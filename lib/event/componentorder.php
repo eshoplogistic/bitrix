@@ -152,6 +152,27 @@ class ComponentOrder
     }
 
 
+    /** Mail chosen PVZ to order property
+     */
+    public function saleOrderPropertyMail($orderID, &$eventName, &$arFields)
+    {
+        $order_props = \CSaleOrderPropsValue::GetOrderProps($orderID);
+        $propertyPvz="";
+
+        while ($arProps = $order_props->Fetch())
+        {
+            if ($arProps["CODE"] == "ESHOPLOGISTIC_PVZ")
+            {
+                $propertyPvz = $arProps["VALUE"];
+            }
+        }
+        //-- добавляем новые поля в массив результатов
+        if($propertyPvz)
+            $arFields["ESHOPLOGISTIC_PVZ"] =  'EShopLogistic ПВЗ: '.$propertyPvz;
+
+    }
+
+
     /** Check filling of PVZ field
      * @param Sale\Order $order
      * @return Main\EventResult

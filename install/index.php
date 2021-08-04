@@ -151,6 +151,14 @@ Class webnauts_EshopLogistic extends CModule
 			'saleOrderBeforeSaved'
 		);
 
+		$eventManager->registerEventHandlerCompatible(
+			'sale',
+			'OnOrderNewSendEmail',
+			$this->MODULE_ID,
+			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'saleOrderPropertyMail'
+		);
+
 		return true;
 	}
 
