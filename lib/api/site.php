@@ -1,14 +1,13 @@
 <?
-namespace Webnauts\EshopLogistic\Api;
+namespace Eshoplogistic\Delivery\Api;
 
 use \Bitrix\Main\Data\Cache,
-    \Webnauts\EshopLogistic\Config,
-    \Webnauts\EshopLogistic\Helpers\Client;
+    \Eshoplogistic\Delivery\Config,
+    \Eshoplogistic\Delivery\Helpers\Client;
 
 /** Class for getting status of authorization, deg=fault settings and account balance
  * Class Site
- * @package Webnauts\EshopLogistic\Api
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Api
  * @author negen
  */
 

@@ -1,6 +1,6 @@
 <?php
 use \Bitrix\Main\Config\Option,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 $moduleId = Config::MODULE_ID;
 $apiYaMapKey = Option::get($moduleId, 'api_yamap_key');

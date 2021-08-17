@@ -1,15 +1,14 @@
 <?
-namespace Webnauts\EshopLogistic\Helpers;
+namespace Eshoplogistic\Delivery\Helpers;
 
 use \CFile,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 
 
 /** Class for logo file handling
  * Class LogotipHandler
- * @package Webnauts\EshopLogistic\Helpers
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Helpers
  * @author negen
  */
 
@@ -27,7 +26,7 @@ class LogotipHandler
 
         $arFields["ATTACH_IMG"] = [
             'name' => $logotipFileName,
-            'tmp_name' => $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/webnauts.eshoplogistic/install/img/'.$logotipFileName,
+            'tmp_name' => $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/eshoplogistic.delivery/install/img/'.$logotipFileName,
             'type' => 'image/'.$ext
         ];
 

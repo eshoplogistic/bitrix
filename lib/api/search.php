@@ -1,13 +1,12 @@
 <?
-namespace Webnauts\EshopLogistic\Api;
+namespace Eshoplogistic\Delivery\Api;
 
 
-use \Webnauts\EshopLogistic\Helpers\Client;
+use \Eshoplogistic\Delivery\Helpers\Client;
 
 /** Class for class for searching cities for delivery
  * Class Search
- * @package Webnauts\EshopLogistic\Api
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Api
  * @author negen
  */
 

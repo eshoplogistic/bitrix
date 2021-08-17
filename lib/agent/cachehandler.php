@@ -1,14 +1,13 @@
 <?php
-namespace Webnauts\EshopLogistic\Agent;
+namespace Eshoplogistic\Delivery\Agent;
 
 use \Bitrix\Main\Application,
     \Bitrix\Main\Data\Cache,
-    \Webnauts\EshopLogistic\Config;;
+    \Eshoplogistic\Delivery\Config;;
 
 /** Agents for cache managing
  * Class CacheHandler
- * @package Webnauts\EshopLogistic\Agent
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Agent
  * @author negen
  */
 
@@ -28,6 +27,6 @@ class CacheHandler
         $managedCahe = Application::getInstance()->getManagedCache();
         $managedCahe->cleanDir( Config::CACHE_DIR);
 
-        return "Webnauts\EshopLogistic\Agent\CacheHandler::clean();";
+        return "Eshoplogistic\Delivery\Agent\CacheHandler::clean();";
     }
 }

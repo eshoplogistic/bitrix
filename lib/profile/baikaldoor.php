@@ -1,5 +1,5 @@
 <?
-namespace Webnauts\EshopLogistic\Profile;
+namespace Eshoplogistic\Delivery\Profile;
 
 use \Bitrix\Main\Localization\Loc,
     \Bitrix\Main\Loader,
@@ -7,7 +7,7 @@ use \Bitrix\Main\Localization\Loc,
     \Bitrix\Sale,
     \Bitrix\Sale\Location\LocationTable,
     \CFile,
-    \Webnauts\EshopLogistic\Helpers;
+    \Eshoplogistic\Delivery\Helpers;
 
 Loc::loadMessages(__FILE__);
 

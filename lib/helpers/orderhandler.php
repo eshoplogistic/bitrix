@@ -1,5 +1,5 @@
 <?
-namespace Webnauts\EshopLogistic\Helpers;
+namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Main,
     \Bitrix\Sale,
@@ -7,8 +7,7 @@ use \Bitrix\Main,
 
 /** Class for handing current order
  * Class OrderHandler
- * @package Webnauts\EshopLogistic\Helpers
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Helpers
  * @author negen
  */
 

@@ -1,11 +1,11 @@
 <?
-namespace Webnauts\EshopLogistic\Event;
+namespace Eshoplogistic\Delivery\Event;
 
 use \Bitrix\Main,
     \Bitrix\Main\Localization\Loc,
     \Bitrix\Sale,
     \Bitrix\Sale\Delivery,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 
 Main\Loader::includeModule('sale');
@@ -14,8 +14,7 @@ Loc::loadMessages(__FILE__);
 
 /** Class for handing sale.order.ajax component events
  * Class ComponentOrder
- * @package Webnauts\EshopLogistic\Event
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Event
  * @author negen
  */
 

@@ -1,14 +1,13 @@
 <?
-namespace Webnauts\EshopLogistic\Api;
+namespace Eshoplogistic\Delivery\Api;
 
 use \Bitrix\Main\Application,
-    \Webnauts\EshopLogistic\Config,
-    \Webnauts\EshopLogistic\Helpers\Client;
+    \Eshoplogistic\Delivery\Config,
+    \Eshoplogistic\Delivery\Helpers\Client;
 
 /** Class for class for getting delivery price
  * Class Delivery
- * @package Webnauts\EshopLogistic\Api
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Api
  * @author negen
  */
 

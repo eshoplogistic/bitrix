@@ -1,12 +1,11 @@
 <?
-namespace Webnauts\EshopLogistic\Event;
+namespace Eshoplogistic\Delivery\Event;
 
-use \Webnauts\EshopLogistic\Config;
+use \Eshoplogistic\Delivery\Config;
 
 /** Class for adding a handler for the delivery service in the admin menu
  * Class DeliveryBuildList
- * @package Webnauts\EshopLogistic\Event
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Event
  * @author negen
  */
 

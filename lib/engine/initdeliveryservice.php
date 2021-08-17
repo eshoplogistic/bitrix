@@ -1,18 +1,17 @@
 <?
-namespace Webnauts\EshopLogistic\Engine;
+namespace Eshoplogistic\Delivery\Engine;
 
 use \Bitrix\Main\Localization\Loc,
     \Bitrix\Main\Application,
     \Bitrix\Main\Page\Asset,
     \Bitrix\Main\Config\Option,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 Loc::loadMessages(__FILE__);
 
 /** Class for initialization of delivery service
  * Class InitDeliveryService
- * @package Webnauts\EshopLogistic\Engine
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Engine
  * @author negen
  */
 

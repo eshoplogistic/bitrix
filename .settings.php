@@ -3,7 +3,7 @@ return [
     'controllers' => [
         'value' => [
             'namespaces' => [
-                '\\Webnauts\\EshopLogistic\\Controller' => 'api'
+                '\\EshopLogistic\\Delivery\\Controller' => 'api'
             ]
         ],
         'readonly' => true

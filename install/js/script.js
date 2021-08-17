@@ -66,7 +66,7 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
             ymaps.ready(BX.EShopLogistic.Delivery.sale_order_ajax.initYMap);
 
 
-            var request = BX.ajax.runAction('webnauts:eshoplogistic.api.ajaxhandler.getPvzList', {
+            var request = BX.ajax.runAction('eshoplogistic:delivery.api.ajaxhandler.getPvzList', {
                 data: {
                     profileId: profileId,
                     locationCode: locationInput.value,

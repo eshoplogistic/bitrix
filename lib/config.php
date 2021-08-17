@@ -1,5 +1,5 @@
 <?php
-namespace Webnauts\EshopLogistic;
+namespace Eshoplogistic\Delivery;
 
 use \Bitrix\Main\Localization\Loc,
     \Bitrix\Main\Config\Option;
@@ -8,13 +8,12 @@ Loc::loadMessages(__FILE__);
 
 /** Class for setup config options
  * Class Config
- * @package Webnauts\EshopLogistic
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery
  * @author negen
  */
 class Config
 {
-    const MODULE_ID = 'webnauts.eshoplogistic';
+    const MODULE_ID = 'eshoplogistic.delivery';
     const DELIVERY_CODE = 'eslogistic';
     const CACHE_TIME = 3600;
     const CACHE_DIR = 'eshoplogistic';
@@ -27,25 +26,25 @@ class Config
     {
 
         $this->profileClasses = array(
-            'baikal_door'   => 'Webnauts\EshopLogistic\Profile\BaikalDoor',
-            'baikal_term'   => 'Webnauts\EshopLogistic\Profile\BaikalTerminal',
-            'boxberry_door' => 'Webnauts\EshopLogistic\Profile\BoxberryDoor',
-            'boxberry_term' => 'Webnauts\EshopLogistic\Profile\BoxberryTerminal',
-            'custom_door'   =>  'Webnauts\EshopLogistic\Profile\CustomDoor',
-            'custom_term'   =>  'Webnauts\EshopLogistic\Profile\CustomTerminal',
-            'delline_door'  =>  'Webnauts\EshopLogistic\Profile\DellineDoor',
-            'delline_term'  =>  'Webnauts\EshopLogistic\Profile\DellineTerminal',
-            'dpd_door'      =>  'Webnauts\EshopLogistic\Profile\DpdDoor',
-            'dpd_term'      =>  'Webnauts\EshopLogistic\Profile\DpdTerminal',
-            'gtd_door'      =>  'Webnauts\EshopLogistic\Profile\GtdDoor',
-            'gtd_term'      =>  'Webnauts\EshopLogistic\Profile\GtdTerminal',
-            'iml_door'      =>  'Webnauts\EshopLogistic\Profile\ImlDoor',
-            'iml_term'      =>  'Webnauts\EshopLogistic\Profile\ImlTerminal',
-            'pecom_door'    =>  'Webnauts\EshopLogistic\Profile\PecomDoor',
-            'pecom_term'    =>  'Webnauts\EshopLogistic\Profile\PecomTerminal',
-            'postrf_term'   =>  'Webnauts\EshopLogistic\Profile\PostrfDoor',
-            'sdek_door'     =>  'Webnauts\EshopLogistic\Profile\SdekDoor',
-            'sdek_term'     =>  'Webnauts\EshopLogistic\Profile\SdekTerminal',
+            'baikal_door'   => 'Eshoplogistic\Delivery\Profile\BaikalDoor',
+            'baikal_term'   => 'Eshoplogistic\Delivery\Profile\BaikalTerminal',
+            'boxberry_door' => 'Eshoplogistic\Delivery\Profile\BoxberryDoor',
+            'boxberry_term' => 'Eshoplogistic\Delivery\Profile\BoxberryTerminal',
+            'custom_door'   =>  'Eshoplogistic\Delivery\Profile\CustomDoor',
+            'custom_term'   =>  'Eshoplogistic\Delivery\Profile\CustomTerminal',
+            'delline_door'  =>  'Eshoplogistic\Delivery\Profile\DellineDoor',
+            'delline_term'  =>  'Eshoplogistic\Delivery\Profile\DellineTerminal',
+            'dpd_door'      =>  'Eshoplogistic\Delivery\Profile\DpdDoor',
+            'dpd_term'      =>  'Eshoplogistic\Delivery\Profile\DpdTerminal',
+            'gtd_door'      =>  'Eshoplogistic\Delivery\Profile\GtdDoor',
+            'gtd_term'      =>  'Eshoplogistic\Delivery\Profile\GtdTerminal',
+            'iml_door'      =>  'Eshoplogistic\Delivery\Profile\ImlDoor',
+            'iml_term'      =>  'Eshoplogistic\Delivery\Profile\ImlTerminal',
+            'pecom_door'    =>  'Eshoplogistic\Delivery\Profile\PecomDoor',
+            'pecom_term'    =>  'Eshoplogistic\Delivery\Profile\PecomTerminal',
+            'postrf_term'   =>  'Eshoplogistic\Delivery\Profile\PostrfDoor',
+            'sdek_door'     =>  'Eshoplogistic\Delivery\Profile\SdekDoor',
+            'sdek_term'     =>  'Eshoplogistic\Delivery\Profile\SdekTerminal',
         );
 
         $this->profileList = array(
@@ -83,26 +82,26 @@ class Config
         $path = '/'.dirname(substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT'])));
         $eventDeliveryList = array(
 
-            '\Webnauts\EshopLogistic\Engine\InitDeliveryService' => $path.'/lib/engine/initdeliveryservice.php',
-            '\Webnauts\EshopLogistic\Profile\BaikalDoor' => $path.'/lib/profile/baikaldoor.php',
-            '\Webnauts\EshopLogistic\Profile\BaikalTerminal' => $path.'/lib/profile/baikalterminal.php',
-            '\Webnauts\EshopLogistic\Profile\BoxberryDoor' => $path.'/lib/profile/boxberrydoor.php',
-            '\Webnauts\EshopLogistic\Profile\BoxberryTerminal' => $path.'/lib/profile/boxberryterminal.php',
-            '\Webnauts\EshopLogistic\Profile\CustomDoor' => $path.'/lib/profile/customdoor.php',
-            '\Webnauts\EshopLogistic\Profile\CustomTerminal' => $path.'/lib/profile/customterminal.php',
-            '\Webnauts\EshopLogistic\Profile\DellineDoor' => $path.'/lib/profile/dellinedoor.php',
-            '\Webnauts\EshopLogistic\Profile\DellineTerminal' => $path.'/lib/profile/dellineterminal.php',
-            '\Webnauts\EshopLogistic\Profile\DpdDoor' => $path.'/lib/profile/dpddoor.php',
-            '\Webnauts\EshopLogistic\Profile\DpdTerminal' => $path.'/lib/profile/dpdterminal.php',
-            '\Webnauts\EshopLogistic\Profile\GtdDoor' => $path.'/lib/profile/gtddoor.php',
-            '\Webnauts\EshopLogistic\Profile\GtdTerminal' => $path.'/lib/profile/gtdterminal.php',
-            '\Webnauts\EshopLogistic\Profile\ImlDoor' => $path.'/lib/profile/imldoor.php',
-            '\Webnauts\EshopLogistic\Profile\ImlTerminal' => $path.'/lib/profile/imlterminal.php',
-            '\Webnauts\EshopLogistic\Profile\PecomDoor' => $path.'/lib/profile/pecomdoor.php',
-            '\Webnauts\EshopLogistic\Profile\PecomTerminal' => $path.'/lib/profile/pecomterminal.php',
-            '\Webnauts\EshopLogistic\Profile\PostrfDoor' => $path.'/lib/profile/postrfdoor.php',
-            '\Webnauts\EshopLogistic\Profile\SdekDoor' => $path.'/lib/profile/sdekdoor.php',
-            '\Webnauts\EshopLogistic\Profile\SdekTerminal' => $path.'/lib/profile/sdekterminal.php',
+            '\Eshoplogistic\Delivery\Engine\InitDeliveryService' => $path.'/lib/engine/initdeliveryservice.php',
+            '\Eshoplogistic\Delivery\Profile\BaikalDoor' => $path.'/lib/profile/baikaldoor.php',
+            '\Eshoplogistic\Delivery\Profile\BaikalTerminal' => $path.'/lib/profile/baikalterminal.php',
+            '\Eshoplogistic\Delivery\Profile\BoxberryDoor' => $path.'/lib/profile/boxberrydoor.php',
+            '\Eshoplogistic\Delivery\Profile\BoxberryTerminal' => $path.'/lib/profile/boxberryterminal.php',
+            '\Eshoplogistic\Delivery\Profile\CustomDoor' => $path.'/lib/profile/customdoor.php',
+            '\Eshoplogistic\Delivery\Profile\CustomTerminal' => $path.'/lib/profile/customterminal.php',
+            '\Eshoplogistic\Delivery\Profile\DellineDoor' => $path.'/lib/profile/dellinedoor.php',
+            '\Eshoplogistic\Delivery\Profile\DellineTerminal' => $path.'/lib/profile/dellineterminal.php',
+            '\Eshoplogistic\Delivery\Profile\DpdDoor' => $path.'/lib/profile/dpddoor.php',
+            '\Eshoplogistic\Delivery\Profile\DpdTerminal' => $path.'/lib/profile/dpdterminal.php',
+            '\Eshoplogistic\Delivery\Profile\GtdDoor' => $path.'/lib/profile/gtddoor.php',
+            '\Eshoplogistic\Delivery\Profile\GtdTerminal' => $path.'/lib/profile/gtdterminal.php',
+            '\Eshoplogistic\Delivery\Profile\ImlDoor' => $path.'/lib/profile/imldoor.php',
+            '\Eshoplogistic\Delivery\Profile\ImlTerminal' => $path.'/lib/profile/imlterminal.php',
+            '\Eshoplogistic\Delivery\Profile\PecomDoor' => $path.'/lib/profile/pecomdoor.php',
+            '\Eshoplogistic\Delivery\Profile\PecomTerminal' => $path.'/lib/profile/pecomterminal.php',
+            '\Eshoplogistic\Delivery\Profile\PostrfDoor' => $path.'/lib/profile/postrfdoor.php',
+            '\Eshoplogistic\Delivery\Profile\SdekDoor' => $path.'/lib/profile/sdekdoor.php',
+            '\Eshoplogistic\Delivery\Profile\SdekTerminal' => $path.'/lib/profile/sdekterminal.php',
         );
 
         return $eventDeliveryList;

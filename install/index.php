@@ -9,10 +9,10 @@ use \Bitrix\Main\Localization\Loc,
 
 Loc::loadMessages(__FILE__);
 
-if(class_exists("webnauts_EshopLogistic")) return;
-Class webnauts_EshopLogistic extends CModule
+if(class_exists("eshoplogistic_delivery")) return;
+Class eshoplogistic_delivery extends CModule
 {
-	var $MODULE_ID  = 'webnauts.eshoplogistic';
+	var $MODULE_ID  = 'eshoplogistic.delivery';
 	var $MODULE_VERSION;
 	var $MODULE_VERSION_DATE;
 	var $MODULE_NAME;
@@ -20,7 +20,7 @@ Class webnauts_EshopLogistic extends CModule
 	var $MODULE_GROUP_RIGHTS = "N";
 
 
-	function webnauts_EshopLogistic()
+	function eshoplogistic_delivery()
 	{
 
 		$arModuleVersion = array();
@@ -123,7 +123,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'onSaleDeliveryHandlersClassNamesBuildList',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\DeliveryBuildList',
+			'Eshoplogistic\Delivery\Event\DeliveryBuildList',
 			'deliveryBuildList'
 		);
 
@@ -131,7 +131,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleComponentOrderOneStepDelivery',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'orderDeliveryBuildList'
 		);
 
@@ -139,7 +139,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleComponentOrderProperties',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'saleOrderPropertyPvzFill'
 		);
 
@@ -147,7 +147,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleOrderBeforeSaved',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'saleOrderBeforeSaved'
 		);
 
@@ -155,7 +155,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnOrderNewSendEmail',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'saleOrderPropertyMail'
 		);
 
@@ -169,7 +169,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'onSaleDeliveryHandlersClassNamesBuildList',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\DeliveryBuildList',
+			'Eshoplogistic\Delivery\Event\DeliveryBuildList',
 			'deliveryBuildList'
 		);
 
@@ -177,7 +177,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleComponentOrderOneStepDelivery',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'orderDeliveryBuildList'
 		);
 
@@ -185,7 +185,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleComponentOrderProperties',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'saleOrderPropertyPvzFill'
 		);
 
@@ -193,7 +193,7 @@ Class webnauts_EshopLogistic extends CModule
 			'sale',
 			'OnSaleOrderBeforeSaved',
 			$this->MODULE_ID,
-			'Webnauts\EshopLogistic\Event\ComponentOrder',
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
 			'saleOrderBeforeSaved'
 		);
 
@@ -206,7 +206,7 @@ Class webnauts_EshopLogistic extends CModule
 		$dateTime =  DateTime::createFromPhp( new \DateTime('now'));
 
 		\CAgent::AddAgent(
-			"Webnauts\EshopLogistic\Agent\CacheHandler::clean();",
+			"Eshoplogistic\Delivery\Agent\CacheHandler::clean();",
 			$this->MODULE_ID,
 			"N",
 			86400,

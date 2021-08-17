@@ -21,7 +21,7 @@ Loc::loadMessages(__FILE__);
 Loader::includeModule($module_id);
 Loader::includeModule('sale');
 
-    $siteClass = new Webnauts\EshopLogistic\Api\Site();
+    $siteClass = new EshopLogistic\Delivery\Api\Site();
     $authStatus = $siteClass->getAuthStatus();
 
     if($authStatus['success'] == true) {
@@ -232,7 +232,7 @@ $tabControl->End();
 <script>
     function eslogClearCach()
     {
-        var request = BX.ajax.runAction('webnauts:eshoplogistic.api.AjaxHandler.clearCache', {
+        var request = BX.ajax.runAction('eshoplogistic:delivery.api.AjaxHandler.clearCache', {
             data: {}
         });
 

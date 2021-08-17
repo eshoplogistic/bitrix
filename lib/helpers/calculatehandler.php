@@ -1,19 +1,18 @@
 <?
-namespace Webnauts\EshopLogistic\Helpers;
+namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Sale,
     \Bitrix\Main\Error,
     \Bitrix\Main\Localization\Loc,
-    \Webnauts\EshopLogistic\Api,
-    \Webnauts\EshopLogistic\Helpers,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Api,
+    \Eshoplogistic\Delivery\Helpers,
+    \Eshoplogistic\Delivery\Config;
 
 
 
 /** Class for calculate deliveries
  * Class LocationHandler
- * @package Webnauts\EshopLogistic\Helpers
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Helpers
  * @author negen
  */
 

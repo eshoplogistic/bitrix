@@ -1,5 +1,5 @@
 <?php
-namespace Webnauts\EshopLogistic\Controller;
+namespace Eshoplogistic\Delivery\Controller;
 
 use \Bitrix\Main\Engine\Controller,
     \Bitrix\Main\Loader,
@@ -7,7 +7,7 @@ use \Bitrix\Main\Engine\Controller,
     \Bitrix\Main\Application,
     \Bitrix\Main\Data\Cache,
     \Bitrix\Sale\Delivery\Services\Table,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 Loader::includeModule('sale');
 
@@ -15,8 +15,7 @@ Loc::loadMessages(__FILE__);
 
 /** Class for getting PVZ by ajax request
  * Class AjaxHandler
- * @package Webnauts\EshopLogistic\Controller
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Controller
  * @author negen
  */
 

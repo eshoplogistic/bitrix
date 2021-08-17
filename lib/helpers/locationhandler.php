@@ -1,16 +1,15 @@
 <?
-namespace Webnauts\EshopLogistic\Helpers;
+namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Main\Loader,
     \Bitrix\Sale\Location\LocationTable,
     \Bitrix\Main\Data\Cache,
-    \Webnauts\EshopLogistic\Api\Search,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Api\Search,
+    \Eshoplogistic\Delivery\Config;
 
 /** Class for handing deliveries by location
  * Class LocationHandler
- * @package Webnauts\EshopLogistic\Helpers
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Helpers
  * @author negen
  */
 

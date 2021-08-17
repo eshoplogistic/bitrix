@@ -1,14 +1,13 @@
 <?php
-namespace Webnauts\EshopLogistic\Helpers;
+namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Main\Config\Option,
     \Bitrix\Main\Web\HttpClient,
-    \Webnauts\EshopLogistic\Config;
+    \Eshoplogistic\Delivery\Config;
 
 /** Класс для обмена данными с eShopLogistic
  * Class Client
- * @package Webnauts\EshopLogistic\Helpers
- * @copyright webnauts.pro
+ * @package Eshoplogistic\Delivery\Helpers
  * @author negen
  */
 
