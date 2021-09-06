@@ -165,9 +165,9 @@ class ComponentOrder
                 $propertyPvz = $arProps["VALUE"];
             }
         }
-        //-- РґРѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Рµ РїРѕР»СЏ РІ РјР°СЃСЃРёРІ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
+        //-- добавляем новые поля в массив результатов
         if($propertyPvz)
-            $arFields["ESHOPLOGISTIC_PVZ"] =  'EShopLogistic РџР’Р—: '.$propertyPvz;
+            $arFields["ESHOPLOGISTIC_PVZ"] =  'EShopLogistic ПВЗ: '.$propertyPvz;
 
     }
 

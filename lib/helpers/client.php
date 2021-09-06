@@ -5,7 +5,7 @@ use \Bitrix\Main\Config\Option,
     \Bitrix\Main\Web\HttpClient,
     \Eshoplogistic\Delivery\Config;
 
-/** РљР»Р°СЃСЃ РґР»СЏ РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё СЃ eShopLogistic
+/** Класс для обмена данными с eShopLogistic
  * Class Client
  * @package Eshoplogistic\Delivery\Helpers
  * @author negen
@@ -27,7 +27,7 @@ class Client
         $this->isLog = Option::get(Config::MODULE_ID, 'is_log');
     }
 
-    /** Http - Р·Р°РїСЂРѕСЃ РґР»СЏ РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё СЃ eSputnik
+    /** Http - запрос для обмена данными с eSputnik
      * @param string $httpMethod
      * @param array $apiParams
      * @return array

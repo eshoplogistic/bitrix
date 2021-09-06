@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_GTD_DOOR_CLASS_TITLE"] = "GTD: ÐºÑƒÑ€ÑŒÐµÑ€";
-$MESS["ESHOP_LOGISTIC_GTD_DOOR_CLASS_DESCRIPTION"] = "GTD: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° ÐºÑƒÑ€ÑŒÐµÑ€Ð¾Ð¼";
+$MESS["ESHOP_LOGISTIC_GTD_DOOR_CLASS_TITLE"] = "GTD: êóðüåð";
+$MESS["ESHOP_LOGISTIC_GTD_DOOR_CLASS_DESCRIPTION"] = "GTD: äîñòàâêà êóðüåðîì";
 ?>

@@ -98,25 +98,25 @@ $aTabs = array(
             array(
                 "api_payment_card",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CARD"),
-                array(),
+                "",
                 ['multiselectbox', $paySystemList]
             ),
             array(
                 "api_payment_cache",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CACHE"),
-                array(),
+                "",
                 ['multiselectbox', $paySystemList]
             ),
             array(
                 "api_payment_cashless",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CASHLESS"),
-                array(),
+                "",
                 ['multiselectbox', $paySystemList]
             ),
             array(
                 "api_payment_prepay",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_PREPAY"),
-                array(),
+                "",
                 ['multiselectbox', $paySystemList]
             ),
        ),
@@ -127,10 +127,10 @@ $aTabs = array(
     ),
 );
 
-// СЃРѕС…СЂР°РЅРµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ
+// сохранение параметров
 if($request->isPost() && check_bitrix_sessid()){
 
-    //СѓРґР°Р»РµРЅРёРµ РєРµС€Р° СЃ РґР°РЅРЅС‹РјРё Р°РІС‚РѕСЂРёР·Р°С†РёРё
+    //удаление кеша с данными авторизации
     Cache::clearCache(true, $cacheDir);
 
     foreach($aTabs as $aTab){

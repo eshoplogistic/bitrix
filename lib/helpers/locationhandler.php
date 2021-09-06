@@ -133,9 +133,11 @@ class LocationHandler
         if(count($deliveryRequest['data']) == 1) {
             $cities = $deliveryRequest['data'];
         }
-        foreach ($name as $part) {
-
-            $cities = self::checkName($part, $cities);
+		
+        if(is_array($name) || is_object($name)){
+            foreach ($name as $part) {
+                $cities = self::checkName($part, $cities);
+            }
         }
 
         if(count($cities) > 1) {
