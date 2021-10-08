@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_BOXBERRY_TERMINAL_CLASS_TITLE"] = "Boxberry: ïóíêò âûäà÷è çàêàçà";
-$MESS["ESHOP_LOGISTIC_BOXBERRY_TERMINAL_CLASS_DESCRIPTION"] = "Boxberry: äîñòàâêà äî ïóíêòà âûäà÷è çàêàçà";
+$MESS["ESHOP_LOGISTIC_BOXBERRY_TERMINAL_CLASS_TITLE"] = "Boxberry: Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
+$MESS["ESHOP_LOGISTIC_BOXBERRY_TERMINAL_CLASS_DESCRIPTION"] = "Boxberry: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° Ð´Ð¾ Ð¿ÑƒÐ½ÐºÑ‚Ð° Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
 ?>

@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_DELLINE_TERMINAL_CLASS_TITLE"] = "Äåëîâûå ëèíèè: ïóíêò âûäà÷è çàêàçà";
-$MESS["ESHOP_LOGISTIC_DELLINE_TERMINAL_CLASS_DESCRIPTION"] = "Äåëîâûå ëèíèè: äîñòàâêà äî ïóíêòà âûäà÷è çàêàçà";
+$MESS["ESHOP_LOGISTIC_DELLINE_TERMINAL_CLASS_TITLE"] = "Ð”ÐµÐ»Ð¾Ð²Ñ‹Ðµ Ð»Ð¸Ð½Ð¸Ð¸: Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
+$MESS["ESHOP_LOGISTIC_DELLINE_TERMINAL_CLASS_DESCRIPTION"] = "Ð”ÐµÐ»Ð¾Ð²Ñ‹Ðµ Ð»Ð¸Ð½Ð¸Ð¸: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° Ð´Ð¾ Ð¿ÑƒÐ½ÐºÑ‚Ð° Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
 ?>

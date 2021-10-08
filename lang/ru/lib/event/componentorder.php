@@ -1,6 +1,6 @@
 <?
-$MESS["ESHOP_LOGISTIC_TERMINAL_BTN"] = "Âûáðàòü ïóíêò âûäà÷è";
-$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN"] = "ÏÂÇ:";
-$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_DESC_EMPTY"] = "íå âûáðàí";
-$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY"] = "Íå âûáðàí ïóíêò âûäà÷è çàêàçà";
+$MESS["ESHOP_LOGISTIC_TERMINAL_BTN"] = "Ð’Ñ‹Ð±Ñ€Ð°Ñ‚ÑŒ Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸";
+$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN"] = "ÐŸÐ’Ð—:";
+$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_DESC_EMPTY"] = "Ð½Ðµ Ð²Ñ‹Ð±Ñ€Ð°Ð½";
+$MESS["ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY"] = "ÐÐµ Ð²Ñ‹Ð±Ñ€Ð°Ð½ Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
 ?>

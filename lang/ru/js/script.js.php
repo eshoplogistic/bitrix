@@ -1,10 +1,10 @@
 <?
-$MESS["ESHOP_LOGISTIC_DELIVERY_PHONE"] = "Òåëåôîí: ";
-$MESS["ESHOP_LOGISTIC_DELIVERY_WORK_TIME"] = "Ðàáî÷åå âðåìÿ: ";
-$MESS["ESHOP_LOGISTIC_DELIVERY_ADDITIONAL_PAYMENT"] = "Ïðè äîñòàâêå â äàííûé ÏÂÇ ìîæåò âçûìàòñüÿ äîïîëíèòåëüíàÿ îïëàòà";
-$MESS["ESHOP_LOGISTIC_DELIVERY_CHOOSE_BTN"] = "Çàáðàòü îòñþäà";
-$MESS["ESHOP_LOGISTIC_DELIVERY_POSTAMAT"] = "Ïîñòàìàò";
-$MESS["ESHOP_LOGISTIC_CHANGE_PVZ_BTN"] = "Ñìåíèòü ïóíêò âûäà÷è";
+$MESS["ESHOP_LOGISTIC_DELIVERY_PHONE"] = "Ð¢ÐµÐ»ÐµÑ„Ð¾Ð½: ";
+$MESS["ESHOP_LOGISTIC_DELIVERY_WORK_TIME"] = "Ð Ð°Ð±Ð¾Ñ‡ÐµÐµ Ð²Ñ€ÐµÐ¼Ñ: ";
+$MESS["ESHOP_LOGISTIC_DELIVERY_ADDITIONAL_PAYMENT"] = "ÐŸÑ€Ð¸ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐµ Ð² Ð´Ð°Ð½Ð½Ñ‹Ð¹ ÐŸÐ’Ð— Ð¼Ð¾Ð¶ÐµÑ‚ Ð²Ð·Ñ‹Ð¼Ð°Ñ‚ÑÑŒÑ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð°Ñ Ð¾Ð¿Ð»Ð°Ñ‚Ð°";
+$MESS["ESHOP_LOGISTIC_DELIVERY_CHOOSE_BTN"] = "Ð—Ð°Ð±Ñ€Ð°Ñ‚ÑŒ Ð¾Ñ‚ÑÑŽÐ´Ð°";
+$MESS["ESHOP_LOGISTIC_DELIVERY_POSTAMAT"] = "ÐŸÐ¾ÑÑ‚Ð°Ð¼Ð°Ñ‚";
+$MESS["ESHOP_LOGISTIC_CHANGE_PVZ_BTN"] = "Ð¡Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸";
 
-$MESS["ESHOP_LOGISTIC_POPUP_TEXT"] = "Ïóíêòû âûäà÷è çàêàçîâ âûáðàííîé äîñòàâêè îòñóòñòâóþò.";
-$MESS["ESHOP_LOGISTIC_POPUP_BTN"] = "Çàêðûòü";
+$MESS["ESHOP_LOGISTIC_POPUP_TEXT"] = "ÐŸÑƒÐ½ÐºÑ‚Ñ‹ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð¾Ð² Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½Ð¾Ð¹ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸ Ð¾Ñ‚ÑÑƒÑ‚ÑÑ‚Ð²ÑƒÑŽÑ‚.";
+$MESS["ESHOP_LOGISTIC_POPUP_BTN"] = "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ";

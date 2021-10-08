@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_TITLE"] = "Áàéêàë Ñåðâèñ: êóðüåð";
-$MESS["ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_DESCRIPTION"] = "Áàéêàë Ñåðâèñ: äîñòàâêà êóðüåðîì";
+$MESS["ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_TITLE"] = "Ð‘Ð°Ð¹ÐºÐ°Ð» Ð¡ÐµÑ€Ð²Ð¸Ñ: ÐºÑƒÑ€ÑŒÐµÑ€";
+$MESS["ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_DESCRIPTION"] = "Ð‘Ð°Ð¹ÐºÐ°Ð» Ð¡ÐµÑ€Ð²Ð¸Ñ: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° ÐºÑƒÑ€ÑŒÐµÑ€Ð¾Ð¼";
 ?>

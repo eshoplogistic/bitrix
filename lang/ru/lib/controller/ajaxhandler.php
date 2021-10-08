@@ -1,3 +1,3 @@
 <?
-$MESS["ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_RESULT"] = "Êýø î÷èùåí";
+$MESS["ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_RESULT"] = "ÐšÑÑˆ Ð¾Ñ‡Ð¸Ñ‰ÐµÐ½";
 ?>

@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_IML_DOOR_CLASS_TITLE"] = "IML: êóðüåð";
-$MESS["ESHOP_LOGISTIC_IML_DOOR_CLASS_DESCRIPTION"] = "IML: äîñòàâêà êóðüåðîì";
+$MESS["ESHOP_LOGISTIC_IML_DOOR_CLASS_TITLE"] = "IML: ÐºÑƒÑ€ÑŒÐµÑ€";
+$MESS["ESHOP_LOGISTIC_IML_DOOR_CLASS_DESCRIPTION"] = "IML: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° ÐºÑƒÑ€ÑŒÐµÑ€Ð¾Ð¼";
 ?>

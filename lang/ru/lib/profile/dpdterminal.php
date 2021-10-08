@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_DPD_TERMINAL_CLASS_TITLE"] = "DPD: ïóíêò âûäà÷è çàêàçà";
-$MESS["ESHOP_LOGISTIC_DPD_TERMINAL_CLASS_DESCRIPTION"] = "DPD: äîñòàâêà äî ïóíêòà âûäà÷è çàêàçà";
+$MESS["ESHOP_LOGISTIC_DPD_TERMINAL_CLASS_TITLE"] = "DPD: Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
+$MESS["ESHOP_LOGISTIC_DPD_TERMINAL_CLASS_DESCRIPTION"] = "DPD: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° Ð´Ð¾ Ð¿ÑƒÐ½ÐºÑ‚Ð° Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
 ?>

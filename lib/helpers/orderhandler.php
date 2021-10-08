@@ -37,9 +37,9 @@ class OrderHandler
             if($product=$result->fetch())
 
             {
-                if($product['WIDTH']) $width = $product['WIDTH'];
-                if($product['LENGTH']) $height = $product['LENGTH'];
-                if($product['HEIGHT']) $length = $product['HEIGHT'];
+                if($product['WIDTH']) $width = $product['WIDTH'] / 10;
+                if($product['LENGTH']) $height = $product['LENGTH'] / 10;
+                if($product['HEIGHT']) $length = $product['HEIGHT'] / 10;
             }
 
 

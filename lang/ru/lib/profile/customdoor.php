@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_CUSTOM_DOOR_CLASS_TITLE"] = "Ñâîÿ ñëóæáà: êóðüåð";
-$MESS["ESHOP_LOGISTIC_CUSTOM_DOOR_CLASS_DESCRIPTION"] = "Ñâîÿ ñëóæáà: äîñòàâêà êóðüåðîì";
+$MESS["ESHOP_LOGISTIC_CUSTOM_DOOR_CLASS_TITLE"] = "Ð¡Ð²Ð¾Ñ ÑÐ»ÑƒÐ¶Ð±Ð°: ÐºÑƒÑ€ÑŒÐµÑ€";
+$MESS["ESHOP_LOGISTIC_CUSTOM_DOOR_CLASS_DESCRIPTION"] = "Ð¡Ð²Ð¾Ñ ÑÐ»ÑƒÐ¶Ð±Ð°: Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ° ÐºÑƒÑ€ÑŒÐµÑ€Ð¾Ð¼";
 ?>

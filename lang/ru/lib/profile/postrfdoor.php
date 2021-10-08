@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_TITLE"] = "Почта России: почтовое отделение";
-$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_DESCRIPTION"] = "Почта России: доставка до почтового отделения";
+$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_TITLE"] = "РџРѕС‡С‚Р° Р РѕСЃСЃРёРё: РїРѕС‡С‚РѕРІРѕРµ РѕС‚РґРµР»РµРЅРёРµ";
+$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_DESCRIPTION"] = "РџРѕС‡С‚Р° Р РѕСЃСЃРёРё: РґРѕСЃС‚Р°РІРєР° РґРѕ РїРѕС‡С‚РѕРІРѕРіРѕ РѕС‚РґРµР»РµРЅРёСЏ";
 ?>

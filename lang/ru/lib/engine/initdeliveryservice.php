@@ -1,4 +1,4 @@
 <?
-$MESS["ESHOP_LOGISTIC_MENU_ITEM_DELIVERY_NAME"] = "Êàëüêóëÿòîð äîñòàâêè eShopLogistic";
-$MESS["ESHOP_LOGISTIC_MENU_ITEM_DELIVERY_DESC"] = "Êàëüêóëÿòîð ðàñ÷åòà ñòîèìîñòè äîñòàâêè äëÿ èíòåðíåò-ìàãàçèíîâ eShopLogistic";
+$MESS["ESHOP_LOGISTIC_MENU_ITEM_DELIVERY_NAME"] = "ÐšÐ°Ð»ÑŒÐºÑƒÐ»ÑÑ‚Ð¾Ñ€ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸ eShopLogistic";
+$MESS["ESHOP_LOGISTIC_MENU_ITEM_DELIVERY_DESC"] = "ÐšÐ°Ð»ÑŒÐºÑƒÐ»ÑÑ‚Ð¾Ñ€ Ñ€Ð°ÑÑ‡ÐµÑ‚Ð° ÑÑ‚Ð¾Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸ Ð´Ð»Ñ Ð¸Ð½Ñ‚ÐµÑ€Ð½ÐµÑ‚-Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½Ð¾Ð² eShopLogistic";
 ?>

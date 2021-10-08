@@ -1,10 +1,10 @@
 <?
-$MESS["ESHOP_LOGISTIC_MODULE_NAME"] = "Ðàñ÷åò äîñòàâêè: Ïî÷òà, ÑÄÝÊ, DPD, Boxberry, Ozon Rocket, PickPoint, IML, Äåëîâûå Ëèíèè, ÏÝÊ è äð.";
-$MESS["ESHOP_LOGISTIC_MODULE_DESC"] = "Íåñêîëüêî ñëóæá äîñòàâêè â îäíîé èíòåãðàöèè:
-CDEK, DPD, Boxberry, IML, Ïî÷òà Ðîññèè, Äåëîâûå Ëèíèè, ÏÝÊ, Dostavista, GTD, Áàéêàë Ñåðâèñ";
+$MESS["ESHOP_LOGISTIC_MODULE_NAME"] = "Ð Ð°ÑÑ‡ÐµÑ‚ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸: ÐŸÐ¾Ñ‡Ñ‚Ð°, Ð¡Ð”Ð­Ðš, DPD, Boxberry, Ozon Rocket, PickPoint, IML, Ð”ÐµÐ»Ð¾Ð²Ñ‹Ðµ Ð›Ð¸Ð½Ð¸Ð¸, ÐŸÐ­Ðš Ð¸ Ð´Ñ€.";
+$MESS["ESHOP_LOGISTIC_MODULE_DESC"] = "ÐÐµÑÐºÐ¾Ð»ÑŒÐºÐ¾ ÑÐ»ÑƒÐ¶Ð± Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸ Ð² Ð¾Ð´Ð½Ð¾Ð¹ Ð¸Ð½Ñ‚ÐµÐ³Ñ€Ð°Ñ†Ð¸Ð¸:
+CDEK, DPD, Boxberry, IML, ÐŸÐ¾Ñ‡Ñ‚Ð° Ð Ð¾ÑÑÐ¸Ð¸, Ð”ÐµÐ»Ð¾Ð²Ñ‹Ðµ Ð›Ð¸Ð½Ð¸Ð¸, ÐŸÐ­Ðš, Dostavista, GTD, Ð‘Ð°Ð¹ÐºÐ°Ð» Ð¡ÐµÑ€Ð²Ð¸Ñ";
 $MESS["ESHOP_LOGISTIC_PARTNER_NAME"] = "eShopLogistic";
 $MESS["ESHOP_LOGISTIC_PARTNER_URI"] = "https://eshoplogistic.ru";
-$MESS["ESHOP_LOGISTIC_INSTALL_ERROR_VERSION"] = "Âåðñèÿ ãëàâíîãî ìîäóëÿ íèæå 14 íå ïîääåðæèâàåòñÿ.  Ïîæàëóéñòà îáíîâèòå ñèñòåìó.";
-$MESS["ESHOP_LOGISTIC_ORDER_PROPERTY_NAME"] = "EShopLogistic ÏÂÇ";
-$MESS["ESHOP_LOGISTIC_ORDER_PROPERTY_DESC"] = "Âûáðàííûé ïîêóïàòåëåì ïóíêò âûäà÷è çàêàçà";
+$MESS["ESHOP_LOGISTIC_INSTALL_ERROR_VERSION"] = "Ð’ÐµÑ€ÑÐ¸Ñ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¼Ð¾Ð´ÑƒÐ»Ñ Ð½Ð¸Ð¶Ðµ 14 Ð½Ðµ Ð¿Ð¾Ð´Ð´ÐµÑ€Ð¶Ð¸Ð²Ð°ÐµÑ‚ÑÑ.  ÐŸÐ¾Ð¶Ð°Ð»ÑƒÐ¹ÑÑ‚Ð° Ð¾Ð±Ð½Ð¾Ð²Ð¸Ñ‚Ðµ ÑÐ¸ÑÑ‚ÐµÐ¼Ñƒ.";
+$MESS["ESHOP_LOGISTIC_ORDER_PROPERTY_NAME"] = "EShopLogistic ÐŸÐ’Ð—";
+$MESS["ESHOP_LOGISTIC_ORDER_PROPERTY_DESC"] = "Ð’Ñ‹Ð±Ñ€Ð°Ð½Ð½Ñ‹Ð¹ Ð¿Ð¾ÐºÑƒÐ¿Ð°Ñ‚ÐµÐ»ÐµÐ¼ Ð¿ÑƒÐ½ÐºÑ‚ Ð²Ñ‹Ð´Ð°Ñ‡Ð¸ Ð·Ð°ÐºÐ°Ð·Ð°";
 ?>
