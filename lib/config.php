@@ -46,6 +46,8 @@ class Config
 			'postrf_term'   =>  'Eshoplogistic\Delivery\Profile\PostrfDoor',
 			'sdek_door'     =>  'Eshoplogistic\Delivery\Profile\SdekDoor',
 			'sdek_term'     =>  'Eshoplogistic\Delivery\Profile\SdekTerminal',
+            'ozon_door'     =>  'Eshoplogistic\Delivery\Profile\OzonDoor',
+            'ozon_term'     =>  'Eshoplogistic\Delivery\Profile\OzonTerminal',
 		);
 
 		$this->profileList = array(
@@ -68,6 +70,8 @@ class Config
 			'postrf_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_POSTRF_TERMINAL"),
 			'sdek_door'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SDEK_DOOR"),
 			'sdek_term'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SDEK_TERMINAL"),
+            'ozon_door'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_OZON_DOOR"),
+            'ozon_term'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_OZON_TERMINAL"),
 		);
 
 		$this->priceError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR");
@@ -105,6 +109,8 @@ class Config
 			'\Eshoplogistic\Delivery\Profile\PostrfDoor' => $path.'/lib/profile/postrfdoor.php',
 			'\Eshoplogistic\Delivery\Profile\SdekDoor' => $path.'/lib/profile/sdekdoor.php',
 			'\Eshoplogistic\Delivery\Profile\SdekTerminal' => $path.'/lib/profile/sdekterminal.php',
+            '\Eshoplogistic\Delivery\Profile\OzonDoor' => $path.'/lib/profile/ozondoor.php',
+            '\Eshoplogistic\Delivery\Profile\OzonTerminal' => $path.'/lib/profile/ozonterminal.php',
 		);
 
 		return $eventDeliveryList;

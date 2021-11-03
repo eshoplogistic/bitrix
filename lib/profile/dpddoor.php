@@ -79,7 +79,7 @@ class DpdDoor extends \Bitrix\Sale\Delivery\Services\Base
         return true;
     }
 
-    public function calculate(Sale\Shipment $shipment = null, $extraServices = array())
+    public function calculate(Sale\Shipment $shipment = null)
     {
         $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type);
         return $result;

@@ -11,14 +11,14 @@ use \Bitrix\Main\Localization\Loc,
 
 Loc::loadMessages(__FILE__);
 
-class BaikalDoor extends \Bitrix\Sale\Delivery\Services\Base
+class OzonTerminal extends \Bitrix\Sale\Delivery\Services\Base
 {
     protected $logotip;
-    protected $logotipFileName = 'baikal.png';
+    protected $logotipFileName = 'ozon.png';
     protected static $isProfile = true;
-    protected static $service = 'baikal';
-    protected static $type = 'door';
-    protected static $profileCode = 'eslogistic:baikal_door';
+    protected static $service = 'ozon';
+    protected static $type = 'terminal';
+    protected static $profileCode = 'eslogistic:ozon_term';
     protected $parent = null;
     protected $fiasFrom = null;
 
@@ -51,12 +51,12 @@ class BaikalDoor extends \Bitrix\Sale\Delivery\Services\Base
 
     public static function getClassTitle()
     {
-        return Loc::getMessage("ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_TITLE");
+        return Loc::getMessage("ESHOP_LOGISTIC_OZON_TERMINAL_CLASS_TITLE");
     }
 
     public static function getClassDescription()
     {
-        return Loc::getMessage("ESHOP_LOGISTIC_BAIKAL_DOOR_CLASS_DESCRIPTION");
+        return Loc::getMessage("ESHOP_LOGISTIC_OZON_TERMINAL_CLASS_DESCRIPTION");
     }
 
     public function getParentService()
@@ -79,7 +79,7 @@ class BaikalDoor extends \Bitrix\Sale\Delivery\Services\Base
         return true;
     }
 
-    public function calculate(Sale\Shipment $shipment = null)
+    public function calculate(Sale\Shipment $shipment = null, $extraServices = array())
     {
         $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type);
         return $result;
