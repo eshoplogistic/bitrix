@@ -9,6 +9,7 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_ACTIVE"] = "активен";
 $MESS["ESHOP_LOGISTIC_OPTIONS_BLOCKED"] = "заблокирован";
 $MESS["ESHOP_LOGISTIC_UNAUTHORIZED"] = "Авторизация не выполнена";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_KEY"] = "Ключ API";
+$MESS["ESHOP_LOGISTIC_OPTIONS_API_LOG"] = "Включить логирование запросов к API";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_YAMAP_KEY"] = "Ключ API для Яндекс карты (необязательный параметр, может использоваться для получения статистики использования карты в личном кабинете Яндекс)";
 $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"] = "Выберите способы оплаты Bitrix, соответствующие указанным ниже способам оплаты eShopLogistic:";
 $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_CARD"] = "Вариант оплаты \"Оплата по карте\"";

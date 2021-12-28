@@ -38,7 +38,9 @@ class ComponentOrder
 
         foreach ($arResult['DELIVERY'] as $delivery) {
             if($delivery['CHECKED'] == 'Y') {
-                if($delivery['ID'] == $requestData['current-profile-id']) {
+                $cityCheck = $requestData;
+                unset($cityCheck['RECENT_DELIVERY_VALUE']);
+                if($delivery['ID'] == $requestData['current-profile-id'] && in_array($requestData['RECENT_DELIVERY_VALUE'], $cityCheck)) {
                     $tmpTitle = explode(',', $requestData['ESHOPLOGISTIC_PVZ']);
                     unset($tmpTitle[0]);
                     $pvzTitle = trim(implode(', ', $tmpTitle));
@@ -63,8 +65,12 @@ class ComponentOrder
             ));
             while($profile = $rsProfile->fetch()) {
 
+                if($arResult['DELIVERY'][$profile['ID']]['OWN_NAME'])
+                    $arResult['DELIVERY'][$profile['ID']]['NAME'] = $arResult['DELIVERY'][$profile['ID']]['OWN_NAME'];
 
-                $arResult['DELIVERY'][$profile['ID']]['NAME'] = $arResult['DELIVERY'][$profile['ID']]['OWN_NAME'];
+                if($arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'])
+                    $arResult['DELIVERY'][$profile['ID']]['NAME'] = $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'];
+
 
                 if(
                     isset($arResult['DELIVERY'][$profile['ID']]) &&
@@ -73,7 +79,7 @@ class ComponentOrder
 
                     $isDeliveryHasPvz = self::isDeliveryHasPvz($profile['CODE']);
 
-                    if ($isDeliveryHasPvz) {
+                    if ($isDeliveryHasPvz && $profile['CODE'] !== 'eslogistic:postrf_term') {
                         $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
                             '<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>'.
                             '<div class="eslog-deliverey-desc-lk">'.$arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'].'</div>'.
@@ -165,9 +171,9 @@ class ComponentOrder
                 $propertyPvz = $arProps["VALUE"];
             }
         }
-        //-- добавляем новые поля в массив результатов
+
         if($propertyPvz)
-            $arFields["ESHOPLOGISTIC_PVZ"] =  'EShopLogistic ПВЗ: '.$propertyPvz;
+            $arFields["ESHOPLOGISTIC_PVZ"] =  'EShopLogistic : '.$propertyPvz;
 
     }
 
@@ -202,7 +208,7 @@ class ComponentOrder
 
                                 $propertyCode = $propertyItem->getField("CODE");
                                 if ($propertyCode == 'ESHOPLOGISTIC_PVZ') {
-                                    if(!$propertyItem->getValue()) {
+                                    if(!$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term') {
                                         return new Main\EventResult(
                                             Main\EventResult::ERROR,
                                             new Sale\ResultError(

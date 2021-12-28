@@ -20,6 +20,10 @@ $MESS["ESHOP_LOGISTIC_PROFILELIST_SDEK_DOOR"] = "СДЭК: доставка ку
 $MESS["ESHOP_LOGISTIC_PROFILELIST_SDEK_TERMINAL"] = "СДЭК: доставка до пункта выдачи";
 $MESS["ESHOP_LOGISTIC_PROFILELIST_OZON_DOOR"] = "OZON: доставка курьером";
 $MESS["ESHOP_LOGISTIC_PROFILELIST_OZON_TERMINAL"] = "OZON: доставка до пункта выдачи";
+$MESS["ESHOP_LOGISTIC_PROFILELIST_ZDE_DOOR"] = "ЖелДорЭкспедиция: доставка курьером";
+$MESS["ESHOP_LOGISTIC_PROFILELIST_ZDE_TERMINAL"] = "ЖелДорЭкспедиция: доставка до пункта выдачи";
+$MESS["ESHOP_LOGISTIC_PROFILELIST_PICPOINT_TERMINAL"] = "Picpoint: доставка до пункта выдачи";
+
 
 $MESS["ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR"] = "Ошибка расчета стоимости доставки.";
 $MESS["ESHOP_LOGISTIC_DELIVERY_LOCATION_ERROR"] = "В данном населенном пункте отсутствует возможность доставки.";

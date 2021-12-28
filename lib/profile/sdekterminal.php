@@ -79,7 +79,7 @@ class SdekTerminal extends Sale\Delivery\Services\Base
         return true;
     }
 
-    public function calculate(Sale\Shipment $shipment = null)
+    public function calculate(Sale\Shipment $shipment = null, $extraServices = array())
     {
         $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type);
         return $result;
