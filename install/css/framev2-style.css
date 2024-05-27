@@ -1,0 +1,181 @@
+.eslog-deliverey-desc,
+eslog-deliverey-desc-lk {
+    padding-bottom: 5px;
+}
+.eslog-btn-default{
+    outline: none;
+    background-color: #1485CE;
+    border-color: #1485CE;
+    color: #FFF;
+    display: inline-block;
+    margin-top: 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 4px;
+    -webkit-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -moz-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -ms-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -o-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    transition: all 0.4s;
+}
+
+.eslog-btn-default .button__text {
+    display: block;
+    color: #ffffff;
+    transition: all 0.4s;
+}
+
+.eslog-btn-default.loading-esl .button__text {
+    display: none;
+    opacity: 0;
+}
+
+.eslog-btn-default.loading-esl{
+    background-color: rgb(199, 199, 199);
+    cursor: not-allowed;
+}
+
+.eslog-btn-default.loading-esl .center{
+    display: none;
+}
+
+.eslog-btn-default.loading-esl .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.eslog-btn-default.loading-esl .wave {
+    width: 12px;
+    height: 45px;
+    background: linear-gradient(to top right, color(srgb 0.9385 0.9385 0.9385), #fff);
+    margin: 2px;
+    animation: wave 1s linear infinite;
+    border-radius: 20px;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(6) {
+    animation-delay: 0.5s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(7) {
+    animation-delay: 0.6s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(8) {
+    animation-delay: 0.7s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(9) {
+    animation-delay: 0.8s;
+}
+
+.eslog-btn-default.loading-esl .wave:nth-child(10) {
+    animation-delay: 0.9s;
+}
+
+@keyframes wave {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+
+.eslog-btn-default:hover, .eslog-btn-default:focus {
+    outline: none;
+    background-color: #53A4D8;
+    border-color: #53A4D8;
+    color: #FFF;
+    text-decoration: none;
+}
+
+.eslog-btn-default:hover, .eslog-btn-default:focus {
+    outline: none;
+    background-color: #53A4D8;
+    border-color: #53A4D8;
+    color: #FFF;
+}
+.eslogistic-description {
+    display: block;
+    padding-top: 10px;
+}
+.access-title-bar{
+    font-size: 1.4em;
+    margin-bottom: 1em;
+    font-weight: 700;
+    font-family: inherit;
+}
+#popup-window-titlebar-widget_esl_frame{
+    padding-top: 15px;
+}
+
+#popup-window-content-widget_esl_frame{
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.11);
+    padding: 25px;
+}
+
+#popup-window-content-widget_esl_frame .app-container{
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#errorPvzEsl{
+    color: red;
+}
+
+#invisibleBlockEsl{
+    display: none;
+}
+
+#widget_esl_frame{
+    min-width: 850px;
+}
+
+@media screen and (max-width: 850px) {
+    #widget_esl_frame{
+        min-width: 100%;
+        min-height: 100%;
+    }
+}

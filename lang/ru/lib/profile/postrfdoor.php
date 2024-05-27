@@ -1,0 +1,4 @@
+<?
+$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_TITLE"] = "Почта России: доставка курьером";
+$MESS["ESHOP_LOGISTIC_POSTRF_DOOR_CLASS_DESCRIPTION"] = "";
+?>

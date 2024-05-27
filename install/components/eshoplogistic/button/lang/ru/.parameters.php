@@ -1,0 +1,17 @@
+<?
+$MESS['ESHOP_LOGISTIC_B_OPTIONS_DATA'] = 'Тип данных';
+$MESS['ESHOP_LOGISTIC_B_OPTIONS_PARAMETERS'] = 'Основные параметры';
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_TYPEIB"] = "Тип инфоблока";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_IB"] = "Инфоблок";
+
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_BUTNAME"] = "Название кнопки";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_ID_ELEM"] = "ID Элемента";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_1CLICK"] = "Купить в 1 клик";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_CSSBUT"] = "Стили кнопки";
+
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_ESLPARAMS"] = "Параметры для api";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_WIDGET_KEY"] = "Ключ виджета";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_WIDGET_SECRET"] = "Секретный код виджета";
+$MESS["ESHOP_LOGISTIC_B_OPTIONS_WIDGET_V_API"] = "Новая версия api";
+
+

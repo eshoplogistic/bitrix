@@ -1,0 +1,4 @@
+<?
+$MESS["ESHOP_LOGISTIC_YANDEX_TERMINAL_CLASS_TITLE"] = "Яндекс Доставка: пункт выдачи заказа";
+$MESS["ESHOP_LOGISTIC_YANDEX_TERMINAL_CLASS_DESCRIPTION"] = "";
+?>

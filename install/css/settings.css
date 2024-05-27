@@ -1,0 +1,67 @@
+
+.esl-section_drag .esl-inner_item ul{
+    min-height: 40px;
+    margin-right: 20px;
+}
+
+.esl-section_drag .js-connected {
+    position: sticky;
+    top: 45px;
+}
+
+.esl-section_drag .esl-status__wp{
+    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    display: inline-block;
+    padding: 5px;border-radius: 5px;
+    background-color: color(srgb 0.9686 0.9686 0.9687);
+    margin-right: 5px;
+    margin-bottom: 10px;
+}
+
+.esl-section_drag .js-inner-connected {
+    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    padding-top: 10px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    min-height: 57px;
+}
+
+.esl-section_drag .esl-status_api{
+    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+    display: inline;padding: 2px;
+    border-radius: 5px 5px 0px 0px;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: color(srgb 0.9686 0.9686 0.9687);
+}
+
+.esl-section_drag .esl-inner_status{
+    box-shadow: 14px 0px 11px -20px black;
+}
+
+.esl-section_drag .row{
+    display: inline-flex;
+}
+
+.esl-section_drag .col-sm-6{
+    width: 49%
+}
+
+#eslExportFormWrap .input-group{
+    margin-bottom: 15px;
+}
+
+#wcEslSettings .float-end{
+    margin-top: 30px;
+}
+
+.sortable-delete{
+    position: absolute;
+    margin-left: 2px;
+    margin-top: -17px;
+    color: rgba(236, 0, 0, 0.66);
+}
+input[name="status-form"] {
+    display: none !important;
+}

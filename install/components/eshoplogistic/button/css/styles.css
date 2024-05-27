@@ -1,0 +1,5 @@
+#eShopLogisticStatic .app-container{
+    overflow-y: initial !important;
+    z-index: 99 !important;
+    margin-bottom: 65px !important;
+}

@@ -1,0 +1,17 @@
+form[name^=unloading_form] #edit4 .form-field_add {
+    padding-bottom: 5px;
+}
+
+form[name^=unloading_form] #edit4 .form-field_add input {
+    margin-left: 10px;
+}
+
+
+form[name^=unloading_form] #edit4 .titleBox {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+form[name^=unloading_form] #edit3 #edit3_edit_table {
+    padding-top: 15px;
+}

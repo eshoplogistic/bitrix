@@ -1,0 +1,170 @@
+.eslog-deliverey-desc,
+eslog-deliverey-desc-lk {
+    padding-bottom: 5px;
+}
+.eslog-btn-default {
+    outline: none;
+    background-color: #1485CE;
+    border-color: #1485CE;
+    color: #FFF;
+    display: inline-block;
+    margin-top: 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 4px;
+    -webkit-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -moz-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -ms-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    -o-transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+    transition: background 280ms ease, opacity 280ms ease, color 280ms ease, border 280ms ease;
+}
+
+.eslog-btn-default:hover, .eslog-btn-default:focus {
+    outline: none;
+    background-color: #53A4D8;
+    border-color: #53A4D8;
+    color: #FFF;
+    text-decoration: none;
+}
+
+.eslog-btn-default:hover, .eslog-btn-default:focus {
+    outline: none;
+    background-color: #53A4D8;
+    border-color: #53A4D8;
+    color: #FFF;
+}
+
+.eslog-point-postamat, .eslog-point-info, .eslog-point-add-payment {
+    padding-bottom: 10px;
+}
+
+.eslog-point-postamat {
+    color: #8d8d8d;
+}
+
+.eslog-point-add-payment {
+    color: red;
+}
+
+.eslogistic-termin {
+    padding-top: 5px;
+    color: #8d8d8d;
+    display: block;
+}
+
+.eslogistic-description {
+    display: block;
+}
+
+/*��������� ��������, ������� ������������ �� �������� �����*/
+.loader {
+    position: absolute;
+    z-index: 15;
+    top: -100%;
+    left: 0;
+
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    color: #000000;
+
+    transition: opacity .7s ease;
+
+    opacity: 0;
+    background-color: rgba(0,0,0,.55);
+}
+.loader:after,
+.loader:before {
+    box-sizing: border-box;
+}
+.loader.is-active {
+    top: 0;
+
+    opacity: 1;
+}
+
+.loader-default:after {
+    position: absolute;
+    top: calc(50% - 24px);
+    left: calc(50% - 24px);
+
+    width: 48px;
+    height: 48px;
+
+    content: '';
+    -webkit-animation: rotation 1s linear infinite;
+    animation: rotation 1s linear infinite;
+
+    border: solid 8px #ffffff;
+    border-left-color: transparent;
+    border-radius: 50%;
+}
+
+#popup-window-content-eslog-popup-message {
+    padding: 15px 15px;
+}
+
+.eslogic-address-full_but{
+    margin-left: 1%;
+    padding: 5px;
+}
+
+@-webkit-keyframes rotation {
+    from {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes rotation {
+    from {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+@-webkit-keyframes blink {
+    from {
+        opacity: .5;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes blink {
+    from {
+        opacity: .5;
+    }
+    to {
+        opacity: 1;
+    }
+}
