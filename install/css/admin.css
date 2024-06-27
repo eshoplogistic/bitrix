@@ -15,3 +15,23 @@ form[name^=unloading_form] #edit4 .titleBox {
 form[name^=unloading_form] #edit3 #edit3_edit_table {
     padding-top: 15px;
 }
+
+form[name^=unloading_form] .esl-delete_table_elem{
+    padding-left: 25px;
+    color: red;
+    cursor: pointer;
+}
+
+form[name^=unloading_form] .mainTbody tr td input{
+    border-radius: 0;
+    margin-right: 1px;
+}
+
+form[name^=unloading_form] .mainTbody .adm-detail-content-cell-r {
+    padding:0px;
+}
+
+form[name^=unloading_form] .mainTbody .adm-detail-content-cell-l {
+    padding:0px;
+}
+

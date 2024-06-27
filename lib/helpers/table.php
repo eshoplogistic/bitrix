@@ -28,6 +28,7 @@ class Table
             'width' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_WIDTH"),
             'length' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_LENGHT"),
             'height' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_HEIGHT"),
+            'delete' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_DELETE"),
         );
     }
 
@@ -72,7 +73,13 @@ class Table
 
                     $attributes = $class . $style;
 
-                    echo '<td ' . $attributes . '><input type="text" data-count="' . $i . '" name="products[' . $i . '][' . $column_name . ']" value="' . stripslashes($rec[$column_name]) . '"/></td>';
+                    if($column_name == 'delete'){
+                        if($i != 0){
+                            echo '<td ' . $attributes . '><div class="esl-delete_table_elem">&#65794;</div></td>';
+                        }
+                    }else{
+                        echo '<td ' . $attributes . '><input type="text" data-count="' . $i . '" name="products[' . $i . '][' . $column_name . ']" value="' . stripslashes($rec[$column_name]) . '"/></td>';
+                    }
                 }
 
                 echo '</tr>';

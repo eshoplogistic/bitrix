@@ -252,14 +252,20 @@ if (isset($resultSave['errors'])) {
 
         <?php if ($type === 'text'): ?>
         <tr>
-            <td><span class="required">*</span><?php echo $name ?></td>
+            <td><?php echo $name ?></td>
             <td><input type="text" name="<?php echo $nameArr ?>[<?php echo $name ?>]" value="<?php echo $value ?>"></td>
         </tr>
         <?php endif; ?>
         <?php if ($type === 'date'): ?>
         <tr>
-            <td><span class="required">*</span><?php echo $name ?></td>
+            <td><?php echo $name ?></td>
             <td><input type="date" name="<?php echo $nameArr ?>[<?php echo $name ?>]" value="<?php echo $value ?>"></td>
+        </tr>
+        <?php endif; ?>
+        <?php if ($type === 'checkbox'): ?>
+        <tr>
+            <td><?php echo $name ?></td>
+            <td><input type="checkbox" name="<?php echo $nameArr ?>[<?php echo $name ?>]"></td>
         </tr>
         <?php endif; ?>
         <?php if ($type === 'select'): ?>

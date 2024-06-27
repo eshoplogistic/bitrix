@@ -23,4 +23,16 @@ BX.ready(function() {
             table.querySelector('.mainTbody').appendChild(tr);
         });
     }
+
+    let deleteElements = document.getElementsByClassName("esl-delete_table_elem");
+
+    let deleteElemTable = function(e) {
+        e.preventDefault();
+        e.target.closest('tr').remove()
+    };
+
+    for (let i = 0; i < deleteElements.length; i++) {
+        deleteElements[i].addEventListener('click', deleteElemTable, false);
+    }
+
 });
