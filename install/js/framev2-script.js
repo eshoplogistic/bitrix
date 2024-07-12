@@ -219,8 +219,10 @@ function isNumeric(value) {
             }
 
             if (!init_esl && e.order && search_city) {
-                esl.run('city')
-                search_city = false
+                setTimeout(function () {
+                    esl.run('city')
+                    search_city = false
+                },2500);
             } else if (!init_esl && e.order) {
                 esl.run('payment')
             } else if (t.method === 'POST'){
@@ -499,6 +501,7 @@ BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
             data['eslData'] = actionData;
             data['location'] = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc
             init_esl = true;
+
             BX.ajax({
                 method: 'POST',
                 dataType: 'json',

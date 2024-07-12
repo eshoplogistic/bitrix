@@ -363,10 +363,31 @@ class ComponentOrder
 				$clearField = true;
 			}
 
+            $apiPaymentCheck = Option::get(Config::MODULE_ID, 'api_payment_check');
+            if($session->has('dataEsl') && !$requestDataEsl && $apiV && $apiPaymentCheck){
+                $requestDataEslTmp = $session->get('dataEsl');
+                $requestDataEslTmp = \Bitrix\Main\Web\Json::decode($requestDataEslTmp);
+                if($requestDataEslTmp['paymentId'] != $arUserResult['PAY_SYSTEM_ID'] ){
+                    $requestDataEsl = \Bitrix\Main\Web\Json::encode($requestDataEslTmp);
+                }
+                $requestDataEslTmp = '';
+            }
+
+            if ($session->has('dataEsl') && !$requestDataEsl && !$apiV){
+                $requestDataEsl = $session->get('dataEsl');
+                $clearField = true;
+            }
+
             if ($requestDataEsl) {
-				$session->set('dataEsl', $requestDataEsl);
 				$requestDataEsl = \Bitrix\Main\Web\Json::decode($requestDataEsl);
-				if($clearField){
+
+                $requestDataEslTmp = $requestDataEsl;
+                $requestDataEslTmp['paymentId'] = $arUserResult['PAY_SYSTEM_ID'];
+                $requestDataEslTmp = \Bitrix\Main\Web\Json::encode($requestDataEslTmp);
+
+                $session->set('dataEsl', $requestDataEslTmp);
+
+                if($clearField){
 					$requestDataEsl['terminals'] = '';
 					$requestDataEsl['selectPvz'] = '';
 				}

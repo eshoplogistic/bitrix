@@ -25,6 +25,7 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_PREPAY"] = "Вариант оплаты \"
 $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_RECEIPT"] = "Вариант оплаты \"При получении\"";
 $MESS["ESHOP_LOGISTIC_OPTIONS_INPUT_APPLY"] = "Применить";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_V2"] = "Включить новую версию API";
+$MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_CHECK"] = "Отключить проверку способа оплаты";
 
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"] = "Описание установки";
 

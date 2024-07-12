@@ -149,6 +149,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 					array("checkbox")
 				),
                 array(
+                    "api_payment_check",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CHECK"),
+                    "",
+                    array("checkbox")
+                ),
+                array(
                     "frame_lib",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_FRAME_LIB"),
                     "",
