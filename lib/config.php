@@ -71,6 +71,8 @@ class Config
             'dostavista_door'  =>  'Eshoplogistic\Delivery\Profile\DostavistaDoor',
             'kit_door'  =>  'Eshoplogistic\Delivery\Profile\KitDoor',
             'kit_term'  =>  'Eshoplogistic\Delivery\Profile\KitTerminal',
+            'halva_door'  =>  'Eshoplogistic\Delivery\Profile\HalvaDoor',
+            'halva_term'  =>  'Eshoplogistic\Delivery\Profile\HalvaTerminal',
         );
 
 		$this->profileList = array(
@@ -113,6 +115,8 @@ class Config
             'dostavista_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DOSTAVISTA_DOOR"),
             'kit_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_KIT_DOOR"),
             'kit_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_KIT_TERMINAL"),
+            'halva_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_HALVA_DOOR"),
+            'halva_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_HALVA_TERMINAL"),
         );
 
 		$this->priceError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR");
@@ -170,6 +174,8 @@ class Config
             '\Eshoplogistic\Delivery\Profile\DostavistaDoor' => $path.'/lib/profile/dostavistadoor.php',
             '\Eshoplogistic\Delivery\Profile\KitDoor' => $path.'/lib/profile/kitdoor.php',
             '\Eshoplogistic\Delivery\Profile\KitTerminal' => $path.'/lib/profile/kitterminal.php',
+            '\Eshoplogistic\Delivery\Profile\HalvaDoor' => $path.'/lib/profile/halvadoor.php',
+            '\Eshoplogistic\Delivery\Profile\HalvaTerminal' => $path.'/lib/profile/halvaterminal.php',
         );
 
 		return $eventDeliveryList;

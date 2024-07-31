@@ -66,4 +66,14 @@ $MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1"] = [
     12 => 'ВОЕННЫЙ БИЛЕТ',
 ];
 
+$MESS["ESHOP_LOGISTIC_HELPERS_LEGAL_BAIKAL_1"] = array(
+    1   => 'Юридическое лицо',
+    2   => 'Физическое лицо',
+);
 
+$MESS["ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"] = array(
+    1   => 'Физическое лицо',
+    5   => 'ООО',
+    9   => 'ИП',
+    12   => 'АО',
+);

@@ -37,9 +37,11 @@ $MESS["SENDER_HOUSE"] = "Здание";
 $MESS["SENDER_ROOM"] = "Квартира / офис";
 $MESS["SENDER_NAME"] = "Имя отправителя";
 $MESS["SENDER_PHONE"] = "Телефон отправителя";
+$MESS["SENDER_EMAIL"] = "Email отправителя";
 
 $MESS["ERROR_SERVICES"] = "Дополнительные услуги отсутствуют";
 $MESS["UNLOADING_SAVED"] = "Данные успешно выгружены";
+$MESS["ADD_FIELDS"] = "Дополнительные поля";
 $MESS["ADDITIONAL_FIELDS"] = array(
     'packages' => 'Упаковка',
     'cargo' => 'Груз',
@@ -47,3 +49,32 @@ $MESS["ADDITIONAL_FIELDS"] = array(
     'other' => 'Другие услуги',
 
 );
+
+$MESS["ADDFIELDS_legal"] = "Форма контрагента";
+$MESS["ADDFIELDS_type"] = "Тип организационно-правовой формы";
+$MESS["ADDFIELDS_series"] = "Серия документа";
+$MESS["ADDFIELDS_number"] = "Номер документа";
+$MESS["ADDFIELDS_inn"] = "ИНН";
+$MESS["ADDFIELDS_kpp"] = "КПП";
+$MESS["ADDFIELDS_date"] = "Дата забора груза от отправителя";
+$MESS["ADDFIELDS_time_from"] = "Время начала периода забора груза от отправителя";
+$MESS["ADDFIELDS_time_to"] = "Время окончания периода забора груза от отправителя";
+$MESS["ADDFIELDS_lift"] = "Флаг наличия лифта";
+$MESS["ADDFIELDS_floor"] = "Количество этажей, если нужен спуск/подъём";
+$MESS["ADDFIELDS_HR_receiver"] = "Получатель";
+$MESS["ADDFIELDS_HR_sender"] = "Отправитель";
+$MESS["ADDFIELDS_tariff"] = "Код тарифа";
+$MESS["ADDFIELDS_requester"] = "Заказчик перевозки";
+$MESS["ADDFIELDS_counterparty"] = "Отправитель";
+$MESS["ADDFIELDS_accept"] = "Принятие заказа в работу";
+$MESS["ADDFIELDS_terminal"] = "Идентификатор терминала, на который привозится груз для отправки";
+$MESS["ADDFIELDS_mode"] = "Вид доставки";
+$MESS["ADDFIELDS_produce_date"] = "Дата передачи груза на терминал отправления или дата приезда машины к отправителю";
+$MESS["ADDFIELDS_company"] = "Название организации";
+$MESS["ADDFIELDS_unp"] = "УПН";
+$MESS["ADDFIELDS_bin"] = "БИН";
+$MESS["ADDFIELDS_variant"] = "Вариант доставки";
+$MESS["ADDFIELDS_comment"] = "Комментарий";
+$MESS["ADDFIELDS_address"] = "Адрес доставки";
+$MESS["ADDFIELDS_index"] = "Индекс адреса доставки";
+$MESS["ADDFIELDS_packing"] = "Упаковка";

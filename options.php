@@ -268,6 +268,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     array("text")
                 ),
                 array(
+                    "sender-terminal-baikal",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_BAIKAL"),
+                    "",
+                    array("text")
+                ),
+                array(
                     "sender-uid-delline",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE"),
                     "",
@@ -288,6 +294,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array(
                     "sender-phone",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_PHONE"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "sender-email",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_EMAIL"),
                     "",
                     array("text")
                 ),
@@ -318,6 +330,54 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array(
                     "sender-room",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_ROOM"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "sender-legal",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SENDER_LEGAL"),
+                    "",
+                    array('selectbox',
+                        array(
+                            '1' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_LEGAL"),
+                            '2' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
+                        )
+                    )
+                ),
+                array(
+                    "sender-type",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SENDER_TYPE"),
+                    "",
+                    array('selectbox',
+                        array(
+                            '1' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
+                            '5' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OOO"),
+                            '9' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_IP"),
+                            '12' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_AO"),
+                        )
+                    )
+                ),
+                array(
+                    "sender-series",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SERIES"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "sender-number",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NUMBER"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "sender-inn",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_INN"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "sender-kpp",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_KPP"),
                     "",
                     array("text")
                 ),

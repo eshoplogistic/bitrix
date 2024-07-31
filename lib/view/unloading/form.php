@@ -241,6 +241,12 @@ if (isset($resultSave['errors'])) {
         <td><?php echo GetMessage("COMMENT") ?></td>
         <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
     </tr>
+
+    <tr>
+        <td><hr></td>
+        <td><h3><?php echo GetMessage("ADD_FIELDS") ?></h3></td>
+    </tr>
+
     <?php foreach ($fieldDelivery as $nameArr => $arr):
         ?>
 
@@ -252,25 +258,25 @@ if (isset($resultSave['errors'])) {
 
         <?php if ($type === 'text'): ?>
         <tr>
-            <td><?php echo $name ?></td>
+            <td><?php echo GetMessage("ADDFIELDS_".$name) ?></td>
             <td><input type="text" name="<?php echo $nameArr ?>[<?php echo $name ?>]" value="<?php echo $value ?>"></td>
         </tr>
         <?php endif; ?>
         <?php if ($type === 'date'): ?>
         <tr>
-            <td><?php echo $name ?></td>
+            <td><?php echo GetMessage("ADDFIELDS_".$name) ?></td>
             <td><input type="date" name="<?php echo $nameArr ?>[<?php echo $name ?>]" value="<?php echo $value ?>"></td>
         </tr>
         <?php endif; ?>
         <?php if ($type === 'checkbox'): ?>
         <tr>
-            <td><?php echo $name ?></td>
+            <td><?php echo GetMessage("ADDFIELDS_".$name) ?></td>
             <td><input type="checkbox" name="<?php echo $nameArr ?>[<?php echo $name ?>]"></td>
         </tr>
         <?php endif; ?>
         <?php if ($type === 'select'): ?>
         <tr>
-            <td><?php echo $name ?>:</td>
+            <td><?php echo GetMessage("ADDFIELDS_".$name) ?>:</td>
             <td>
                 <select name="<?php echo $nameArr ?>[<?php echo $name ?>]">
                     <?php foreach ($value as $k => $v): ?>
@@ -279,7 +285,13 @@ if (isset($resultSave['errors'])) {
                 </select>
             </td>
         </tr>
-    <?php endif; ?>
+        <?php endif; ?>
+        <?php if ($type === 'hr'): ?>
+        <tr>
+            <td></td>
+            <td><hr><h3><?php echo GetMessage("ADDFIELDS_HR_".$name) ?></h3></td>
+        </tr>
+        <?php endif; ?>
 
     <?php endforeach; ?>
     <?php endforeach; ?>
@@ -338,6 +350,11 @@ if (isset($resultSave['errors'])) {
                    value="<?php echo Option::get(Config::MODULE_ID, 'sender-phone') ?>"></td>
     </tr>
     <tr>
+        <td><span class="required">*</span><?php echo GetMessage("SENDER_EMAIL") ?></td>
+        <td><input type="text" name="sender-email"
+                   value="<?php echo Option::get(Config::MODULE_ID, 'sender-email') ?>"></td>
+    </tr>
+    <tr>
         <td><span class="required">*</span><?php echo GetMessage("SENDER_TERMINAL") ?></td>
         <td><input type="text" name="sender-terminal"
                    value="<?php echo Option::get(Config::MODULE_ID, 'sender-terminal-'.$typeMethod['name']) ?>"></td>
@@ -367,7 +384,6 @@ if (isset($resultSave['errors'])) {
         <td><input type="text" name="sender-room" value="<?php echo Option::get(Config::MODULE_ID, 'sender-room') ?>">
         </td>
     </tr>
-
 
     <?php $tabControl->BeginNextTab(); ?>
     <?php

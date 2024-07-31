@@ -237,6 +237,16 @@ Class eshoplogistic_delivery extends CModule
 			"Y",
 			$dateTime
 		);
+
+		\CAgent::AddAgent(
+			"Eshoplogistic\Delivery\Agent\CacheHandler::clean();",
+			$this->MODULE_ID,
+			"N",
+			86400,
+			$dateTime,
+			"Y",
+			$dateTime
+		);
 	}
 
 

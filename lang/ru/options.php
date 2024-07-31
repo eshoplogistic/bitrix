@@ -63,8 +63,10 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_S_COUNTER_DELLINE"] = "Отправитель (Д�
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_KIT"] = "Код терминала (KIT)";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_UID_KIT"] = "Заказчик перевозки (KIT)";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_POSTRF"] = "Код терминала (Почта России)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_S_BAIKAL"] = "Код терминала (Байкал)";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_NAME"] = "Имя отправителя";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_PHONE"] = "Телефон отправителя";
+$MESS["ESHOP_LOGISTIC_OPTIONS_S_EMAIL"] = "Email отправителя";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_REGION"] = "Регион";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_CITY"] = "Населённый пункт";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_STREET"] = "Улица";
@@ -85,3 +87,15 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_TRANSLATE"] = [
     'returned'   => 'Возвращен отправителю',
     'n/a'   => 'Не определён',
 ];
+
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_LEGAL"] = "Форма контрагента отправителя";
+$MESS["ESHOP_LOGISTIC_OPTIONS_LEGAL"] = "Юридическое лицо";
+$MESS["ESHOP_LOGISTIC_OPTIONS_NATURAL"] = "Физическое лицо";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_TYPE"] = "Тип организационно-правовой формы";
+$MESS["ESHOP_LOGISTIC_OPTIONS_OOO"] = "ООО";
+$MESS["ESHOP_LOGISTIC_OPTIONS_IP"] = "ИП";
+$MESS["ESHOP_LOGISTIC_OPTIONS_AO"] = "АО";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SERIES"] = "Серия документа";
+$MESS["ESHOP_LOGISTIC_OPTIONS_NUMBER"] = "Номер документа";
+$MESS["ESHOP_LOGISTIC_OPTIONS_INN"] = "ИНН";
+$MESS["ESHOP_LOGISTIC_OPTIONS_KPP"] = "КПП";

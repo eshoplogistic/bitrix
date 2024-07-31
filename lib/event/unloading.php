@@ -211,6 +211,7 @@ class Unloading
             'sender' => array( //Данные отправителя
                 'name' => $data['sender-name'],
                 'phone' => $data['sender-phone'],
+                'email' => $data['sender-email'],
             ),
             'delivery' => array(
                 'type' => $data['delivery_type'],

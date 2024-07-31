@@ -113,6 +113,46 @@ class ExportFileds {
             );
         }
 
+        if ( $name === 'baikal' ) {
+            $result = array(
+                'sender'   => array(
+                    'legal' => '',
+                    'identity' => array(
+                        'type' => '',
+                        'series' => '',
+                        'number' => '',
+                    ),
+                    'requisites' => array(
+                        'inn' => '',
+                        'kpp' => '',
+                    ),
+                ),
+                'receiver' => array(
+                    'legal' => '',
+                    'identity' => array(
+                        'type' => '',
+                        'series' => '',
+                        'number' => '',
+                    ),
+                    'requisites' => array(
+                        'inn' => '',
+                        'kpp' => '',
+                    ),
+                ),
+                'delivery' => array(
+                    'location_from' => array(
+                        'pick_up_data' => array(
+                            'date' => '',
+                            'time_from' => '',
+                            'time_to' => '',
+                            'lift' => '',
+                            'floor' => '',
+                        )
+                    )
+                ),
+            );
+        }
+
         return $result;
     }
 
@@ -196,7 +236,7 @@ class ExportFileds {
                     'date||date' => $produce_date,
                     'time_from||date' => $produce_date,
                     'time_to||date' => $produce_date,
-                    'comment||text|' => '',
+                    'comment||text' => '',
 
                 )
             );
@@ -252,6 +292,55 @@ class ExportFileds {
             $result = array(
                 'order' => array(
                     'packing||checkbox' => '',
+                )
+            );
+        }
+
+        if ( $name === 'baikal' ) {
+            $date = new DateTime();
+            $date->modify('+1 day');
+            $produce_date = $date->format('Y-m-d');
+
+            $result = array(
+                'hr' => array(
+                    'sender||hr' => ''
+                ),
+                'sender'   => array(
+                    'legal||text'    => Option::get(Config::MODULE_ID, 'sender-legal'),
+                ),
+                'sender[identity]' => array(
+                    'type||text' => Option::get(Config::MODULE_ID, 'sender-type'),
+                    'series||text' => Option::get(Config::MODULE_ID, 'sender-series'),
+                    'number||text' => Option::get(Config::MODULE_ID, 'sender-number'),
+                ),
+                'sender[requisites]' => array(
+                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-inn'),
+                    'kpp||text' => Option::get(Config::MODULE_ID, 'sender-kpp'),
+                ),
+                'hr2' => array(
+                    'receiver||hr' => ''
+                ),
+                'receiver'   => array(
+                    'legal||select'    => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_LEGAL_BAIKAL_1"),
+                ),
+                'receiver[identity]' => array(
+                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"),
+                    'series||text' => '',
+                    'number||text' => '',
+                ),
+                'receiver[requisites]' => array(
+                    'inn||text' => '',
+                    'kpp||text' => '',
+                ),
+                'hr3' => array(
+                    'empty||hr' => ''
+                ),
+                'delivery[location_from][pick_up_data]' => array(
+                    'date||date' => $produce_date,
+                    'time_from||date' => $produce_date,
+                    'time_to||date' => $produce_date,
+                    'lift||checkbox' => '',
+                    'floor||text' => '',
                 )
             );
         }
