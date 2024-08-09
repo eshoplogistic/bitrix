@@ -26,6 +26,8 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_RECEIPT"] = "Вариант оплаты \
 $MESS["ESHOP_LOGISTIC_OPTIONS_INPUT_APPLY"] = "Применить";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_V2"] = "Включить новую версию API";
 $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_CHECK"] = "Отключить проверку способа оплаты";
+$MESS["ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"] = "Выберите «Адрес доставки», для подстановки адреса пункта самовывоза (для варианта «доставка до пункта выдачи»)";
+
 
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"] = "Описание установки";
 

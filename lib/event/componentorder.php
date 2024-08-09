@@ -99,7 +99,9 @@ class ComponentOrder
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($profile['CODE']);
 
 						if ($isDeliveryHasPvz && $profile['CODE']) {
-							$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
+                            $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
+
+                            $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
 								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
 								'<div class="eslog-deliverey-desc-lk">' . $arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'] . '</div>' .
 								'<a 
@@ -122,7 +124,12 @@ class ComponentOrder
 								'<input 
                             name="current-profile-id"
                             type="hidden" value="' . $profile['ID'] . '"
-                         >';
+                         >'.
+                                '<input 
+                            id="eslogic-address-requar" 
+                            name="ESHOPLOGISTIC_ADDRESS_REQUAR"
+                            type="hidden" value="' . $addressRequar . '"
+                        >';
 						} else {
 							$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
 								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
@@ -524,9 +531,11 @@ class ComponentOrder
         }else{
             $deliveryResult['PERIOD_TEXT'] = '';
         }
+        $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
+        $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-address-requar' value='$addressRequar' type='hidden'>";
 
 
-		$arResult['DELIVERY'][$deliveryResult['ID']] = $deliveryResult;
+        $arResult['DELIVERY'][$deliveryResult['ID']] = $deliveryResult;
 
 
 		echo self::frameHtmlField($widgetKey, $arUserResult, $arResult);

@@ -112,6 +112,14 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         $counterFields = array('text');
     }
 
+    $dbRes = \Bitrix\Sale\PropertyValueCollection::getList([
+        'select' => ['*'],
+    ]);
+    $fieldsFeatures[0] = 'Отключить';
+    while ($item = $dbRes->fetch())
+    {
+        $fieldsFeatures[$item['ORDER_PROPS_ID']] = $item['NAME'];
+    }
     $aTabs = array(
 		array(
 			"DIV"       => "edit",
@@ -177,6 +185,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"),
                     "",
                     array("text")
+                ),
+                array(
+                    "api_address_requar",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"),
+                    '',
+                    ['selectbox', $fieldsFeatures]
                 ),
 				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"),
 				array(

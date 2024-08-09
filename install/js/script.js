@@ -212,6 +212,14 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
             BX.adjust(BX('eslogic-pvz-value'), {props: { value: e.dataset.code+', '+pvzTitle}});
             BX.adjust(BX('eslogistic-btn-choose-pvz'), {text: BX.message('ESHOP_LOGISTIC_CHANGE_PVZ_BTN')});
 
+            let addressRequar =  document.getElementById('eslogic-address-requar');
+            if (typeof(addressRequar) != 'undefined' && addressRequar != null)
+            {
+                if(addressRequar.value && addressRequar.value !== '0'){
+                    document.querySelector('[name=ORDER_PROP_'+addressRequar.value+']').value = pvzTitle;
+                }
+            }
+
             myMap.destroy();
             popup.destroy();
         }

@@ -202,6 +202,14 @@ function isNumeric(value) {
             if (info) {
                 info.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_PVZ')+': ' + response.address
             }
+
+            let addressRequar =  document.getElementById('eslogic-address-requar');
+            if (typeof(addressRequar) != 'undefined' && addressRequar != null)
+            {
+                if(addressRequar.value && addressRequar.value !== '0'){
+                    document.querySelector('[name=ORDER_PROP_'+addressRequar.value+']').value = response.address;
+                }
+            }
         },
         error: function (response) {
             console.log('Esl: error', response)

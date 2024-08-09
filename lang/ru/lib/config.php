@@ -40,6 +40,7 @@ $MESS["ESHOP_LOGISTIC_PROFILELIST_KIT_DOOR"] = "KIT: доставка курье
 $MESS["ESHOP_LOGISTIC_PROFILELIST_KIT_TERMINAL"] = "KIT: доставка до пункта выдачи";
 $MESS["ESHOP_LOGISTIC_PROFILELIST_HALVA_DOOR"] = "Халва: доставка курьером";
 $MESS["ESHOP_LOGISTIC_PROFILELIST_HALVA_TERMINAL"] = "Халва: доставка до пункта выдачи";
+$MESS["ESHOP_LOGISTIC_PROFILELIST_LOGSIS_DOOR"] = "Logsis: доставка курьером";
 
 $MESS["ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR"] = "Ошибка расчета стоимости доставки.";
 $MESS["ESHOP_LOGISTIC_DELIVERY_LOCATION_ERROR"] = "В данном населенном пункте отсутствует возможность доставки.";
