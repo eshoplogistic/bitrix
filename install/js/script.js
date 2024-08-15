@@ -216,7 +216,12 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
             if (typeof(addressRequar) != 'undefined' && addressRequar != null)
             {
                 if(addressRequar.value && addressRequar.value !== '0'){
-                    document.querySelector('[name=ORDER_PROP_'+addressRequar.value+']').value = pvzTitle;
+                    const addressRequarArr = addressRequar.value.split(',')
+                    addressRequarArr.forEach((val) => {
+                        if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
+                            document.querySelector('[name=ORDER_PROP_'+val+']').value = pvzTitle;
+                        }
+                    })
                 }
             }
 

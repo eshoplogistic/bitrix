@@ -112,13 +112,14 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         $counterFields = array('text');
     }
 
-    $dbRes = \Bitrix\Sale\PropertyValueCollection::getList([
-        'select' => ['*'],
-    ]);
-    $fieldsFeatures[0] = 'Отключить';
+    $dbRes = CSaleOrderProps::GetList(
+        array(
+            "SORT" => "ASC",
+        )
+    );
     while ($item = $dbRes->fetch())
     {
-        $fieldsFeatures[$item['ORDER_PROPS_ID']] = $item['NAME'];
+        $fieldsFeatures[$item['ID']] = $item['NAME'];
     }
     $aTabs = array(
 		array(
@@ -190,7 +191,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "api_address_requar",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"),
                     '',
-                    ['selectbox', $fieldsFeatures]
+                    ['multiselectbox', $fieldsFeatures]
                 ),
 				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"),
 				array(
