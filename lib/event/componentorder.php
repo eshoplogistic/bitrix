@@ -545,9 +545,10 @@ class ComponentOrder
 	private static function frameHtmlField($widgetKey, $arUserResult, $arResult)
 	{
 		$offers = [];
-        $width = 0;
-        $height = 0;
-        $length = 0;
+        $width = (int)Option::get(Config::MODULE_ID, 'width_default', 0);
+        $height = (int)Option::get(Config::MODULE_ID, 'height_default', 0);
+        $length = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
+        $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
         $configClass = new Config();
         $apiV = $configClass->apiV;
@@ -573,7 +574,7 @@ class ComponentOrder
 				'name' => $item['NAME'],
 				'count' => $item['QUANTITY'],
 				'price' => $item['PRICE'],
-				'weight' => isset($item['WEIGHT']) && $item['WEIGHT'] != '0.00' ? $item['WEIGHT'] / 1000 : 1,
+				'weight' => isset($item['WEIGHT']) && $item['WEIGHT'] != '0.00' ? $item['WEIGHT'] / 1000 : $weightDefault,
                 "dimensions" => $width."*".$height."*".$length
 			);
 		}

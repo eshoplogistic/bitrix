@@ -188,6 +188,30 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     array("text")
                 ),
                 array(
+                    "weight_default",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WEIGHT_DEFAULT"),
+                    "1",
+                    array("text")
+                ),
+                array(
+                    "width_default",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDTH_DEFAULT"),
+                    "0",
+                    array("text")
+                ),
+                array(
+                    "height_default",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_HEIGHT_DEFAULT"),
+                    "0",
+                    array("text")
+                ),
+                array(
+                    "length_default",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_LENGTH_DEFAULT"),
+                    "0",
+                    array("text")
+                ),
+                array(
                     "api_address_requar",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"),
                     '',

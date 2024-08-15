@@ -27,6 +27,10 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_INPUT_APPLY"] = "Применить";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_V2"] = "Включить новую версию API";
 $MESS["ESHOP_LOGISTIC_OPTIONS_PAYMENT_CHECK"] = "Отключить проверку способа оплаты";
 $MESS["ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"] = "Выберите «Адрес доставки», для подстановки адреса пункта самовывоза (для варианта «доставка до пункта выдачи»)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_WEIGHT_DEFAULT"] = "Вес товара по умолчанию (в килограммах)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_WIDTH_DEFAULT"] = "Ширина товара по умолчанию (в сантиметрах)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_HEIGHT_DEFAULT"] = "Высота товара по умолчанию (в сантиметрах)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_LENGTH_DEFAULT"] = "Длина товара по умолчанию (в сантиметрах)";
 
 
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"] = "Описание установки";
