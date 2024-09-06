@@ -257,6 +257,9 @@ class ExportFileds {
 
             $tariffsResult = array();
             foreach ($tariffs as $key=>$value){
+                if(!isset($value['name']))
+                    continue;
+
                 $tariffsResult[$key] = $value['name'];
             }
 

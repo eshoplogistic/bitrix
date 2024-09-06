@@ -35,3 +35,11 @@ form[name^=unloading_form] .mainTbody .adm-detail-content-cell-l {
     padding:0px;
 }
 
+.error-msg p{
+    border: 1px solid rgba(136, 136, 136, 0.45);
+    padding: 5px;
+    color: rgb(20, 20, 20);
+    background-color: rgba(240, 105, 105, 0.66);
+    font-weight: 500;
+}
+

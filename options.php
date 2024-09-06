@@ -5,6 +5,7 @@ use Bitrix\Main\Localization\Loc,
 	Bitrix\Main\Config\Option,
 	Bitrix\Main\Data\Cache,
 	Bitrix\Main\UI;
+use Bitrix\Sale\OrderStatus;
 use Eshoplogistic\Delivery\Api\Counterparties;
 use Eshoplogistic\Delivery\Config;
 
@@ -67,7 +68,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY", array("#CITY#" => $currentSendPoint));
     }
 
-
 	$paySystemResult = \Bitrix\Sale\PaySystem\Manager::getList(array(
 		'filter'  => array('ACTIVE' => 'Y'),
 		'select' => array('ID', 'PAY_SYSTEM_ID', 'NAME')
@@ -82,6 +82,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 		$paySystemList[$paySystem['ID']] = $paySystem['NAME'].'['.$paySystem['ID'].']';
 	}
 
+    $statusesList = OrderStatus::getAllStatusesNames();
 
     \CUtil::InitJSCore(array('html5sortable'));
     \CUtil::InitJSCore(array('settings_lib'));
@@ -419,6 +420,16 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_KPP"),
                     "",
                     array("text")
+                ),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"),
+                array(
+                    'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CRON_URL_UNLOADING")
+                ),
+                array(
+                    "cron-status-unloading",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CRON_UNLOADING_STATUS"),
+                    '',
+                    ['multiselectbox', $statusesList]
                 ),
                 array(
                     "status-form",

@@ -14,8 +14,8 @@ Class eshoplogistic_delivery extends CModule
 {
 	var $MODULE_ID  = 'eshoplogistic.delivery';
 	var $MODULE_SHORT_ID  = 'eshoplogistic';
-	var $MODULE_VERSION = "2.0.0";
-	var $MODULE_VERSION_DATE = "2023-10-31 20:00:00";
+	var $MODULE_VERSION = "2.3.3";
+	var $MODULE_VERSION_DATE = "2024-09-06 20:00:00";
 	var $MODULE_NAME;
 	var $MODULE_DESCRIPTION;
 	var $MODULE_GROUP_RIGHTS = "N";
@@ -239,12 +239,12 @@ Class eshoplogistic_delivery extends CModule
 		);
 
 		\CAgent::AddAgent(
-			"Eshoplogistic\Delivery\Agent\CacheHandler::clean();",
+			"Eshoplogistic\Delivery\Agent\UnloadingHandler::update();",
 			$this->MODULE_ID,
 			"N",
 			86400,
 			$dateTime,
-			"Y",
+			"N",
 			$dateTime
 		);
 	}

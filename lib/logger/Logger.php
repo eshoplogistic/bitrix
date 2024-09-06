@@ -1,21 +1,21 @@
 <?php
+namespace Eshoplogistic\Delivery\Logger;
 
 /** Class for custom log
  *  * Example
-require_once($_SERVER['DOCUMENT_ROOT'].dirname(substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']))).'/logger/Logger.php');
-$logger = new \Logger('test', 'test');
+$logger = new Logger('test', '*test');
 $logger->log($message);
  */
 
 class Logger
 {
-    //статические переменные
     public static $PATH = __DIR__;
     protected static $loggers=array();
 
     protected $name;
     protected $file;
     protected $fp;
+    protected $fullPath;
 
     public function __construct($name=null, $file=null){
         $this->name=$name;
@@ -29,7 +29,8 @@ class Logger
             return ;
         }
 
-        $this->fp=fopen($this->file==null ? self::$PATH.'/'.$this->name.'.log' : self::$PATH.'/'.$this->file,'a+');
+        $this->fullPath = $this->file==null ? self::$PATH.'/'.$this->name.'.log' : self::$PATH.'/'.$this->file;
+        $this->fp=fopen($this->fullPath,'a+');
     }
 
     public static function getLogger($name='root',$file=null){
@@ -72,9 +73,14 @@ class Logger
     }
 
     protected function _write($string){
+        if (file_exists($this->fullPath)) {
+            $size = filesize($this->fullPath);
+            $sizeMb = round($size / 1024 / 1024, 2);
+            if($sizeMb > 10){
+                file_put_contents($this->fullPath, '');
+            }
+        }
         fwrite($this->fp, $string);
-
-        //echo $string;
     }
 
     public function __destruct(){

@@ -11,6 +11,7 @@ use \Bitrix\Main\Engine\Controller,
     \Eshoplogistic\Delivery\Config;
 use Bitrix\Main\Request;
 use Bitrix\Main\Web\Json;
+use Eshoplogistic\Delivery\Event\Unloading;
 use Eshoplogistic\Delivery\Helpers\OrderHandler;
 
 Loader::includeModule('sale');
@@ -43,6 +44,9 @@ class AjaxHandler extends Controller
                 'prefilters' => []
             ],
             'widgetData' => [
+                'prefilters' => []
+            ],
+            'unloadingForm' => [
                 'prefilters' => []
             ]
         ];
@@ -252,6 +256,23 @@ class AjaxHandler extends Controller
         }
 
         return false;
+    }
+
+    public static function unloadingFormAction()
+    {
+        if(!$_POST)
+            return false;
+
+        $request = $_POST;
+        $unloading = new Unloading();
+
+        $result = $unloading->params_delivery_init($request);
+        if(isset($result['errors'])){
+            echo json_encode(['success' => false, 'errors' => $result['errors']]);
+            exit();
+        }else{
+           return $result['http_status_message'];
+        }
     }
 
 }

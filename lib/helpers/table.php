@@ -14,7 +14,7 @@ class Table
 
     function extra_tablenav()
     {
-        echo '<input id="buttonModalUnloadAdd" type="button" class="button button-primary" value="Добавить место">';
+        echo '<input id="buttonModalUnloadAdd" type="button" class="button button-primary" value="'.Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_ADD_PLACE").'">';
     }
 
     function get_columns()
