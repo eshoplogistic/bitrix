@@ -47,9 +47,11 @@ class UnloadingHandler
             $result['idOrder'] = $orderId;
             if (isset($status['http_status']) && $status['http_status'] === 422) {
                 $result['unloading'] = $status;
-            } else {
+            } elseif(isset($status['data'])) {
                 $result['unloading'] = $status;
                 $result['updateStatus'] = $unloading->updateStatusById($status['data'], $orderId);
+            }else{
+                $result['unloading'] = $status;
             }
 
             $logger = new Logger('unloading-cron');
