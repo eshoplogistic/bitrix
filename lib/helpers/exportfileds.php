@@ -17,14 +17,24 @@ class ExportFileds {
                     'barcode' => '',
                     'type' => '',
                     'packing_type' => '',
-                    'issue'        => ''
+                    'issue'        => '',
+                    'combine_places' => array(
+                        'apply' => '',
+                        'dimensions' => '',
+                        'weight' => ''
+                    )
                 )
             );
         }
         if ( $name === 'sdek' ) {
             $result = array(
                 'order'    => array(
-                    'type' => ''
+                    'type' => '',
+                    'combine_places' => array(
+                        'apply' => '',
+                        'dimensions' => '',
+                        'weight' => ''
+                    )
                 ),
                 'delivery' => array(
                     'tariff' => '',
@@ -166,7 +176,12 @@ class ExportFileds {
                     'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"),
                     'packing_type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"),
                     'issue||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"),
-                )
+                ),
+                'order[combine_places]' => array(
+                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
+                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
+                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                ),
             );
         }
         if($name === 'sdek') {
@@ -184,6 +199,11 @@ class ExportFileds {
             $result = array(
                 'order' => array(
                     'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"),
+                ),
+                'order[combine_places]' => array(
+                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
+                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
+                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
                 ),
                 'delivery' => array(
                     'tariff||select' => $tariffs,

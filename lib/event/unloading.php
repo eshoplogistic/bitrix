@@ -270,8 +270,12 @@ class Unloading
         }
 
         if (isset($data['order']) && $data['order']) {
-            foreach ($data['order'] as $key => $value)
+            foreach ($data['order'] as $key => $value){
+                if(isset($value['apply']) && $value['apply'] == 'on'){
+                    $value['apply'] = true;
+                }
                 $defaultFields['order'][$key] = $value;
+            }
         }
 
         $exportFields = new ExportFileds();
@@ -279,7 +283,7 @@ class Unloading
         foreach ($exportFields as $key => $value) {
             if (isset($data[$key])){
                 //$defaultFields[$key] = $defaultFields[$key] + $data[$key];
-                $defaultFields[$key] = array_merge_recursive($defaultFields[$key], $data[$key]);
+                $defaultFields[$key] = array_merge($defaultFields[$key], $data[$key]);
             }
         }
 

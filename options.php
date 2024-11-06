@@ -421,6 +421,24 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
+                array(
+                    "combine-places-apply",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES"),
+                    "",
+                    array("checkbox")
+                ),
+                array(
+                    "combine-places-dimensions",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "combine-places-weight",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"),
+                    "",
+                    array("text")
+                ),
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"),
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CRON_URL_UNLOADING")

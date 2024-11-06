@@ -332,13 +332,16 @@ echo $ID ?>"
             <?php
             endif; ?>
             <?php
-            if ($type === 'checkbox'): ?>
+            if ($type === 'checkbox'):
+                ?>
                 <tr>
                     <td><?php
                         echo GetMessage("ADDFIELDS_" . $name) ?></td>
                     <td><input type="checkbox" name="<?php
                         echo $nameArr ?>[<?php
-                        echo $name ?>]"></td>
+                        echo $name ?>]"
+                            <?php
+                            echo $value ?>></td>
                 </tr>
             <?php
             endif; ?>

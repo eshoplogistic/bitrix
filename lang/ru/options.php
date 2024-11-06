@@ -108,3 +108,6 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_SERIES"] = "Серия документа";
 $MESS["ESHOP_LOGISTIC_OPTIONS_NUMBER"] = "Номер документа";
 $MESS["ESHOP_LOGISTIC_OPTIONS_INN"] = "ИНН";
 $MESS["ESHOP_LOGISTIC_OPTIONS_KPP"] = "КПП";
+$MESS["ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES"] = "Объединить все грузовые места в одно (СДЭК, Boxberry)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS"] = "Габариты итогового грузового места. Формат: строка вида «Д*Ш*В», в сантиметрах (СДЭК, Boxberry)";
+$MESS["ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"] = "Вес итогового грузового места в кг (СДЭК, Boxberry)";
