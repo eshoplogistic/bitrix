@@ -74,6 +74,7 @@ class Config
             'halva_door'  =>  'Eshoplogistic\Delivery\Profile\HalvaDoor',
             'halva_term'  =>  'Eshoplogistic\Delivery\Profile\HalvaTerminal',
             'logsis_door'  =>  'Eshoplogistic\Delivery\Profile\LogsisDoor',
+            'magnit_term'  =>  'Eshoplogistic\Delivery\Profile\MagnitTerminal',
         );
 
 		$this->profileList = array(
@@ -119,6 +120,7 @@ class Config
             'halva_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_HALVA_DOOR"),
             'halva_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_HALVA_TERMINAL"),
             'logsis_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_LOGSIS_DOOR"),
+            'magnit_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_MAGNIT_TERMINAL"),
         );
 
 		$this->priceError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR");
@@ -179,6 +181,7 @@ class Config
             '\Eshoplogistic\Delivery\Profile\HalvaDoor' => $path.'/lib/profile/halvadoor.php',
             '\Eshoplogistic\Delivery\Profile\HalvaTerminal' => $path.'/lib/profile/halvaterminal.php',
             '\Eshoplogistic\Delivery\Profile\LogsisDoor' => $path.'/lib/profile/logsisdoor.php',
+            '\Eshoplogistic\Delivery\Profile\MagnitTerminal' => $path.'/lib/profile/magnitterminal.php',
         );
 
 		return $eventDeliveryList;

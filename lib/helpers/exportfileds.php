@@ -163,6 +163,21 @@ class ExportFileds {
             );
         }
 
+        if ( $name === 'magnit' ) {
+            $result = array(
+                'receiver' => array(
+                    'last_name' => ''
+                ),
+                'order' => array(
+                    'combine_places' => array(
+                        'apply' => '',
+                        'dimensions' => '',
+                        'weight' => ''
+                    )
+                )
+            );
+        }
+
         return $result;
     }
 
@@ -362,6 +377,19 @@ class ExportFileds {
                     'lift||checkbox' => '',
                     'floor||text' => '',
                 )
+            );
+        }
+
+        if ( $name === 'magnit' ) {
+            $result = array(
+                'receiver' => array(
+                    'last_name||text' => '',
+                ),
+                'order[combine_places]' => array(
+                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
+                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
+                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                ),
             );
         }
 

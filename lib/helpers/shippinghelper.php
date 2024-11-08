@@ -61,4 +61,32 @@ class ShippingHelper
         }
         return $result;
     }
+
+    public function checkUnloadingDelivery($name)
+    {
+        $nameList = array(
+            'СберЛогистика'   => 'sberlogistics',
+            '5POST'           => 'fivepost',
+            'Boxberry'        => 'boxberry',
+            'Яндекс.Доставка' => 'yandex',
+            'СДЭК'            => 'sdek',
+            'Деловые линии'   => 'delline',
+            'Халва'           => 'halva',
+            'Kit'             => 'kit',
+            'Почта России'    => 'postrf',
+            'ПЭК'             => 'pecom',
+            'Магнит Пост'     => 'magnit',
+            'Байкал Сервис'   => 'baikal',
+            'Фулфилмент-оператор «Почтальон»'   => 'pochtalion',
+        );
+
+        foreach ( $nameList as $key => $value ) {
+            if (str_contains(mb_strtolower($name), mb_strtolower($key))) {
+                return true;
+            }
+        }
+
+        return  false;
+    }
+
 }

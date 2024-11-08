@@ -84,3 +84,4 @@ $MESS["ADDFIELDS_issue"] = "Вид выдачи заказа";
 $MESS["ADDFIELDS_apply"] = "Объединить все грузовые места в одно";
 $MESS["ADDFIELDS_dimensions"] = "Габариты итогового грузового места (Д*Ш*В)";
 $MESS["ADDFIELDS_weight"] = "Вес итогового грузового места в кг";
+$MESS["ADDFIELDS_last_name"] = "Фамилия получателя";

@@ -77,6 +77,7 @@ class Unloading
         $moduleId = Config::MODULE_ID;
         $elementId = $_REQUEST['ID'];
         $currectDeliveryEsl = null;
+        $checkUnloading = false;
 
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER"),
@@ -113,11 +114,13 @@ class Unloading
                 if ($deliveryService) {
                     $deliveryCode = $deliveryService->getCode();
                     $currectDeliveryEsl = $shippingHelper->getSlugMethod($deliveryCode);
+                    if($currectDeliveryEsl)
+                        $checkUnloading = $shippingHelper->checkUnloadingDelivery($currectDeliveryEsl);
                 }
             }
         }
 
-        if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_edit.php' && $_REQUEST['ID'] > 0 && $currectDeliveryEsl) {
+        if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_edit.php' && $_REQUEST['ID'] > 0 && $currectDeliveryEsl && $checkUnloading) {
             $items[] = array(
                 "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_ASSEMBLY"),
                 "LINK" => "button.php",
@@ -126,7 +129,7 @@ class Unloading
                 "MENU" => $arReports
             );
         }
-        if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php' && $_REQUEST['ID'] > 0 && $currectDeliveryEsl) {
+        if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php' && $_REQUEST['ID'] > 0 && $currectDeliveryEsl && $checkUnloading) {
             $items[] = array(
                 "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_2"),
                 "TITLE" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_2"),
