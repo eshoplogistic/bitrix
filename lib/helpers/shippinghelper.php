@@ -77,6 +77,7 @@ class ShippingHelper
             'ПЭК'             => 'pecom',
             'Магнит Пост'     => 'magnit',
             'Байкал Сервис'   => 'baikal',
+            'DPD'             => 'dpd',
             'Фулфилмент-оператор «Почтальон»'   => 'pochtalion',
         );
 

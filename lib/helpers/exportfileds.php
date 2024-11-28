@@ -178,6 +178,28 @@ class ExportFileds {
             );
         }
 
+        if ( $name === 'dpd' ) {
+            $result = array(
+                'receiver' => array(
+                    'email' => ''
+                ),
+                'order' => array(
+                    'content' => '',
+                    'costly' => '',
+                    'combine_places' => array(
+                        'apply' => '',
+                        'dimensions' => '',
+                        'weight' => ''
+                    )
+                ),
+                'delivery' => array(
+                    'produce_date' => '',
+                    'produce_time' => '',
+                    'tariff' => '',
+                ),
+            );
+        }
+
         return $result;
     }
 
@@ -389,6 +411,42 @@ class ExportFileds {
                     'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
                     'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
                     'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                ),
+            );
+        }
+
+        if ( $name === 'dpd' ) {
+            $date = new DateTime();
+            $date->modify('+1 day');
+            $produce_date = $date->format('Y-m-d');
+            $tariffsApi = new Tariffs();
+            $tariffs = $tariffsApi->sendExport($name);
+            $tariffs = $tariffs['data']??'';
+            if(isset($shippingMethods['terminal']['tariff'])){
+                $selectedTariffCode = $shippingMethods['terminal']['tariff']['code'];
+                if(isset($tariffs[$selectedTariffCode])) {
+                    $value[$selectedTariffCode] = $tariffs[$selectedTariffCode];
+                    unset($tariffs[$selectedTariffCode]);
+                    $tariffs = $value + $tariffs;
+                }
+            }
+            $result = array(
+                'receiver' => array(
+                    'email||text' => ''
+                ),
+                'order' => array(
+                    'content||text' => '',
+                    'costly||checkbox' => '',
+                ),
+                'order[combine_places]' => array(
+                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
+                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
+                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                ),
+                'delivery' => array(
+                    'produce_date||date' => $produce_date,
+                    'produce_time||text' => '',
+                    'tariff||select' => $tariffs,
                 ),
             );
         }
