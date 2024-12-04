@@ -66,6 +66,11 @@ Class eshoplogistic_delivery extends CModule
 				'CODE'  => "ESHOPLOGISTIC_SHIPPING_METHODS",
 				'NAME'  => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_NAME'),
 				'DESCR' => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC')
+			),
+			array(
+				'CODE'  => "ESHOPLOGISTIC_CHOSE_FRAME",
+				'NAME'  => GetMessage('ESHOP_LOGISTIC_ORDER_PROPERTY_NAME'),
+				'DESCR' => GetMessage('ESHOP_LOGISTIC_ORDER_PROPERTY_DESC')
 			)
 		);
 		foreach($arProps as $prop) {

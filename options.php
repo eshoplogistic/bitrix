@@ -218,6 +218,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     '',
                     ['multiselectbox', $fieldsFeatures]
                 ),
+                array(
+                    "chose_frame",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CHOSE_FRAME"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "terminal_pvz",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TERMINAL_PVZ"),
+                    "",
+                    array("text")
+                ),
 				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"),
 				array(
 					"api_payment_card",

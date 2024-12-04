@@ -184,6 +184,25 @@ class ComponentOrder
 
 				}
 
+                if($request->getPost('ESHOPLOGISTIC_CHOSE_FRAME')){
+                    $choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
+                    $db_props = \CSaleOrderProps::GetList(
+                        array(),
+                        array(
+                            "PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
+                            "CODE" => "ESHOPLOGISTIC_CHOSE_FRAME",
+                        ),
+                        false,
+                        false,
+                        array('ID')
+                    );
+
+                    if ($props = $db_props->Fetch()) {
+                        if ($choseFrame)
+                            $arUserResult['ORDER_PROP'][$props['ID']] = $choseFrame;
+                    }
+                }
+
                 if($request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS')){
                     $shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
                     $db_props = \CSaleOrderProps::GetList(
@@ -255,22 +274,21 @@ class ComponentOrder
 							$propertyCollection = $order->getPropertyCollection();
                             $propertyPvz = '';
                             $propertyAddress = '';
+                            $typeError = array();
 
 							foreach ($propertyCollection as $propertyItem) {
                                 $requaryPvz = Option::get(Config::MODULE_ID, 'requary_pvz');
 								$propertyCode = $propertyItem->getField("CODE");
 
+                                if ($propertyCode == 'ESHOPLOGISTIC_CHOSE_FRAME') {
+                                    if($propertyItem->getValue()){
+                                        $typeError['CHOSE_FRAME'] = 1;
+                                    }
+                                }
 								if ($propertyCode == 'ESHOPLOGISTIC_PVZ') {
                                     $propertyPvz = $propertyItem;
 									if (!$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term' && !$requaryPvz) {
-										return new Main\EventResult(
-											Main\EventResult::ERROR,
-											new Sale\ResultError(
-												Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY"),
-												'ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY'
-											),
-											'sale'
-										);
+                                        $typeError['ESHOPLOGISTIC_PVZ'] = 1;
 									}
 								}
                                 if ($propertyCode == 'ADDRESS'){
@@ -290,6 +308,30 @@ class ComponentOrder
                             }
 
 						}
+                        if(isset($typeError['CHOSE_FRAME'])){
+                            $message = (!empty(Option::get(Config::MODULE_ID, 'chose_frame'))) ? (Option::get(Config::MODULE_ID, 'chose_frame')) : Loc::getMessage("ESHOP_LOGISTIC_CHOSE_FRAME_EMPTY");
+                            return new Main\EventResult(
+                                Main\EventResult::ERROR,
+                                new Sale\ResultError(
+                                    $message,
+                                    'ESHOP_LOGISTIC_CHOSE_FRAME_EMPTY'
+                                ),
+                                'sale'
+                            );
+                        }
+                        if(isset($typeError['ESHOPLOGISTIC_PVZ'])){
+                            $message = (!empty(Option::get(Config::MODULE_ID, 'terminal_pvz'))) ? Option::get(Config::MODULE_ID, 'terminal_pvz') : Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY");
+                            return new Main\EventResult(
+                                Main\EventResult::ERROR,
+                                new Sale\ResultError(
+                                    $message,
+                                    'ESHOP_LOGISTIC_TERMINAL_PVZ_FIELD_EMPTY'
+                                ),
+                                'sale'
+                            );
+                        }
+
+
 					}
 				}
 			}
@@ -506,6 +548,15 @@ class ComponentOrder
 			}
 		}
 
+        if(!isset($requestDataEsl['mode'])){
+            $deliveryResult['DESCRIPTION'] .= '<input 
+                            id="eslChoseFrame" 
+                            type="hidden"
+                            name="ESHOPLOGISTIC_CHOSE_FRAME"
+                            value="1"
+                        >';
+        }
+
 		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl' value='$jsonValueCity' type='hidden'>";
 
 		if ($check)
@@ -593,7 +644,7 @@ class ComponentOrder
         }
 
 		$jsonValuePayment = \Bitrix\Main\Web\Json::encode($paymentResult);
-		$html .= "<input id='widgetPaymentEsl' value='$jsonValuePayment' type='hidden'>";
+            $html .= "<input id='widgetPaymentEsl' value='$jsonValuePayment' type='hidden'>";
 
 		return $html;
 	}

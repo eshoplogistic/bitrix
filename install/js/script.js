@@ -14,9 +14,26 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
 
         getPvzList: function(profileId) {
 
-            let locationFieldId = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc;
-            let locationInput = document.querySelector('input[name=ORDER_PROP_'+locationFieldId+']');
+            let locationFieldId = '';
+            let locationInput = '';
             let paymentInput = document.querySelector('input[name=PAY_SYSTEM_ID]:checked');
+
+            let addressRequar =  document.getElementById('eslogic-address-requar');
+            if (typeof(addressRequar) != 'undefined' && addressRequar != null) {
+                if (addressRequar.value && addressRequar.value !== '0') {
+                    const addressRequarArr = addressRequar.value.split(',')
+                    addressRequarArr.forEach((val) => {
+                        if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
+                            locationInput = document.querySelector('input[name=ORDER_PROP_'+val+']');
+                        }
+                    })
+                }
+            }
+
+            if(!locationInput){
+                locationFieldId = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc;
+                locationInput = document.querySelector('input[name=ORDER_PROP_'+locationFieldId+']')
+            }
 
             if(!locationInput){
                 var request = BX.ajax.runAction('eshoplogistic:delivery.api.ajaxhandler.getDefaultCity');
