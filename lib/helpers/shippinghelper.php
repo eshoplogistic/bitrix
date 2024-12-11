@@ -82,7 +82,7 @@ class ShippingHelper
         );
 
         foreach ( $nameList as $key => $value ) {
-            if (str_contains(mb_strtolower($name), mb_strtolower($key))) {
+            if (mb_strtolower($name) == mb_strtolower($value)) {
                 return true;
             }
         }
