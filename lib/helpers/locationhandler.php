@@ -85,6 +85,7 @@ class LocationHandler
                 $subregion = '';
                 $name = '';
                 $type = '';
+                $city = '';
 
                 $res = LocationTable::getList(array(
                     'filter' => array(
@@ -110,13 +111,20 @@ class LocationHandler
                         $region = $itemLocation['I_NAME_'.$lang];
                     } elseif ($itemLocation['I_TYPE_CODE'] == 'SUBREGION') {
                         $subregion = $itemLocation['I_NAME_'.$lang];
-                    }else {
+                    } else {
                         $name = $itemLocation['I_NAME_'.$lang];
+                    }
+
+                    if($itemLocation['I_TYPE_CODE'] == 'CITY'){
+                        $city = $itemLocation['I_NAME_'.$lang];
                     }
 
                     //$arName = explode(' ', $name);
 
                 }
+                if($city)
+                    $name = $city;
+
                 if($name) {
                     $name = self::unsetNameCityPart($name);
                     $region = ComparisonCities::checkCityNamePartRevert($region, 'region', $name);

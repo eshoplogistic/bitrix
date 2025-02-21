@@ -468,6 +468,13 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     array("text")
                 ),
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER"),
+                array(
+                    "add-field",
+                    "",
+                    "",
+                    array("text")
+                ),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADD_FIELD"),
             ),
         ),
 	);

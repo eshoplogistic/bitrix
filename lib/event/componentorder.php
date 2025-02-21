@@ -406,7 +406,7 @@ class ComponentOrder
 			}
 
 			$session = \Bitrix\Main\Application::getInstance()->getSession();
-            //session->remove('dataEsl');
+            //$session->remove('dataEsl');
 			if ($session->has('dataEsl') && !$requestDataEsl && !$apiV){
 				$requestDataEsl = $session->get('dataEsl');
 				$clearField = true;
@@ -661,6 +661,14 @@ class ComponentOrder
 
         if ($type === 'postrf')
             $nameTypeBx = 'term';
+
+
+        if (strpos($code, 'custom') !== false) {
+            $codeTmp = explode('-', $code);
+            if(count($codeTmp) > 1){
+                $code = 'custom';
+            }
+        }
 
 		$nameDeliveryBx = 'eslogistic:' . $code . '_' . $nameTypeBx;
 
