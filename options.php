@@ -230,6 +230,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
+                array(
+                    "price_empty",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PRICE_EMPTY"),
+                    "",
+                    array("text")
+                ),
+                array(
+                    "price_hide",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PRICE_HIDE"),
+                    "",
+                    array("checkbox")
+                ),
 				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"),
 				array(
 					"api_payment_card",

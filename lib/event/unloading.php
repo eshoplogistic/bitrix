@@ -148,7 +148,10 @@ class Unloading
         $result = $export->sendExport($defaultParamsCreate);
 
         if (!isset($result['errors'])) {
-            $order = Sale\Order::load($_REQUEST['elementId']);
+            if(!isset($data['order_id']))
+                return false;
+
+            $order = Sale\Order::load($data['order_id']);
             $propertyCollection = $order->getPropertyCollection();
             foreach ($propertyCollection as $propertyItem) {
                 $propertyCode = $propertyItem->getField("CODE");

@@ -141,7 +141,17 @@ class ComponentOrder
                                     '<input  type="button" value="ОК" onclick="BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress()" class="eslogic-address-full_but"/>';
                             }
 						}
-						$arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'] = '';
+
+                        $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
+                        if($priceEmpty && $arResult['DELIVERY'][$profile['ID']]['PRICE'] == 0.0){
+                            $arResult['DELIVERY'][$profile['ID']]['PRICE_FORMATED'] = $priceEmpty;
+                        }
+                        $priceHide = Option::get(Config::MODULE_ID, 'price_hide');
+                        if($priceHide == 'Y'){
+                            $arResult['DELIVERY'][$profile['ID']]['PRICE_FORMATED'] = '';
+                        }
+
+                        $arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'] = '';
 					}
 				}
 			}
@@ -584,6 +594,15 @@ class ComponentOrder
         }
         $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
         $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-address-requar' value='$addressRequar' type='hidden'>";
+
+        $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
+        if($priceEmpty && $deliveryResult['PRICE'] == 0.0){
+            $deliveryResult['PRICE_FORMATED'] = $priceEmpty;
+        }
+        $priceHide = Option::get(Config::MODULE_ID, 'price_hide');
+        if($priceHide == 'Y'){
+            $deliveryResult['PRICE_FORMATED'] = '';
+        }
 
 
         $arResult['DELIVERY'][$deliveryResult['ID']] = $deliveryResult;

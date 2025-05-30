@@ -33,6 +33,8 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_HEIGHT_DEFAULT"] = "Высота товара по
 $MESS["ESHOP_LOGISTIC_OPTIONS_LENGTH_DEFAULT"] = "Длина товара по умолчанию (в сантиметрах)";
 $MESS["ESHOP_LOGISTIC_OPTIONS_CHOSE_FRAME"] = "Изменить название ошибки для - Не выбран способ доставки";
 $MESS["ESHOP_LOGISTIC_OPTIONS_TERMINAL_PVZ"] = "Изменить название ошибки для - Не выбран пункт выдачи заказа";
+$MESS["ESHOP_LOGISTIC_OPTIONS_PRICE_EMPTY"] = "Заменить расчётную стоимость «0 руб» на текст";
+$MESS["ESHOP_LOGISTIC_OPTIONS_PRICE_HIDE"] = "Скрыть стоимость доставки";
 
 
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"] = "Описание установки";
