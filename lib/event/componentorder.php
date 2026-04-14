@@ -474,6 +474,9 @@ class ComponentOrder
 				unset($arResult['DELIVERY'][$key]);
 			}
 
+            if(!isset($selectedElement['ID']))
+                continue;
+
 			if ($item['ID'] == $selectedElement['ID']) {
 				$deliveryResult = $item;
                 if(isset($selectedElement['OWN_NAME']))
@@ -560,6 +563,12 @@ class ComponentOrder
 
         if(!isset($requestDataEsl['mode'])){
             $deliveryResult['DESCRIPTION'] .= '<input 
+                            id="terminalEsl" 
+                            name="ESHOPLOGISTIC_PVZ" 
+                            type="hidden"                         
+                            value="' . $requestDataEsl['selectPvz'] . '"
+                        >';
+            $deliveryResult['DESCRIPTION'] .= '<input 
                             id="eslChoseFrame" 
                             type="hidden"
                             name="ESHOPLOGISTIC_CHOSE_FRAME"
@@ -633,7 +642,7 @@ class ComponentOrder
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {
             if($item['DIMENSIONS']){
-                $dimensions = unserialize($item['DIMENSIONS']);
+                $dimensions = is_array($item['DIMENSIONS']) ? $item['DIMENSIONS'] : unserialize($item['DIMENSIONS']);
                 if($dimensions['WIDTH']) $width = $dimensions['WIDTH'] / 10;
                 if($dimensions['LENGTH']) $height = $dimensions['LENGTH'] / 10;
                 if($dimensions['HEIGHT']) $length = $dimensions['HEIGHT'] / 10;

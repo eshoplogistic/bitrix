@@ -6,6 +6,8 @@ use Bitrix\Sale\Order;
 use Eshoplogistic\Delivery\Config;
 use Eshoplogistic\Delivery\Event\Unloading;
 use Eshoplogistic\Delivery\Logger\Logger;
+use Bitrix\Sale\Delivery\Services\Manager;
+use Eshoplogistic\Delivery\Helpers\ShippingHelper;
 
 /** Agents for unloading
  * Class UnloadingHandler
@@ -20,6 +22,10 @@ class UnloadingHandler
      */
     public static function update()
     {
+        global $CModule;
+        if(!\CModule::IncludeModule("sale"))
+            return false;
+
         $statusEnd = Option::get(Config::MODULE_ID, 'cron-status-unloading');
         $filter = [
             'LID' => 's1',
@@ -36,9 +42,30 @@ class UnloadingHandler
 
         ));
 
+        $shippingHelper = new ShippingHelper();
         foreach ($orders as $order) {
             $orderValues = $order->getFields()->getValues();
             $orderId = $orderValues['ID'];
+
+            // Проверка, что доставка заказа принадлежит данному плагину
+            $shipmentCollection = $order->getShipmentCollection();
+            $checkUnloading = false;
+
+            foreach ($shipmentCollection as $shipment) {
+                if ($shipment->isSystem()) continue;
+                $deliveryId = $shipment->getDeliveryId();
+                $deliveryService = Manager::getObjectById($deliveryId);
+                if ($deliveryService) {
+                    $deliveryCode = $deliveryService->getCode();
+                    $currectDeliveryEsl = $shippingHelper->getSlugMethod($deliveryCode);
+                    if($currectDeliveryEsl)
+                        $checkUnloading = $shippingHelper->checkUnloadingDelivery($currectDeliveryEsl);
+                }
+    
+            }
+            if (!$checkUnloading) {
+                continue;
+            }
 
             $unloading = new Unloading();
             $status = $unloading->infoOrder($orderId);
@@ -54,10 +81,12 @@ class UnloadingHandler
                 $result['unloading'] = $status;
             }
 
-            $logger = new Logger('unloading-cron');
-            $logger->log($result);
-        }
+            if (class_exists('\Eshoplogistic\Delivery\Logger\Logger')) {
+                $logger = new Logger('unloading-cron');
+                $logger->log($result);
+            }
 
+        }
 
         return "Eshoplogistic\Delivery\Agent\UnloadingHandler::update();";
     }

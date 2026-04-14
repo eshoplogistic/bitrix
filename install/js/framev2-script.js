@@ -127,7 +127,6 @@ function isNumeric(value) {
                         settlement = this.widget_city
 
                 }
-                console.log('reload')
                 widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                     detail: {
                         settlement: settlement,
@@ -403,7 +402,13 @@ function isNumeric(value) {
                 BX.Sale.OrderAjaxComponent.result.TOTAL.DELIVERY_PRICE = 0
                 BX.Sale.OrderAjaxComponent.result.TOTAL.DELIVERY_PRICE_FORMATED = "0 &#8381;"
                 BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_TOTAL_PRICE = BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_PRICE
-                BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_TOTAL_PRICE_FORMATED = BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_PRICE+" &#8381;"
+                BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_TOTAL_PRICE_FORMATED = formatPriceWithSpace(BX.Sale.OrderAjaxComponent.result.TOTAL.ORDER_PRICE) +" &#8381;"
+                // Форматирование цены с пробелом между тысячами
+                function formatPriceWithSpace(price) {
+                    price = parseInt(price, 10);
+                    if (isNaN(price)) return price;
+                    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                }
                 BX.Sale.OrderAjaxComponent.editTotalBlock()
             }
 
@@ -446,6 +451,7 @@ function isNumeric(value) {
     function validate() {
         let fieldTerminal = document.getElementById('terminalEsl')
         let nameErrorDiv = 'errorPvzEsl'
+        console.log(fieldTerminal.value)
         if(fieldTerminal){
             if (!fieldTerminal.value) {
                 let element = document.createElement('div')
@@ -523,7 +529,13 @@ BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
                 onsuccess: BX.delegate(function (result) {
                     result.order.TOTAL.DELIVERY_PRICE_FORMATED = resultEsl.price + ' &#8381';
                     result.order.TOTAL.DELIVERY_PRICE = resultEsl.price;
-                    result.order.TOTAL.ORDER_TOTAL_PRICE_FORMATED = result.order.TOTAL.ORDER_PRICE + resultEsl.price + ' &#8381';
+                    result.order.TOTAL.ORDER_TOTAL_PRICE_FORMATED = formatPriceWithSpace(result.order.TOTAL.ORDER_PRICE + resultEsl.price) +" &#8381;"
+                    // Форматирование цены с пробелом между тысячами
+                    function formatPriceWithSpace(price) {
+                        price = parseInt(price, 10);
+                        if (isNaN(price)) return price;
+                        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                    }
                     if (result.redirect && result.redirect.length)
                         document.location.href = result.redirect;
 
