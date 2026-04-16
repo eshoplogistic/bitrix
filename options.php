@@ -459,14 +459,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER"),
-                array(
-                    "add-field",
-                    "",
-                    "",
-                    array("text")
-                ),
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADD_FIELD"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER")
             ),
         ),
 	);
@@ -536,21 +529,21 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 			if($aTab["DIV"] == 'faq'){
 				$tabControl->BeginNextTab();
 				?>
-				<tr class="heading"><td colspan="2" valign="top" align="center"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_INSTALL_TITLE")?></td></tr>
+				<tr class="heading"><td colspan="2"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_INSTALL_TITLE")?></td></tr>
 				<tr>
-					<td style="color:#555;" colspan="2">
+					<td class="esl-faq-text" colspan="2">
 						<?=GetMessage('ESHOP_LOGISTIC_OPTIONS_INSTALL_DESC')?>
 					</td>
 				</tr>
-				<tr class="heading"><td colspan="2" valign="top" align="center"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SETTING_TITLE")?></td></tr>
+				<tr class="heading"><td colspan="2"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SETTING_TITLE")?></td></tr>
 				<tr>
-					<td style="color:#555;" colspan="2">
+					<td class="esl-faq-text" colspan="2">
 						<?=GetMessage('ESHOP_LOGISTIC_OPTIONS_SETTING_DESC')?>
 					</td>
 				</tr>
-				<tr class="heading"><td colspan="2" valign="top" align="center"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_MOMENTS_TITLE")?></td></tr>
+				<tr class="heading"><td colspan="2"><?=Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_MOMENTS_TITLE")?></td></tr>
 				<tr>
-					<td style="color:#555;" colspan="2">
+					<td class="esl-faq-text" colspan="2">
 						<?=GetMessage('ESHOP_LOGISTIC_OPTIONS_MOMENTS_DESC')?>
 					</td>
 				</tr>

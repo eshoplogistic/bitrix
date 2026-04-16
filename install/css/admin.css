@@ -1,45 +1,478 @@
-form[name^=unloading_form] #edit4 .form-field_add {
-    padding-bottom: 5px;
+/* =============================================
+   EShopLogistic — Форма выгрузки: единый стиль
+   ============================================= */
+
+/* ---------- Общий фон вкладок ---------- */
+form[name^=unloading_form] .adm-detail-content {
+    background: #f2f4f8 !important;
 }
 
-form[name^=unloading_form] #edit4 .form-field_add input {
-    margin-left: 10px;
+form[name^=unloading_form] .adm-detail-content-item-block {
+    background: transparent !important;
+    padding: 20px !important;
 }
 
+/* ---------- Required asterisk ---------- */
+form[name^=unloading_form] span.required {
+    color: #ef4444;
+    margin-right: 3px;
+}
+
+/* ---------- Error message ---------- */
+.error-msg p {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 8px 12px;
+    color: #7f1d1d;
+    background-color: #fee2e2;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0 0 12px 0;
+}
+
+/* =============================================
+   ВКЛАДКИ 1 и 2 — Общее / Получатель / Отправитель
+   ============================================= */
+
+/* Карточка-таблица */
+form[name^=unloading_form] #edit1 .edit-table,
+form[name^=unloading_form] #edit2 .edit-table {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #ffffff;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Строки */
+form[name^=unloading_form] #edit1 .edit-table tr,
+form[name^=unloading_form] #edit2 .edit-table tr {
+    transition: background 0.12s ease;
+}
+
+form[name^=unloading_form] #edit1 .edit-table tr:hover td,
+form[name^=unloading_form] #edit2 .edit-table tr:hover td {
+    background: #f7f9fd;
+}
+
+/* Ячейка-лейбл (первая td) */
+form[name^=unloading_form] #edit1 .edit-table tr > td:first-child,
+form[name^=unloading_form] #edit2 .edit-table tr > td:first-child,
+form[name^=unloading_form] #edit1 .adm-detail-content-cell-l,
+form[name^=unloading_form] #edit2 .adm-detail-content-cell-l {
+    font-size: 13px !important;
+    color: #5a6782 !important;
+    font-weight: 500 !important;
+    padding: 9px 12px 9px 16px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    width: 230px !important;
+    white-space: nowrap;
+    background: transparent;
+}
+
+/* Ячейка-контрол (вторая td) */
+form[name^=unloading_form] #edit1 .edit-table tr > td:last-child,
+form[name^=unloading_form] #edit2 .edit-table tr > td:last-child,
+form[name^=unloading_form] #edit1 .adm-detail-content-cell-r,
+form[name^=unloading_form] #edit2 .adm-detail-content-cell-r {
+    padding: 6px 16px 6px 10px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    background: transparent;
+}
+
+/* Разделитель — строка с hr */
+form[name^=unloading_form] #edit1 .edit-table tr > td:first-child hr,
+form[name^=unloading_form] #edit2 .edit-table tr > td:first-child hr {
+    border: none;
+    border-top: 1px solid #dde3ed;
+    margin: 0;
+}
+
+/* Заголовки секций (h3) */
+form[name^=unloading_form] #edit1 .edit-table h3,
+form[name^=unloading_form] #edit2 .edit-table h3 {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7a99;
+    margin: 2px 0 !important;
+    padding: 0 !important;
+}
+
+/* Строка с разделителем: убираем hover и фон */
+form[name^=unloading_form] #edit1 .edit-table tr:has(hr):hover td,
+form[name^=unloading_form] #edit2 .edit-table tr:has(hr):hover td,
+form[name^=unloading_form] #edit1 .edit-table tr:has(h3):hover td,
+form[name^=unloading_form] #edit2 .edit-table tr:has(h3):hover td {
+    background: transparent !important;
+    cursor: default;
+}
+
+/* ---------- Текстовые инпуты ---------- */
+form[name^=unloading_form] #edit1 input[type="text"],
+form[name^=unloading_form] #edit2 input[type="text"],
+form[name^=unloading_form] #edit1 input[type="date"],
+form[name^=unloading_form] #edit2 input[type="date"] {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 5px 10px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background: #fafbfd !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 280px !important;
+    min-width: unset !important;
+    box-sizing: border-box;
+    height: auto !important;
+}
+
+form[name^=unloading_form] #edit1 input[type="text"]:focus,
+form[name^=unloading_form] #edit2 input[type="text"]:focus,
+form[name^=unloading_form] #edit1 input[type="date"]:focus,
+form[name^=unloading_form] #edit2 input[type="date"]:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background: #fff !important;
+}
+
+/* ---------- Select ---------- */
+form[name^=unloading_form] #edit1 select,
+form[name^=unloading_form] #edit2 select {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 5px 32px 5px 10px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background-color: #fafbfd !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7a99' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 280px !important;
+    min-width: unset !important;
+}
+
+form[name^=unloading_form] #edit1 select:focus,
+form[name^=unloading_form] #edit2 select:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background-color: #fff !important;
+}
+
+/* ---------- Textarea ---------- */
+form[name^=unloading_form] #edit1 textarea.typearea {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background: #fafbfd !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    resize: vertical;
+    width: 280px !important;
+    min-width: unset !important;
+    line-height: 1.5;
+}
+
+form[name^=unloading_form] #edit1 textarea.typearea:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background: #fff !important;
+}
+
+/* ---------- Toggle (единый для всех вкладок) ---------- */
+
+/* =============================================
+   ВКЛАДКА 3 — Места
+   ============================================= */
+
+form[name^=unloading_form] #edit3 .adm-detail-content-item-block {
+    padding: 20px !important;
+}
+
+/* Таблица-карточка */
+form[name^=unloading_form] #edit3 table {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #ffffff;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Заголовки колонок */
+form[name^=unloading_form] #edit3 thead th {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #6b7a99;
+    background: #f8f9fc !important;
+    border-bottom: 2px solid #dde3ed !important;
+    padding: 9px 10px !important;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Строки тела таблицы */
+form[name^=unloading_form] #edit3 .mainTbody tr {
+    transition: background 0.12s ease;
+}
+
+form[name^=unloading_form] #edit3 .mainTbody tr:hover td {
+    background: #f7f9fd;
+}
+
+form[name^=unloading_form] #edit3 .mainTbody tr td,
+form[name^=unloading_form] .mainTbody .adm-detail-content-cell-r,
+form[name^=unloading_form] .mainTbody .adm-detail-content-cell-l {
+    padding: 5px 8px !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    vertical-align: middle;
+}
+
+/* Инпуты в таблице мест */
+form[name^=unloading_form] .mainTbody tr td input {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 4px !important;
+    padding: 4px 7px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background: #fafbfd !important;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 !important;
+}
+
+form[name^=unloading_form] .mainTbody tr td input:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background: #fff !important;
+}
+
+/* Кнопка "Добавить место" */
+form[name^=unloading_form] #edit3 #buttonModalUnloadAdd,
+form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button.button-primary,
+form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button {
+    margin-top: 14px !important;
+    padding: 7px 18px !important;
+    background: #4a7dff !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.15s, box-shadow 0.15s !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+form[name^=unloading_form] #edit3 #buttonModalUnloadAdd:hover,
+form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button:hover {
+    background: #3a6de8 !important;
+    box-shadow: 0 3px 10px rgba(74, 125, 255, 0.32) !important;
+    color: #ffffff !important;
+}
+
+/* Удаление строки */
+form[name^=unloading_form] .esl-delete_table_elem {
+    padding-left: 0 !important;
+    color: #ef4444 !important;
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    display: block;
+    text-align: center;
+    transition: color 0.12s, transform 0.12s;
+}
+
+form[name^=unloading_form] .esl-delete_table_elem:hover {
+    color: #dc2626 !important;
+    transform: scale(1.15);
+}
+
+/* =============================================
+   ВКЛАДКА 4 — Дополнительные услуги
+   ============================================= */
+
+form[name^=unloading_form] #edit4 .esl-services-td {
+    padding: 20px 0 !important;
+    background: #f2f4f8;
+}
+
+form[name^=unloading_form] #edit4 .esl-services-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 20px;
+}
+
+form[name^=unloading_form] #edit4 .esl-services-group {
+    background: #ffffff;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
 
 form[name^=unloading_form] #edit4 .titleBox {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7a99;
+    background: #f8f9fc;
+    border-bottom: 1px solid #dde3ed;
+    padding: 9px 16px;
+    margin: 0;
 }
 
-form[name^=unloading_form] #edit3 #edit3_edit_table {
-    padding-top: 15px;
+form[name^=unloading_form] #edit4 .esl-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-form[name^=unloading_form] .esl-delete_table_elem{
-    padding-left: 25px;
-    color: red;
+form[name^=unloading_form] #edit4 .form-field_add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 16px;
+    border-bottom: 1px solid #f0f2f7;
+    border-right: 1px solid #f0f2f7;
+    transition: background 0.12s ease;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+form[name^=unloading_form] #edit4 .form-field_add:last-child {
+    border-bottom: none;
+}
+
+form[name^=unloading_form] #edit4 .form-field_add:hover {
+    background: #f7f9fd;
+}
+
+form[name^=unloading_form] #edit4 .label {
+    font-size: 13px;
+    color: #2d3a52;
+    flex: 1;
+    margin-right: 16px;
+    line-height: 1.4;
     cursor: pointer;
+    user-select: none;
 }
 
-form[name^=unloading_form] .mainTbody tr td input{
-    border-radius: 0;
-    margin-right: 1px;
+/* Числовые поля */
+form[name^=unloading_form] #edit4 .form-value_number {
+    width: 68px !important;
+    padding: 4px 8px;
+    border: 1px solid #c8d0e0;
+    border-radius: 5px;
+    font-size: 13px;
+    color: #1a2540;
+    background: #fafbfd;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-left: 0 !important;
+    flex-shrink: 0;
+    -moz-appearance: textfield;
 }
 
-form[name^=unloading_form] .mainTbody .adm-detail-content-cell-r {
-    padding:0px;
+form[name^=unloading_form] #edit4 .form-value_number::-webkit-outer-spin-button,
+form[name^=unloading_form] #edit4 .form-value_number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
 }
 
-form[name^=unloading_form] .mainTbody .adm-detail-content-cell-l {
-    padding:0px;
+form[name^=unloading_form] #edit4 .form-value_number:focus {
+    border-color: #4a7dff;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14);
+    background: #fff;
 }
 
-.error-msg p{
-    border: 1px solid rgba(136, 136, 136, 0.45);
-    padding: 5px;
-    color: rgb(20, 20, 20);
-    background-color: rgba(240, 105, 105, 0.66);
-    font-weight: 500;
+/* Переключатель (toggle) — обёртка */
+form[name^=unloading_form] .esl-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
+/* Скрываем Bitrix-овский кастомный лейбл для чекбокса */
+form[name^=unloading_form] .esl-toggle .adm-designed-checkbox-label {
+    display: none !important;
+}
+
+/* Скрытый нативный checkbox */
+form[name^=unloading_form] .esl-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Визуальный трек */
+form[name^=unloading_form] .esl-toggle__track {
+    position: absolute;
+    inset: 0;
+    background: #c8d0e0;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+    pointer-events: none;
+}
+
+/* Ползунок-шарик */
+form[name^=unloading_form] .esl-toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+}
+
+/* Состояние: включён */
+form[name^=unloading_form] .esl-toggle input[type="checkbox"]:checked ~ .esl-toggle__track {
+    background: #4a7dff;
+}
+
+form[name^=unloading_form] .esl-toggle input[type="checkbox"]:checked ~ .esl-toggle__track::after {
+    transform: translateX(16px);
+}
+
+/* Focus ring */
+form[name^=unloading_form] .esl-toggle input[type="checkbox"]:focus ~ .esl-toggle__track {
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.2);
+}

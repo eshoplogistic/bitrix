@@ -1,7 +1,289 @@
+/* =============================================
+   EShopLogistic — Страница настроек: единый стиль
+   ============================================= */
 
-.esl-section_drag .esl-inner_item ul{
+/* ---------- Фон вкладок ---------- */
+#edit .adm-detail-content,
+#faq .adm-detail-content,
+#unloading .adm-detail-content {
+    background: #f2f4f8 !important;
+}
+
+#edit .adm-detail-content-item-block,
+#faq .adm-detail-content-item-block,
+#unloading .adm-detail-content-item-block {
+    background: transparent !important;
+    padding: 20px !important;
+}
+
+/* ---------- Карточка-таблица ---------- */
+#edit .edit-table,
+#faq .edit-table,
+#unloading .edit-table {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #ffffff;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Строки ---------- */
+#edit .edit-table tr,
+#faq .edit-table tr,
+#unloading .edit-table tr {
+    transition: background 0.12s ease;
+}
+
+#edit .edit-table tr:hover td,
+#faq .edit-table tr:hover td,
+#unloading .edit-table tr:hover td {
+    background: #f7f9fd;
+}
+
+/* ---------- Заголовки секций (heading) ---------- */
+#edit .edit-table tr.heading td,
+#faq .edit-table tr.heading td,
+#unloading .edit-table tr.heading td {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7a99 !important;
+    background: #f8f9fc !important;
+    border-bottom: 1px solid #dde3ed !important;
+    border-top: 1px solid #dde3ed !important;
+    padding: 9px 16px !important;
+    text-align: left !important;
+}
+
+#edit .edit-table tr.heading:hover td,
+#faq .edit-table tr.heading:hover td,
+#unloading .edit-table tr.heading:hover td {
+    background: #f8f9fc !important;
+    cursor: default;
+}
+
+/* ---------- Note (описание) ---------- */
+#edit .edit-table .adm-settings-note,
+#unloading .edit-table .adm-settings-note {
+    font-size: 12px;
+    color: #6b7a99;
+    background: #f8f9fc;
+    border: 1px solid #dde3ed;
+    border-radius: 5px;
+    padding: 7px 12px;
+    margin: 2px 0;
+    line-height: 1.5;
+}
+
+/* ---------- Ячейка-лейбл ---------- */
+#edit .adm-detail-content-cell-l,
+#unloading .adm-detail-content-cell-l {
+    font-size: 13px !important;
+    color: #5a6782 !important;
+    font-weight: 500 !important;
+    padding: 9px 12px 9px 16px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    width: 300px !important;
+    background: transparent !important;
+}
+
+/* ---------- Ячейка-контрол ---------- */
+#edit .adm-detail-content-cell-r,
+#unloading .adm-detail-content-cell-r {
+    padding: 6px 16px 6px 10px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    background: transparent !important;
+}
+
+/* ---------- Текстовые инпуты ---------- */
+#edit .adm-input,
+#unloading .adm-input,
+#edit input[type="text"],
+#unloading input[type="text"] {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 5px 10px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background: #fafbfd !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 280px !important;
+    box-sizing: border-box;
+    height: auto !important;
+}
+
+#edit .adm-input:focus,
+#unloading .adm-input:focus,
+#edit input[type="text"]:focus,
+#unloading input[type="text"]:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background: #fff !important;
+}
+
+/* ---------- Select (одиночный и множественный) ---------- */
+#edit select:not([multiple]),
+#unloading select:not([multiple]) {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 5px 32px 5px 10px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background-color: #fafbfd !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7a99' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    outline: none !important;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 280px !important;
+}
+
+#edit select:not([multiple]):focus,
+#unloading select:not([multiple]):focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background-color: #fff !important;
+}
+
+/* Мультиселект */
+#edit select[multiple],
+#unloading select[multiple] {
+    border: 1px solid #c8d0e0 !important;
+    border-radius: 5px !important;
+    padding: 4px 6px !important;
+    font-size: 13px !important;
+    color: #1a2540 !important;
+    background: #fafbfd !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 280px !important;
+    min-height: 80px;
+}
+
+#edit select[multiple]:focus,
+#unloading select[multiple]:focus {
+    border-color: #4a7dff !important;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    background: #fff !important;
+}
+
+/* ---------- Toggle — переопределяем adm-designed-checkbox-label ---------- */
+
+/* Скрываем нативный оригинальный checkbox */
+#edit .adm-designed-checkbox,
+#unloading .adm-designed-checkbox {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Лейбл-трек */
+#edit .adm-designed-checkbox-label,
+#unloading .adm-designed-checkbox-label {
+    position: relative !important;
+    display: inline-block !important;
+    width: 36px !important;
+    height: 20px !important;
+    background: #c8d0e0 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    vertical-align: middle;
+    /* Сброс Bitrix-стилей */
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+    overflow: visible !important;
+}
+
+/* Шарик через ::after */
+#edit .adm-designed-checkbox-label::before,
+#unloading .adm-designed-checkbox-label::before {
+    display: none !important;
+}
+
+#edit .adm-designed-checkbox-label::after,
+#unloading .adm-designed-checkbox-label::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 2px !important;
+    left: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: #fff !important;
+    border-radius: 50% !important;
+    transition: transform 0.2s ease !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22) !important;
+    pointer-events: none !important;
+    /* Сброс Bitrix-стилей checkmark */
+    border: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+/* Checked: синий трек */
+#edit .adm-designed-checkbox:checked + .adm-designed-checkbox-label,
+#unloading .adm-designed-checkbox:checked + .adm-designed-checkbox-label {
+    background: #4a7dff !important;
+}
+
+/* Checked: шарик вправо */
+#edit .adm-designed-checkbox:checked + .adm-designed-checkbox-label::after,
+#unloading .adm-designed-checkbox:checked + .adm-designed-checkbox-label::after {
+    transform: translateX(16px) !important;
+}
+
+/* Focus ring */
+#edit .adm-designed-checkbox:focus + .adm-designed-checkbox-label,
+#unloading .adm-designed-checkbox:focus + .adm-designed-checkbox-label {
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.2) !important;
+}
+
+/* ---------- Кнопка "Очистить кэш" ---------- */
+#edit input[type="button"],
+#unloading input[type="button"] {
+    padding: 6px 16px !important;
+    background: #f8f9fc !important;
+    color: #2d3a52 !important;
+    border: 1px solid #dde3ed !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: background 0.15s, border-color 0.15s !important;
+}
+
+#edit input[type="button"]:hover,
+#unloading input[type="button"]:hover {
+    background: #eef1f8 !important;
+    border-color: #c8d0e0 !important;
+}
+
+/* =============================================
+   Drag-and-drop статусы (вкладка "Выгрузка")
+   ============================================= */
+
+.esl-section_drag .esl-inner_item ul {
     min-height: 40px;
-    margin-right: 20px;
+    margin: 0px 20px 10px 0;
+    padding: 0;
+    list-style: none;
 }
 
 .esl-section_drag .js-connected {
@@ -9,59 +291,194 @@
     top: 45px;
 }
 
-.esl-section_drag .esl-status__wp{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
+.esl-section_drag .esl-status__wp {
+    position: relative;
+    border: 1px solid #dde3ed;
     display: inline-block;
-    padding: 5px;border-radius: 5px;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
+    padding: 8px 12px 6px 16px;
+    border-radius: 5px;
+    background: #f8f9fc;
     margin-right: 5px;
-    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: #2d3a52;
+    cursor: grab;
+    transition: background 0.12s, box-shadow 0.12s;
+    list-style: none;
+}
+
+.esl-section_drag .esl-status__wp:hover {
+    background: #eef1f8;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .esl-section_drag .js-inner-connected {
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
-    padding-top: 10px;
-    padding-bottom: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
+    border: 1px solid #dde3ed;
+    border-radius: 0px 6px 6px 6px;
+    padding: 12px 14px 10px;
     min-height: 57px;
+    background: #fff;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    position: relative;
 }
 
-.esl-section_drag .esl-status_api{
-    border: 1px solid color(srgb 0.8627 0.8628 0.8628);
-    display: inline;padding: 2px;
-    border-radius: 5px 5px 0px 0px;
-    font-size: 14px;
+body.esl-status-dragging .esl-section_drag .js-inner-connected {
+    border-color: #8fb3ff;
+    background: #f7faff;
+    box-shadow: inset 0 0 0 1px rgba(74, 125, 255, 0.08);
+}
+
+.esl-section_drag .js-inner-connected.esl-drop-zone-ready {
+    min-height: 84px;
+    border: 2px dashed #9bb9ff;
+    background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+    box-shadow: inset 0 0 0 1px rgba(74, 125, 255, 0.12);
+}
+
+.esl-section_drag .js-inner-connected.esl-drop-zone-ready:empty::before {
+    content: 'Перетащите статус сюда';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
     font-weight: 600;
-    background-color: color(srgb 0.9686 0.9686 0.9687);
+    color: #6a88c7;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
-.esl-section_drag .esl-inner_status{
-    box-shadow: 14px 0px 11px -20px black;
+body.esl-status-dragging .esl-section_drag .esl-status_api {
+    color: #4d6fb8;
+    border-color: #8fb3ff;
+    background: #eef4ff;
 }
 
-.esl-section_drag .row{
+body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-active {
+    border-color: #4a7dff;
+    background: #edf4ff;
+    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.18);
+}
+
+.esl-section_drag .js-inner-connected.esl-drop-zone-hover,
+body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-active,
+body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-zone-hover {
+    border: 2px solid #4a7dff;
+    background: linear-gradient(180deg, #eef5ff 0%, #e2eeff 100%);
+    box-shadow: 0 0 0 4px rgba(74, 125, 255, 0.22);
+}
+
+.esl-section_drag .js-inner-connected.esl-drop-zone-hover:empty::before,
+body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-active:empty::before {
+    color: #2f5fcb;
+}
+
+.esl-section_drag .esl-sortable-placeholder,
+.esl-section_drag .sortable-placeholder {
+    display: block;
+    min-height: 8px;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    list-style: none;
+}
+
+.esl-section_drag .esl-status_api {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px 5px 0 0;
+    margin-top: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7a99;
+    background: #f8f9fc;
+    border: 1px solid #dde3ed;
+    border-bottom: none;
+}
+
+.esl-section_drag .esl-inner_status {
+    box-shadow: none;
+}
+
+.esl-section_drag .row {
     display: inline-flex;
 }
 
-.esl-section_drag .col-sm-6{
-    width: 49%
+.esl-section_drag .col-sm-6 {
+    width: 49%;
 }
 
-#eslExportFormWrap .input-group{
+.sortable-delete {
+    position: absolute;
+    top: 6px;
+    right: -8px;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #e11d48;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    transition: color 0.12s, background-color 0.12s, border-color 0.12s, transform 0.12s, box-shadow 0.12s;
+    z-index: 10;
+    pointer-events: auto;
+    box-shadow: 0 1px 2px rgba(225, 29, 72, 0.12);
+}
+
+.sortable-delete:hover {
+    color: #be123c;
+    background: #ffe4e6;
+    border-color: #fda4af;
+    transform: scale(1.08);
+    box-shadow: 0 2px 5px rgba(225, 29, 72, 0.18);
+}
+
+#eslExportFormWrap .input-group {
     margin-bottom: 15px;
 }
 
-#wcEslSettings .float-end{
-    margin-top: 30px;
-}
-
-.sortable-delete{
-    position: absolute;
-    margin-left: 2px;
-    margin-top: -17px;
-    color: rgba(236, 0, 0, 0.66);
-}
 input[name="status-form"] {
     display: none !important;
+}
+
+/* =============================================
+   Вкладка FAQ — описание установки
+   ============================================= */
+
+/* Ячейка с текстом описания */
+#faq .edit-table td.esl-faq-text {
+    padding: 14px 20px !important;
+    font-size: 13px !important;
+    color: #3d4f6e !important;
+    line-height: 1.7 !important;
+    background: transparent !important;
+    border-bottom: 1px solid #f0f2f7 !important;
+    vertical-align: top !important;
+}
+
+/* Убираем hover-подсветку на строках с текстом */
+#faq .edit-table tr:has(td.esl-faq-text):hover td {
+    background: transparent !important;
+    cursor: default;
+}
+
+/* Параграфы внутри описания */
+#faq .edit-table td.esl-faq-text p {
+    margin: 0 0 8px 0;
+}
+
+#faq .edit-table td.esl-faq-text p:last-child {
+    margin-bottom: 0;
 }

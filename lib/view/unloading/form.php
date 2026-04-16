@@ -224,7 +224,12 @@ echo $ID ?>"
         <tr>
             <td><?php
                 echo GetMessage("FULFILLMENT") ?></td>
-            <td><input type="checkbox" name="fulfillment" value=""></td>
+            <td>
+                <label class="esl-toggle">
+                    <input type="checkbox" name="fulfillment" value="">
+                    <span class="esl-toggle__track"></span>
+                </label>
+            </td>
         </tr>
     <?php
     endif; ?>
@@ -337,11 +342,14 @@ echo $ID ?>"
                 <tr>
                     <td><?php
                         echo GetMessage("ADDFIELDS_" . $name) ?></td>
-                    <td><input type="checkbox" name="<?php
-                        echo $nameArr ?>[<?php
-                        echo $name ?>]"
-                            <?php
-                            echo $value ?>></td>
+                    <td>
+                        <label class="esl-toggle">
+                            <input type="checkbox" name="<?php
+                            echo $nameArr ?>[<?php
+                            echo $name ?>]" <?php echo $value ?>>
+                            <span class="esl-toggle__track"></span>
+                        </label>
+                    </td>
                 </tr>
             <?php
             endif; ?>
@@ -519,38 +527,52 @@ echo $ID ?>"
     $tabControl->BeginNextTab(); ?>
     <?php
     if (isset($additionalFields['data']) && $additionalFields['data']): ?>
-        <tr class="esl-box_add">
-            <?php
-            foreach ($additionalFields['data'] as $key => $value): ?>
-                <p class="titleBox"><?php
-                    echo ($additionalFieldsRu[$key]) ?? $key ?></p>
-                <?php
-                foreach ($value as $k => $v):
-                    if (!isset($v['name'])) {
-                        continue;
-                    }
-                    ?>
-                    <div class="form-field_add">
-                        <label class="label" for="<?php
-                        echo $k ?>"><?php
-                            echo $v['name'] ?></label>
-                        <?php
-                        if ($v['type'] === 'integer'): ?>
-                            <input class="form-value_add" name="<?php
-                            echo $k ?>" type="number"
-                                   value="0" max="<?php
-                            echo $v['max_value'] ?>">
-                        <?php
-                        else: ?>
-                            <input class="form-value_add" name="<?php
-                            echo $k ?>" type="checkbox">
-                        <?php
-                        endif; ?>
-                    </div>
-                <?php
-                endforeach; ?>
-            <?php
-            endforeach; ?>
+        <tr>
+            <td colspan="2" class="esl-services-td">
+                <div class="esl-services-container">
+                    <?php
+                    foreach ($additionalFields['data'] as $key => $value): ?>
+                        <div class="esl-services-group">
+                            <p class="titleBox"><?php
+                                echo ($additionalFieldsRu[$key]) ?? $key ?></p>
+                            <div class="esl-services-grid">
+                                <?php
+                                foreach ($value as $k => $v):
+                                    if (!isset($v['name'])) {
+                                        continue;
+                                    }
+                                    ?>
+                                    <div class="form-field_add">
+                                        <label class="label" for="esl-field-<?php echo $k ?>"><?php
+                                            echo $v['name'] ?></label>
+                                        <?php
+                                        if ($v['type'] === 'integer'): ?>
+                                            <input class="form-value_add form-value_number"
+                                                   id="esl-field-<?php echo $k ?>"
+                                                   name="<?php echo $k ?>"
+                                                   type="number"
+                                                   value="0"
+                                                   max="<?php echo $v['max_value'] ?>">
+                                        <?php
+                                        else: ?>
+                                            <label class="esl-toggle" for="esl-field-<?php echo $k ?>">
+                                                <input class="form-value_add form-value_check"
+                                                       id="esl-field-<?php echo $k ?>"
+                                                       name="<?php echo $k ?>"
+                                                       type="checkbox">
+                                                <span class="esl-toggle__track"></span>
+                                            </label>
+                                        <?php
+                                        endif; ?>
+                                    </div>
+                                <?php
+                                endforeach; ?>
+                            </div>
+                        </div>
+                    <?php
+                    endforeach; ?>
+                </div>
+            </td>
         </tr>
     <?php
     else: ?>
