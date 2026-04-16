@@ -134,7 +134,7 @@ class CalculateHandler
                 $errorString = 'Error: ' . $deliveryProfileData['msg'];
             }
 
-            if (!$errorString) $errorString == 'Unknown error';
+            if (!$errorString) $errorString = 'Unknown error';
 
             $result->addError(new \Bitrix\Main\Error($errorString));
         }

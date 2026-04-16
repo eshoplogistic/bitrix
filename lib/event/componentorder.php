@@ -69,7 +69,7 @@ class ComponentOrder
 				'select' => array('ID')
 			));
 
-            if(!isset($arResult['DELIVERY']) && !is_array($arResult['DELIVERY']))
+            if(!isset($arResult['DELIVERY']) || !is_array($arResult['DELIVERY']))
                 return [];
 
 			$profileIds = array_keys($arResult['DELIVERY']);
@@ -392,7 +392,7 @@ class ComponentOrder
 			'select' => array('ID', 'NAME', 'DESCRIPTION', 'CURRENCY', 'SORT', 'LOGOTIP')
 		));
 
-        if(!isset($arResult['DELIVERY']) && !is_array($arResult['DELIVERY']))
+        if(!isset($arResult['DELIVERY']) || !is_array($arResult['DELIVERY']))
             return [];
 
 		$profileIds = array_keys($arResult['DELIVERY']);

@@ -42,7 +42,7 @@ $unloading = new Unloading();
 
 $status = $unloading->infoOrder($ID);
 if (isset($status['success']) && $status['success'] === false) {
-    $result = $status['data']['messages'] ?? Loc::GetMessage("ESHOP_LOGISTIC_VIEW_UPDATESTATUS_ERROR");;
+    $result = $status['data']['messages'] ?? Loc::GetMessage("ESHOP_LOGISTIC_VIEW_UPDATESTATUS_ERROR");
 } else {
     $result = $unloading->updateStatusById($status['data'], $ID);
 }
