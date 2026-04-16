@@ -2,11 +2,9 @@
 namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Main\Loader,
-	\Bitrix\Sale\Location\LocationTable,
 	\Bitrix\Main\Data\Cache,
 	\Eshoplogistic\Delivery\Api\Search,
-	\Eshoplogistic\Delivery\Config,
-    \Eshoplogistic\Delivery\Helpers\ComparisonCities;
+	\Eshoplogistic\Delivery\Config;
 use Bitrix\Main\Localization\Loc;
 
 
@@ -57,95 +55,20 @@ class LocationHandler
 		$cityDeliveries = array();
 		if(Loader::includeModule('sale')) {
 
-            $configClass = new Config();
-            $apiV = $configClass->apiV;
-            if($apiV){
-                $hash = hash('md5', $locationCode);
-                $cacheKey = self::$cacheKeyCityList.'-'.$hash;
-                $cache = Cache::createInstance();
+            $hash = hash('md5', $locationCode);
+            $cacheKey = self::$cacheKeyCityList.'-'.$hash;
+            $cache = Cache::createInstance();
 
-                if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
-                    $vars = $cache->getVars();
-                    $cityDeliveries = $vars['citylist'];
+            if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
+                $vars = $cache->getVars();
+                $cityDeliveries = $vars['citylist'];
 
-                } elseif ($cache->startDataCache()) {
-                    $cityList = Search::getCity('', '', $locationCode);
-                    $cityDeliveries = self::parseSelectedCity($cityList, '', '', '');
+            } elseif ($cache->startDataCache()) {
+                $cityList = Search::getCity('', '', $locationCode);
+                $cityDeliveries = self::parseSelectedCity($cityList, '', '', '');
 
-                    if ($cityList['success'] == true || $cityList['http_status'] == 200) {
-                        $cache->endDataCache(array("citylist" => $cityDeliveries));
-                    }
-                }
-            }
-
-
-            if(!$cityDeliveries){
-                $lang = strtoupper(LANGUAGE_ID);
-                $region = '';
-                $subregion = '';
-                $name = '';
-                $type = '';
-                $city = '';
-
-                $res = LocationTable::getList(array(
-                    'filter' => array(
-                        '=CODE' => $locationCode,
-                        '=PARENTS.NAME.LANGUAGE_ID' => $lang,
-                        '=PARENTS.TYPE.NAME.LANGUAGE_ID' => $lang,
-                        '!PARENTS.TYPE.CODE' => 'COUNTRY'
-                    ),
-                    'select' => array(
-                        'I_ID' => 'PARENTS.ID',
-                        'I_NAME_RU' => 'PARENTS.NAME.NAME',
-                        'I_TYPE_CODE' => 'PARENTS.TYPE.CODE',
-                        'I_TYPE_NAME_RU' => 'PARENTS.TYPE.NAME.NAME'
-                    ),
-                    'order' => array(
-                        'PARENTS.DEPTH_LEVEL' => 'asc'
-                    )
-                ));
-                while($itemLocation = $res->fetch())
-                {
-
-                    if($itemLocation['I_TYPE_CODE'] == 'REGION') {
-                        $region = $itemLocation['I_NAME_'.$lang];
-                    } elseif ($itemLocation['I_TYPE_CODE'] == 'SUBREGION') {
-                        $subregion = $itemLocation['I_NAME_'.$lang];
-                    } else {
-                        $name = $itemLocation['I_NAME_'.$lang];
-                    }
-
-                    if($itemLocation['I_TYPE_CODE'] == 'CITY'){
-                        $city = $itemLocation['I_NAME_'.$lang];
-                    }
-
-                    //$arName = explode(' ', $name);
-
-                }
-                if($city)
-                    $name = $city;
-
-                if($name) {
-                    $name = self::unsetNameCityPart($name);
-                    $region = ComparisonCities::checkCityNamePartRevert($region, 'region', $name);
-
-                    $hash = hash('md5', $name.$subregion.$region);
-                    $cacheKey = self::$cacheKeyCityList.'-'.$hash;
-                    $cache = Cache::createInstance();
-
-                    if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
-                        $vars = $cache->getVars();
-                        $cityDeliveries = $vars['citylist'];
-
-                    } elseif ($cache->startDataCache()) {
-                        $cityList = Search::getCity($name, $region);
-                        $cityDeliveries = self::parseSelectedCity($cityList, $name, $subregion, $region);
-
-                        if ($cityList['success'] == true || $cityList['http_status'] == 200) {
-                            $cache->endDataCache(array("citylist" => $cityDeliveries));
-                        }
-                    }
-
+                if ($cityList['success'] == true || $cityList['http_status'] == 200) {
+                    $cache->endDataCache(array("citylist" => $cityDeliveries));
                 }
             }
 

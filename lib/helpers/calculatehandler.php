@@ -199,13 +199,7 @@ class CalculateHandler
         $from = $deliveriesListFrom[$service]['city_code'];
 
         $deliveriesListTo = Helpers\LocationHandler::getAvailableDeliveriesByLocation($locationCode);
-        $apiV = $configClass->apiV;
-
-        if($apiV) {
-            $to = $deliveriesListTo['fias'];
-        }else{
-            $to = $deliveriesListTo['services'][$service];
-        }
+        $to = $deliveriesListTo['fias'];
 
         $deliveryProfileData = Api\Delivery::getLocationDeliveryData($service, $from, $to, $orderData);
 

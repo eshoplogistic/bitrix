@@ -34,13 +34,7 @@ class ComponentOrder
 	public static function orderDeliveryBuildList(&$arResult, &$arUserResult, $arParams)
 	{
 		if (Option::get(Config::MODULE_ID, 'frame_lib')) {
-            $configClass = new Config();
-            $apiV = $configClass->apiV;
-            if($apiV){
-                \CUtil::InitJSCore(array('framev2_lib'));
-            }else{
-                \CUtil::InitJSCore(array('frame_lib'));
-            }
+            \CUtil::InitJSCore(array('framev2_lib'));
 			$arResult['DELIVERY'] = self::orderDeliveryBuildListFrame($arResult, $arUserResult);
 		} else {
 			\CUtil::InitJSCore(array('main_lib'));
@@ -376,8 +370,6 @@ class ComponentOrder
 		$request = Main\Application::getInstance()->getContext()->getRequest();
 		$requestDataEsl = $request->getPost("eslData");
 
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
         $registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
         $orderClassName = $registry->getOrderClassName();
         $order = $orderClassName::create(\Bitrix\Main\Application::getInstance()->getContext()->getSite());
@@ -417,24 +409,15 @@ class ComponentOrder
 
 			$session = \Bitrix\Main\Application::getInstance()->getSession();
             //$session->remove('dataEsl');
-			if ($session->has('dataEsl') && !$requestDataEsl && !$apiV){
-				$requestDataEsl = $session->get('dataEsl');
-				$clearField = true;
-			}
 
             $apiPaymentCheck = Option::get(Config::MODULE_ID, 'api_payment_check');
-            if($session->has('dataEsl') && !$requestDataEsl && $apiV && $apiPaymentCheck){
+            if($session->has('dataEsl') && !$requestDataEsl && $apiPaymentCheck){
                 $requestDataEslTmp = $session->get('dataEsl');
                 $requestDataEslTmp = \Bitrix\Main\Web\Json::decode($requestDataEslTmp);
                 if($requestDataEslTmp['paymentId'] != $arUserResult['PAY_SYSTEM_ID'] ){
                     $requestDataEsl = \Bitrix\Main\Web\Json::encode($requestDataEslTmp);
                 }
                 $requestDataEslTmp = '';
-            }
-
-            if ($session->has('dataEsl') && !$requestDataEsl && !$apiV){
-                $requestDataEsl = $session->get('dataEsl');
-                $clearField = true;
             }
 
             if ($requestDataEsl) {
@@ -629,16 +612,8 @@ class ComponentOrder
         $length = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-
-        if($apiV){
-            $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKey . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
-            $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
-        }else{
-            $html = "<div id='eShopLogisticStatic' data-key='" . $widgetKey . "' style='display: block;'></div>";
-            $html .= "<script src='https://api.eshoplogistic.ru/widget/cart/v1/app.js'></script>";
-        }
+        $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKey . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
+        $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {
             if($item['DIMENSIONS']){

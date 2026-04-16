@@ -24,14 +24,7 @@ class Client
     {
 
         $this->httpClient = new HttpClient();
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-
-        if($apiV){
-            $this->url = 'https://api.esplc.ru/' . $apiObject;
-        }else{
-            $this->url = 'https://api.eshoplogistic.ru/api/' . $apiObject;
-        }
+        $this->url = 'https://api.esplc.ru/' . $apiObject;
         $this->apiKey = Option::get(Config::MODULE_ID, 'api_key');
 
         $this->log = Option::get(Config::MODULE_ID, 'api_log');
@@ -49,11 +42,7 @@ class Client
     {
         global $APPLICATION;
         $apiParams['key'] = $this->apiKey;
-
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-        if($apiV)
-            $apiParams['partner_key'] = $this->partnerKey;
+        $apiParams['partner_key'] = $this->partnerKey;
 
         if (strtolower(SITE_CHARSET) != 'utf-8') {
             $apiParams = $APPLICATION->ConvertCharsetArray($apiParams, SITE_CHARSET, 'utf-8');

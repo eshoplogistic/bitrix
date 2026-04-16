@@ -52,21 +52,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 		$note = Loc::getMessage("ESHOP_LOGISTIC_UNAUTHORIZED");
 	}
 
-    $configClass = new Config();
-    $apiV = $configClass->apiV;
-    if($apiV){
-        $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY_V2");;
-    }else{
-        $sendPoint = $siteClass->getSendPoint();
-        if($sendPoint) {
-            $currentSendPoint = $sendPoint['city_name'];
-
-        } else {
-            $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY_EMPTY");
-        }
-
-        $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY", array("#CITY#" => $currentSendPoint));
-    }
+    $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY_V2");
 
 	$paySystemResult = \Bitrix\Sale\PaySystem\Manager::getList(array(
 		'filter'  => array('ACTIVE' => 'Y'),
@@ -145,12 +131,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 				),
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_YAMAP_KEY_DESC")
-                ),
-                array(
-                    "api_v2",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_V2"),
-                    "",
-                    array("checkbox")
                 ),
 				array(
 					"api_log",

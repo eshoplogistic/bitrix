@@ -1,7 +1,6 @@
 <?
 namespace Eshoplogistic\Delivery\Api;
 
-use Bitrix\Main\Config\Option;
 use \Bitrix\Main\Data\Cache,
     \Eshoplogistic\Delivery\Config,
     \Eshoplogistic\Delivery\Helpers\Client;
@@ -25,16 +24,7 @@ class Site
 
     private static function getHttpClient()
     {
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-
-        if($apiV){
-            $apiObject = 'client/state';
-        }else{
-            $apiObject = 'site';
-        }
-
-        $httpClient = new Client($apiObject);
+        $httpClient = new Client('client/state');
         return $httpClient;
     }
 
@@ -47,11 +37,9 @@ class Site
         $httpMethod = 'POST';
         $params = array();
         $response = $httpClient->request($httpMethod, $params);
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
 
         $result = array(
-            'success'   => ($apiV)?$response['http_status_message']:$response['success'],
+            'success'   => $response['http_status_message'],
             'blocked'   => $response['data']['blocked'],
             'free_days' => $response['data']['free_days'],
             'balance'   => $response['data']['balance'],

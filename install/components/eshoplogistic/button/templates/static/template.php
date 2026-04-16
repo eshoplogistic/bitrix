@@ -13,11 +13,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
 $this->setFrameMode(true);
 
 $this->addExternalCss('/bitrix/components/eshoplogistic/button/css/styles.css');
-if($arParams['ESL_WIDGET_V_API'] == 'Y'){
-    $this->addExternalJs('/bitrix/components/eshoplogistic/button/js/scriptv2'.(mb_strtolower(LANG_CHARSET)!='utf-8'?'-1251':'').'.js');
-}else{
-    $this->addExternalJs('/bitrix/components/eshoplogistic/button/js/script'.(mb_strtolower(LANG_CHARSET)!='utf-8'?'-1251':'').'.js');
-}
+$this->addExternalJs('/bitrix/components/eshoplogistic/button/js/scriptv2'.(mb_strtolower(LANG_CHARSET)!='utf-8'?'-1251':'').'.js');
 
 $rsUser = CUser::GetByID($USER->GetID());
 $arUser = $rsUser->Fetch();
@@ -33,7 +29,7 @@ if($element['offers_exists']){
 ?>
 
 
-<?php if($arParams['ESL_WIDGET_V_API'] == 'Y'):
+<?php
     $item[]   = array(
         'article' => $curSKU,
         'name'    => $element['name'],
@@ -56,16 +52,5 @@ if($element['offers_exists']){
          data-key="<?=$arParams['ESL_WIDGET_KEY']?>"
          data-offers="<?=$jsonItem?>"
     ></div>
-<?php else: ?>
-    <button type="button" class="<?=$arParams['BUTTON_ONE_CLICK_CLASS']?>  esl-button_static" id="wtpbtn" data-widget-load=""><?=$arParams['BUTTON_ONE_CLICK']?></button>
-    <div id="eShopLogisticStatic"
-         data-article="<?=$curSKU?>"
-         data-id="<?=$arParams['ELEMENT_ID']?>"
-         data-name="<?=$element['name']?>"
-         data-price="<?=$element['price']?>"
-         data-weight="1"
-         data-key="<?=$arParams['ESL_WIDGET_KEY']?>"
-    ></div>
-<?php endif; ?>
 
 

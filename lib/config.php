@@ -23,14 +23,10 @@ class Config
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;
-	public $apiV = 0;
 
 
 	public function __construct()
 	{
-        $apiV = Option::get(Config::MODULE_ID, 'api_v2');
-        $this->apiV = isset($apiV) && $apiV == 'Y';
-
         $this->profileClasses = array(
 			'baikal_door'   =>  'Eshoplogistic\Delivery\Profile\BaikalDoor',
 			'baikal_term'   =>  'Eshoplogistic\Delivery\Profile\BaikalTerminal',

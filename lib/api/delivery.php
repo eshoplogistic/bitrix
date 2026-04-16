@@ -24,14 +24,7 @@ class Delivery
      */
     private static function getHttpClient($service)
     {
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-        if($apiV){
-            $apiObject = 'delivery/calculation';
-        }else{
-            $apiObject = 'delivery/'.$service;
-        }
-        $httpClient = new Client($apiObject);
+        $httpClient = new Client('delivery/calculation');
         return $httpClient;
     }
 
@@ -104,16 +97,10 @@ class Delivery
     private static function getDeliveryData($orderData, $from, $to, $service, $basketHash)
     {
         $requestData = $orderData;
-        $requestData['from'] = $from;
         $requestData['to'] = $to;
         $requestData['all_comments'] = 2;
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-        if($apiV){
-            $requestData['service'] = $service;
-            $requestData['debug'] = 1;
-            unset($requestData['from']);
-        }
+        $requestData['service'] = $service;
+        $requestData['debug'] = 1;
 
         $deliveryRequest = self::query($service, $requestData);
         if(isset($deliveryRequest['debug']))

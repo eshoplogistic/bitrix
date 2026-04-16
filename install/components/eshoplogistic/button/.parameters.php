@@ -162,11 +162,4 @@ $arComponentParameters['PARAMETERS']['ESL_WIDGET_SECRET'] = array(
     'MULTIPLE' => 'N',
     'VALUES' => "");
 
-$arComponentParameters['PARAMETERS']['ESL_WIDGET_V_API'] = array(
-    'PARENT' => 'GROUP_ESL',
-    'NAME' => Loc::GetMessage("ESHOP_LOGISTIC_B_OPTIONS_WIDGET_V_API"),
-    'TYPE' => 'CHECKBOX',
-    'MULTIPLE' => 'N',
-    'VALUES' => "");
-
 

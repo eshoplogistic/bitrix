@@ -2,7 +2,6 @@
 namespace Eshoplogistic\Delivery\Api;
 
 
-use Eshoplogistic\Delivery\Config;
 use \Eshoplogistic\Delivery\Helpers\Client;
 
 /** Class for class for searching cities for delivery
@@ -20,15 +19,7 @@ class Search
      */
     private static function getHttpClient()
     {
-        $configClass = new Config();
-        $apiV = $configClass->apiV;
-
-        if($apiV){
-            $apiObject = 'locality/search';
-        }else{
-            $apiObject = 'search';
-        }
-        $httpClient = new Client($apiObject);
+        $httpClient = new Client('locality/search');
         return $httpClient;
     }
 
