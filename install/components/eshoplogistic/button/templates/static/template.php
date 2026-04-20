@@ -9,6 +9,8 @@ use Bitrix\Main\Page\Asset,
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
     die();
 
+if(empty($arParams['ELEMENT_ID']))
+    return;
 
 $this->setFrameMode(true);
 
@@ -42,6 +44,7 @@ if($element['offers_exists']){
     ?>
     <button type="button"
             class="<?=$arParams['BUTTON_ONE_CLICK_CLASS']?> esl-button_static esl-button_data"
+            data-id="<?=$arParams['ELEMENT_ID']?>"
             data-esl-widget
             data-widget-load="">
         <?=$arParams['BUTTON_ONE_CLICK']?>

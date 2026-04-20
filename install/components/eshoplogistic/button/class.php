@@ -40,7 +40,7 @@ class EslButtonComponent extends \CBitrixComponent
         }
     }
 
-    private function getOfferProps($offerIds,$propIds)
+    private static function getOfferProps($offerIds,$propIds)
     {
         GLOBAL $sale_module;
         $param_group_names=array();
@@ -78,6 +78,11 @@ class EslButtonComponent extends \CBitrixComponent
         }
 
         return array("offers"=>$offers,"param_group_names"=>$param_group_names);
+    }
+
+    private static function getElementPropValues($elementId, $propIds)
+    {
+        return self::getOfferProps([$elementId], $propIds);
     }
 
     public static function getDirectoryLivVal($XML_ID)
@@ -124,11 +129,8 @@ class EslButtonComponent extends \CBitrixComponent
     {
         GLOBAL $sale_module;
         $arRet=array();
-        if(!$fields)
-            $fields = array();
-
-        if(!$fields_price)
-            $fields_price = '';
+        $fields = (isset($fields) && is_array($fields)) ? $fields : [];
+        $fields_price = (isset($fields_price) && is_array($fields_price)) ? $fields_price : [];
 
         if(!CModule::IncludeModule("iblock"))return array("result"=>"error",'description'=>"Error include iblock");
 
@@ -346,8 +348,7 @@ class EslButtonComponent extends \CBitrixComponent
     private function findDeliveryByName($deliveryBX, $code, $type){
         $result = false;
 
-        if($type === 'terminal')
-            $nameTypeBx = 'term';
+        $nameTypeBx = ($type === 'terminal') ? 'term' : 'door';
 
         $nameDeliveryBx = 'eslogistic:'.$code.'_'.$nameTypeBx;
 
