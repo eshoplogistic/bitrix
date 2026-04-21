@@ -197,7 +197,7 @@ function isNumeric(value) {
                 return false
 
 
-            terminal.value = response.code + ' ' + response.address
+            terminal.value = response.code + ', ' + response.address
             if (info) {
                 info.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_PVZ')+': ' + response.address
             }
@@ -303,6 +303,11 @@ function isNumeric(value) {
 
 
         const root = document.getElementById('eShopLogisticWidgetCart');
+
+        if (!root) {
+            console.log('ESL: Widget key is not set. Widget will not be initialized.');
+            return;
+        }
 
         root.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
             console.log('Событие onLoadApp', event.detail)

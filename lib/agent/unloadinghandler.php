@@ -28,7 +28,7 @@ class UnloadingHandler
 
         $statusEnd = Option::get(Config::MODULE_ID, 'cron-status-unloading');
         $filter = [
-            'LID' => 's1',
+            'LID' => \Bitrix\Main\Context::getCurrent()->getSite(),
         ];
         if($statusEnd){
             $statusEnd = explode(",", $statusEnd);

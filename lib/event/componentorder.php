@@ -619,8 +619,8 @@ class ComponentOrder
             if($item['DIMENSIONS']){
                 $dimensions = is_array($item['DIMENSIONS']) ? $item['DIMENSIONS'] : unserialize($item['DIMENSIONS']);
                 if($dimensions['WIDTH']) $width = $dimensions['WIDTH'] / 10;
-                if($dimensions['LENGTH']) $height = $dimensions['LENGTH'] / 10;
-                if($dimensions['HEIGHT']) $length = $dimensions['HEIGHT'] / 10;
+                if($dimensions['HEIGHT']) $height = $dimensions['HEIGHT'] / 10;
+                if($dimensions['LENGTH']) $length = $dimensions['LENGTH'] / 10;
 
             }
 			$offers[] = array(

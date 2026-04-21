@@ -76,6 +76,8 @@ class Table
                     if($column_name == 'delete'){
                         if($i != 0){
                             echo '<td ' . $attributes . '><div class="esl-delete_table_elem">&#65794;</div></td>';
+                        } else {
+                            echo '<td ' . $attributes . '></td>';
                         }
                     }else{
                         echo '<td ' . $attributes . '><input type="text" data-count="' . $i . '" name="products[' . $i . '][' . $column_name . ']" value="' . stripslashes($rec[$column_name]) . '"/></td>';

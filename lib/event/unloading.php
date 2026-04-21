@@ -81,12 +81,12 @@ class Unloading
 
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER"),
-            "LINK" => "/bitrix/admin/" . $moduleId . "/unloading/form.php?elementId=" . $elementId . "",
+            "LINK" => "/bitrix/admin/eshoplogistic_delivery_form.php?elementId=" . $elementId . "",
         );
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"),
             "ACTION" => "(new BX.CAdminDialog({
-				'content_url': '/bitrix/admin/" . $moduleId . "/unloading/updatestatus.php?elementId=" . $elementId . "',
+				'content_url': '/bitrix/admin/eshoplogistic_delivery_updatestatus.php?elementId=" . $elementId . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 800,
@@ -96,7 +96,7 @@ class Unloading
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CHECK_STATUS"),
             "ACTION" => "(new BX.CAdminDialog({
-				'content_url': '/bitrix/admin/" . $moduleId . "/unloading/checkstatus.php?elementId=" . $elementId . "',
+				'content_url': '/bitrix/admin/eshoplogistic_delivery_checkstatus.php?elementId=" . $elementId . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 1200,
@@ -106,6 +106,7 @@ class Unloading
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_edit.php' && $_REQUEST['ID'] > 0
             || $_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php' && $_REQUEST['ID'] > 0) {
+            $GLOBALS['APPLICATION']->AddHeadString('<script>BX.ready(function(){document.querySelectorAll("td").forEach(function(td){if(td.childElementCount===0&&td.textContent.trim().indexOf("EShopLogistic данные для выгрузки")===0){var r=td.closest("tr");if(r)r.style.display="none";}});});</script>');
             $order = Sale\Order::load($elementId);
             $deliveryIds = $order->getDeliverySystemId();
             $shippingHelper = new ShippingHelper();
@@ -178,7 +179,11 @@ class Unloading
                 );
                 $resultGet = $export->sendExport($data);
                 if (isset($resultGet['errors']) || !isset($resultGet['data']['state']['number'])) {
-                    $resultGet['errors'] = $resultGet['data']['state']['errors'];
+                    if (!empty($resultGet['data']['state']['errors'])) {
+                        $resultGet['errors'] = $resultGet['data']['state']['errors'];
+                    } elseif (!isset($resultGet['errors'])) {
+                        $resultGet['errors'] = [];
+                    }
                     return $resultGet;
                 }
             }
@@ -362,18 +367,16 @@ class Unloading
             $resultNameStatus = $settingsStatus[$id['state']['status']['code']][0]['name'];
         }
 
-
         if ($resultNameStatus) {
             if ($orderData['STATUS_ID'] == $resultNameStatus)
-                return Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_NOCHANGE");
+                return ['type' => 'info', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_NOCHANGE")];
 
-            $order->setField('STATUS_ID', $resultNameStatus); //статус
+            $order->setField('STATUS_ID', $resultNameStatus);
             $order->save();
-            return Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_OK");
+            return ['type' => 'success', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_OK")];
         }
 
-        return Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR");
-
+        return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR")];
     }
 
 

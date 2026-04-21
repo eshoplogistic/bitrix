@@ -258,7 +258,7 @@ Class eshoplogistic_delivery extends CModule
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$this->MODULE_ID."/install/js/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/js/".$this->MODULE_ID, true, true);
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$this->MODULE_ID."/install/css/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/css/".$this->MODULE_ID, true, true);
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/components/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/components', true, true);
-		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/view/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.$this->MODULE_ID, true, true);
+		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/view/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/', true, true);
 
 		return true;
 	}
@@ -267,7 +267,9 @@ Class eshoplogistic_delivery extends CModule
 		DeleteDirFilesEx("/bitrix/js/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/css/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/components/".$this->MODULE_SHORT_ID."/button");
-		DeleteDirFilesEx("/bitrix/admin/".$this->MODULE_ID);
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_form.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_checkstatus.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_updatestatus.php");
 
 		return true;
 	}

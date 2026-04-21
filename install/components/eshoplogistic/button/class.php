@@ -234,7 +234,7 @@ class EslButtonComponent extends \CBitrixComponent
             return false;
         }
 
-        if(!isset($item_id) && !$item_id)
+        if(!$item_id)
             return false;
 
         $arUser=array();

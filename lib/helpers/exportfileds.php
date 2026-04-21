@@ -225,12 +225,15 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            if(isset($shippingMethods['terminal']['tariff'])){
-                $selectedTariffCode = $shippingMethods['terminal']['tariff']['code'];
+            $savedTariff = $shippingMethods['terminal']['tariff'] ?? null;
+            if($savedTariff){
+                $selectedTariffCode = $savedTariff['code'];
                 if(isset($tariffs[$selectedTariffCode])) {
                     $value[$selectedTariffCode] = $tariffs[$selectedTariffCode];
                     unset($tariffs[$selectedTariffCode]);
                     $tariffs = $value + $tariffs;
+                } elseif(empty($tariffs)) {
+                    $tariffs = [$selectedTariffCode => $savedTariff['name'] ?? $selectedTariffCode];
                 }
             }
             $result = array(
@@ -303,12 +306,15 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            if ( isset( $shippingMethods['tariff'] ) ) {
-                $selectedTariffCode = $shippingMethods['tariff']['code'];
+            $savedTariff = $shippingMethods['tariff'] ?? null;
+            if ( $savedTariff ) {
+                $selectedTariffCode = $savedTariff['code'];
                 if ( isset( $tariffs[ $selectedTariffCode ] ) ) {
                     $value[ $selectedTariffCode ] = $tariffs[ $selectedTariffCode ];
                     unset( $tariffs[ $selectedTariffCode ] );
                     $tariffs = $value + $tariffs;
+                } elseif ( empty( $tariffs ) ) {
+                    $tariffs = [ $selectedTariffCode => $savedTariff['name'] ?? $selectedTariffCode ];
                 }
             }
 
@@ -422,12 +428,15 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            if(isset($shippingMethods['terminal']['tariff'])){
-                $selectedTariffCode = $shippingMethods['terminal']['tariff']['code'];
+            $savedTariff = $shippingMethods['terminal']['tariff'] ?? null;
+            if($savedTariff){
+                $selectedTariffCode = $savedTariff['code'];
                 if(isset($tariffs[$selectedTariffCode])) {
                     $value[$selectedTariffCode] = $tariffs[$selectedTariffCode];
                     unset($tariffs[$selectedTariffCode]);
                     $tariffs = $value + $tariffs;
+                } elseif(empty($tariffs)) {
+                    $tariffs = [$selectedTariffCode => $savedTariff['name'] ?? $selectedTariffCode];
                 }
             }
             $result = array(

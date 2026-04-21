@@ -1,4 +1,9 @@
 BX.ready(function() {
+    let deleteElemTable = function(e) {
+        e.preventDefault();
+        e.target.closest('tr').remove();
+    };
+
     let buttonAddTable = document.getElementById('buttonModalUnloadAdd')
     if(buttonAddTable){
         buttonAddTable.addEventListener("click", (event) => {
@@ -11,13 +16,20 @@ BX.ready(function() {
             let tbodyTrArray = [...tbodyTrAll];
             let tbodyTrArrayCount = Number(tbodyTrArray.length) + 1;
             let tr = document.createElement('tr');
-            console.log(tbodyTdArray)
             tbodyTdArray.forEach(element => {
                 let td = document.createElement('td');
-                let input = document.createElement('input');
-                input.name = 'products[' + tbodyTrArrayCount + '][' + element.getAttribute('name') + ']';
-                input.type = 'text';
-                td.appendChild(input);
+                if (element.getAttribute('name') === 'delete') {
+                    let deleteBtn = document.createElement('div');
+                    deleteBtn.className = 'esl-delete_table_elem';
+                    deleteBtn.innerHTML = '&#65794;';
+                    deleteBtn.addEventListener('click', deleteElemTable, false);
+                    td.appendChild(deleteBtn);
+                } else {
+                    let input = document.createElement('input');
+                    input.name = 'products[' + tbodyTrArrayCount + '][' + element.getAttribute('name') + ']';
+                    input.type = 'text';
+                    td.appendChild(input);
+                }
                 tr.appendChild(td);
             });
             table.querySelector('.mainTbody').appendChild(tr);
@@ -25,11 +37,6 @@ BX.ready(function() {
     }
 
     let deleteElements = document.getElementsByClassName("esl-delete_table_elem");
-
-    let deleteElemTable = function(e) {
-        e.preventDefault();
-        e.target.closest('tr').remove()
-    };
 
     for (let i = 0; i < deleteElements.length; i++) {
         deleteElements[i].addEventListener('click', deleteElemTable, false);
@@ -49,13 +56,18 @@ function ajaxFormEsl(obForm, link) {
                 alert(`Ошибка ${xhr.status}: ${xhr.statusText}`);
             } else {
                 const json = JSON.parse(xhr.responseText);
+                const isSuccess = json.status === 'success' || json.success === true;
 
-                if (!json.success) {
+                if (!isSuccess) {
                     let errorStr = '';
-                    let errorList = getPropVal(json.errors)
+                    let errorList = getPropVal(json.errors);
 
                     for (let val in errorList){
-                        errorStr += '<p>'+errorList[val]+'</p>'
+                        errorStr += '<p>'+errorList[val]+'</p>';
+                    }
+
+                    if (!errorStr) {
+                        errorStr = '<p>Ошибка при выгрузке заказа</p>';
                     }
 
                     obForm.getElementsByClassName('error-msg')[0].innerHTML = errorStr;
