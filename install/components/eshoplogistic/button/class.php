@@ -222,20 +222,22 @@ class EslButtonComponent extends \CBitrixComponent
         $request = Context::getCurrent()->getRequest();
 
         if($request['offers']){
-            $offers = json_decode($request['offers'], true)[0];
-            $item_id = (isset($request['article']))?$request['article']:false;
-            $item_name = (isset($request['name']))?$request['name']:false;
-            $item_price = (isset($request['price']))?$request['price']:false;
-            $item_summ = (isset($request['summ']))?$request['summ']:false;
-            $item_unit = (isset($request['unit']))?$request['unit']:false;
-            $item_count = (isset($request['count']))?$request['count']:1;
-            $item_weight = (isset($request['weight']))?$request['weight']:1;
+            $offersRaw = $request['offers'];
+            $offersArr = is_string($offersRaw) ? json_decode($offersRaw, true) : $offersRaw;
+            $offers = isset($offersArr[0]) ? $offersArr[0] : $offersArr;
+            $item_id     = $request['article'] ?: ($offers['article'] ?? false);
+            $item_name   = $request['name']    ?: ($offers['name']    ?? false);
+            $item_price  = $request['price']   ?: ($offers['price']   ?? false);
+            $item_summ   = $request['summ']    ?: ($offers['summ']    ?? false);
+            $item_unit   = $request['unit']    ?: ($offers['unit']    ?? false);
+            $item_count  = $request['count']   ?: ($offers['count']   ?? 1);
+            $item_weight = $request['weight']  ?: ($offers['weight']  ?? 1);
         }else{
-            return false;
+            return array('success' => false, 'error' => 'offers_missing', 'debug' => 'offers param not received');
         }
 
         if(!$item_id)
-            return false;
+            return array('success' => false, 'error' => 'article_missing', 'debug' => 'article not found in request or offers', 'offers_dump' => $offers);
 
         $arUser=array();
         $arUser['phone'] = $request["phone"];
@@ -243,10 +245,10 @@ class EslButtonComponent extends \CBitrixComponent
         $arUser['email'] = $request["email"];
         $arUser['comment'] = $request["comment"];
 
-        $idShipper = json_decode($request['idShipper'], true);
-        $selectedDelivery = json_decode($request['selectedDelivery'], true);
-        $selectedPayment = json_decode($request['selectedPayment'], true);
-        $city = json_decode($request['city'], true);
+        $idShipper = is_string($request['idShipper']) ? json_decode($request['idShipper'], true) : $request['idShipper'];
+        $selectedDelivery = is_string($request['selectedDelivery']) ? json_decode($request['selectedDelivery'], true) : $request['selectedDelivery'];
+        $selectedPayment = is_string($request['selectedPayment']) ? json_decode($request['selectedPayment'], true) : $request['selectedPayment'];
+        $city = is_string($request['city']) ? json_decode($request['city'], true) : $request['city'];
         $addressForDelivery = $request['addressForDelivery'];
         $costDelivery = $request['costDelivery'];
 
@@ -339,13 +341,13 @@ class EslButtonComponent extends \CBitrixComponent
             $order->doFinalAction(true);
             $result = $order->save();
             $orderId = $order->getId();
-	        if($orderId > 0)return array("success"=>true,"message"=>"Order save success");
-	        else return array("success"=>"error","message"=>"Order save error");
+	        if($orderId > 0)return array("success"=>true,"message"=>"Заказ успешно создан");
+	        else return array("success"=>"error","message"=>"Ошибка сохранения заказа");
         }
 
     }
 
-    private function findDeliveryByName($deliveryBX, $code, $type){
+    private static function findDeliveryByName($deliveryBX, $code, $type){
         $result = false;
 
         $nameTypeBx = ($type === 'terminal') ? 'term' : 'door';
