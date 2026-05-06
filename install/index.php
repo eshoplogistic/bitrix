@@ -29,6 +29,9 @@ Class eshoplogistic_delivery extends CModule
 		$path = str_replace("\\", "/", __FILE__);
 		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
 		include($path."/version.php");
+		
+		$this->MODULE_VERSION = $arModuleVersion["VERSION"];
+		$this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
 
 		$this->MODULE_NAME = Loc::GetMessage("ESHOP_LOGISTIC_MODULE_NAME");
 		$this->MODULE_DESCRIPTION = Loc::GetMessage("ESHOP_LOGISTIC_MODULE_DESC");

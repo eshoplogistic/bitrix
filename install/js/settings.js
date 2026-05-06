@@ -187,7 +187,7 @@ function createDeleteButton() {
     var button = document.createElement('span');
 
     button.className = 'sortable-delete';
-    button.textContent = 'х';
+    button.textContent = 'x';
     button.addEventListener('click', function () {
         sortableDelete(button);
     });

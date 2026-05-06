@@ -10,6 +10,9 @@ use Bitrix\Main,
     Bitrix\Sale\PaySystem;
 
 use Eshoplogistic\Delivery\Config;
+use Bitrix\Main\Localization\Loc;
+
+Loc::loadMessages(__FILE__);
 
 if(!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
 	die();
@@ -233,24 +236,47 @@ class EslButtonComponent extends \CBitrixComponent
             $item_count  = $request['count']   ?: ($offers['count']   ?? 1);
             $item_weight = $request['weight']  ?: ($offers['weight']  ?? 1);
         }else{
-            return array('success' => false, 'error' => 'offers_missing', 'debug' => 'offers param not received');
+            return array('success' => false, 'error' => 'offers_missing', 'message' => Loc::getMessage('ESL_BUTTON_ORDER_CREATE_ERROR'));
         }
 
         if(!$item_id)
-            return array('success' => false, 'error' => 'article_missing', 'debug' => 'article not found in request or offers', 'offers_dump' => $offers);
+            return array('success' => false, 'error' => 'article_missing', 'message' => Loc::getMessage('ESL_BUTTON_ORDER_CREATE_ERROR'));
 
-        $arUser=array();
-        $arUser['phone'] = $request["phone"];
-        $arUser['name'] = $request["name"];
-        $arUser['email'] = $request["email"];
-        $arUser['comment'] = $request["comment"];
+        $isNewFormat = !empty($request['settlement']) || !empty($request['receiver']);
 
-        $idShipper = is_string($request['idShipper']) ? json_decode($request['idShipper'], true) : $request['idShipper'];
-        $selectedDelivery = is_string($request['selectedDelivery']) ? json_decode($request['selectedDelivery'], true) : $request['selectedDelivery'];
-        $selectedPayment = is_string($request['selectedPayment']) ? json_decode($request['selectedPayment'], true) : $request['selectedPayment'];
-        $city = is_string($request['city']) ? json_decode($request['city'], true) : $request['city'];
-        $addressForDelivery = $request['addressForDelivery'];
-        $costDelivery = $request['costDelivery'];
+        $arUser = array();
+        if ($isNewFormat) {
+            $receiver = is_string($request['receiver']) ? json_decode($request['receiver'], true) : $request['receiver'];
+            $arUser['phone']   = $receiver['phone']   ?? '';
+            $arUser['name']    = $receiver['name']    ?? '';
+            $arUser['email']   = $receiver['email']   ?? '';
+            $arUser['comment'] = $request['comment']  ?? '';
+        } else {
+            $arUser['phone']   = $request['phone'];
+            $arUser['name']    = $request['name'];
+            $arUser['email']   = $request['email'];
+            $arUser['comment'] = $request['comment'];
+        }
+
+        if ($isNewFormat) {
+            $delivery     = is_string($request['delivery'])   ? json_decode($request['delivery'],   true) : $request['delivery'];
+            $settlement   = is_string($request['settlement']) ? json_decode($request['settlement'], true) : $request['settlement'];
+            $paymentData  = is_string($request['payment'])    ? json_decode($request['payment'],    true) : $request['payment'];
+
+            $idShipper          = ['keyShipper' => $delivery['code'] ?? ''];
+            $selectedDelivery   = ['key'         => $delivery['type'] ?? ''];
+            $selectedPayment    = $paymentData;
+            $city               = ['name' => $settlement['name'] ?? '', 'postal_code' => $settlement['postal_code'] ?? ''];
+            $addressForDelivery = $delivery['pvz']['address'] ?? $delivery['pvz']['name'] ?? '';
+            $costDelivery       = $delivery['data']['price']['value'] ?? 0;
+        } else {
+            $idShipper        = is_string($request['idShipper'])        ? json_decode($request['idShipper'],        true) : $request['idShipper'];
+            $selectedDelivery = is_string($request['selectedDelivery']) ? json_decode($request['selectedDelivery'], true) : $request['selectedDelivery'];
+            $selectedPayment  = is_string($request['selectedPayment'])  ? json_decode($request['selectedPayment'],  true) : $request['selectedPayment'];
+            $city             = is_string($request['city'])             ? json_decode($request['city'],             true) : $request['city'];
+            $addressForDelivery = $request['addressForDelivery'];
+            $costDelivery       = $request['costDelivery'];
+        }
 
         if($sale_module)
         {
@@ -270,13 +296,20 @@ class EslButtonComponent extends \CBitrixComponent
 
 
             $basket = Basket::create($siteId);
-            $item = $basket->createItem('catalog', $offers['article']);
-            $item->setFields(array(
+            $item = $basket->createItem('catalog', $item_id);
+            $setFieldsResult = $item->setFields(array(
                 'QUANTITY' => $item_count,
                 'CURRENCY' => $currencyCode,
                 'LID' => $siteId,
                 'PRODUCT_PROVIDER_CLASS' => '\CCatalogProductProvider',
             ));
+            if (!$setFieldsResult->isSuccess()) {
+                return array(
+                    'success' => false,
+                    'error'   => 'basket_item_error',
+                    'message' => implode('; ', $setFieldsResult->getErrorMessages()),
+                );
+            }
             $order->setBasket($basket);
 
             $deliveryCurrectBX = Delivery\Services\EmptyDeliveryService::getEmptyDeliveryServiceId();
@@ -313,7 +346,22 @@ class EslButtonComponent extends \CBitrixComponent
 
             $paymentCollection = $order->getPaymentCollection();
             $payment = $paymentCollection->createItem();
-            $paySystemService = PaySystem\Manager::getObjectById(1);
+            $paySystemId = 1;
+            $paymentKeyMap = [
+                'card'          => 'api_payment_card',
+                'cash'          => 'api_payment_cache',
+                'cashless'      => 'api_payment_cashless',
+                'prepay'        => 'api_payment_prepay',
+                'upon_receipt'  => 'api_payment_upon_receipt',
+            ];
+            $paymentKey = $selectedPayment['key'] ?? '';
+            if ($paymentKey && isset($paymentKeyMap[$paymentKey])) {
+                $optionVal = \Bitrix\Main\Config\Option::get(Config::MODULE_ID, $paymentKeyMap[$paymentKey], '');
+                $ids = array_filter(explode(',', $optionVal));
+                if (!empty($ids))
+                    $paySystemId = (int) reset($ids);
+            }
+            $paySystemService = PaySystem\Manager::getObjectById($paySystemId);
             $payment->setFields(array(
                 'PAY_SYSTEM_ID' => $paySystemService->getField("PAY_SYSTEM_ID"),
                 'PAY_SYSTEM_NAME' => $paySystemService->getField("NAME"),
@@ -341,8 +389,8 @@ class EslButtonComponent extends \CBitrixComponent
             $order->doFinalAction(true);
             $result = $order->save();
             $orderId = $order->getId();
-	        if($orderId > 0)return array("success"=>true,"message"=>"Заказ успешно создан");
-	        else return array("success"=>"error","message"=>"Ошибка сохранения заказа");
+	        if($orderId > 0)return array("success"=>true,"message"=>Loc::getMessage('ESL_BUTTON_ORDER_SAVE_SUCCESS'));
+	        else return array("success"=>false,"message"=>Loc::getMessage('ESL_BUTTON_ORDER_SAVE_ERROR'));
         }
 
     }
