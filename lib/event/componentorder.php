@@ -469,9 +469,26 @@ class ComponentOrder
         if(!$deliveryResult)
             return $arResult['DELIVERY'];
 
-		$deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($arUserResult['ORDER_PROP'][$requestDataLocation]);
-        $city = Search::getCity($deliveriesListTo['name']);
-        $cityFirst = LocationHandler::parseSelectedCity($city, $deliveriesListTo['name'], $deliveriesListTo['sub_region'], $deliveriesListTo['region']);
+        $addressRequarOption = Option::get(Config::MODULE_ID, 'api_address_requar');
+        $addressRequarIds = $addressRequarOption ? array_filter(array_map('trim', explode(',', $addressRequarOption))) : [];
+        $addressCityName = null;
+        foreach ($addressRequarIds as $reqId) {
+            if ((string)$reqId !== (string)$requestDataLocation
+                && isset($arUserResult['ORDER_PROP'][$reqId])
+                && $arUserResult['ORDER_PROP'][$reqId]
+            ) {
+                $addressCityName = $arUserResult['ORDER_PROP'][$reqId];
+                break;
+            }
+        }
+        if ($addressCityName !== null) {
+            $city = Search::getCity($addressCityName);
+            $cityFirst = LocationHandler::parseSelectedCity($city, $addressCityName, '', '');
+        } else {
+            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($arUserResult['ORDER_PROP'][$requestDataLocation]);
+            $city = Search::getCity($deliveriesListTo['name']);
+            $cityFirst = LocationHandler::parseSelectedCity($city, $deliveriesListTo['name'], $deliveriesListTo['sub_region'], $deliveriesListTo['region']);
+        }
 		$jsonValueCity = \Bitrix\Main\Web\Json::encode($cityFirst);
 		$calcDesc = (isset($deliveryResult['CALCULATE_DESCRIPTION'])) ? $deliveryResult['CALCULATE_DESCRIPTION'] : '';
 		$deliveryResult['OWN_NAME'] = (isset($deliveryResult['OWN_NAME'])) ? $deliveryResult['OWN_NAME'] : $deliveryResult['NAME'];
@@ -503,10 +520,15 @@ class ComponentOrder
 		}
 
 		$descUser = ($requestDataEsl['selectPvz'])?Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN").' '.$requestDataEsl['selectPvz']:'';
+
+        $cityNotFound = empty($cityFirst);
+
 		$deliveryResult['DESCRIPTION'] =
 			'<div class="eslog-deliverey-desc">' . $descriptionTerminal . '</div>' .
 			'<div class="eslog-deliverey-desc-lk">' . $calcDesc . '</div>' .
-			'<a id="container_widget_esl_button" class="container_widget_esl_button eslog-btn-default loading-esl"><span class="button__text">' . Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FRAME_BUT") . '</span>
+			($cityNotFound
+				? '<div class="eslog-city-not-found" style="color:red;margin:8px 0;">' . Loc::getMessage("ESHOP_LOGISTIC_CITY_NOT_FOUND") . '</div>'
+				: '<a id="container_widget_esl_button" class="container_widget_esl_button eslog-btn-default loading-esl"><span class="button__text">' . Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FRAME_BUT") . '</span>
                 <div class="center">
                   <div class="wave"></div>
                   <div class="wave"></div>
@@ -519,7 +541,8 @@ class ComponentOrder
                   <div class="wave"></div>
                   <div class="wave"></div>
                 </div>
-             </a>' .
+             </a>'
+			) .
 			'<span>
                  <div id="eslogisticDescription" class="eslogistic-description">'.$descUser.'</div>
              </span>' .

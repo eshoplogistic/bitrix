@@ -248,4 +248,22 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
 
     };
     BX.EShopLogistic.Delivery.sale_order_ajax.init();
+
+    function eslBindAddressChange() {
+        var addressRequar = document.getElementById('eslogic-address-requar');
+        if (!addressRequar || !addressRequar.value || addressRequar.value === '0') return;
+        var ids = addressRequar.value.split(',');
+        ids.forEach(function(id) {
+            id = id.trim();
+            var field = document.querySelector('[name="ORDER_PROP_' + id + '"]');
+            if (field && !field.dataset.eslChangeBound) {
+                field.dataset.eslChangeBound = '1';
+                field.addEventListener('change', function() {
+                    BX.Sale.OrderAjaxComponent.sendRequest();
+                });
+            }
+        });
+    }
+    BX.ready(eslBindAddressChange);
+    BX.addCustomEvent(window, 'onAjaxSuccess', eslBindAddressChange);
 })();

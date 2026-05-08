@@ -5,6 +5,7 @@ let first_load = true
 let button_click = false
 let add_frame_esl
 let servicesLoad = false
+let eslAddressChanged = false
 
 function init_popup(){
     button_click = true
@@ -220,6 +221,23 @@ function isNumeric(value) {
         },
     }
 
+    function eslBindAddressChange() {
+        var addressRequar = document.getElementById('eslogic-address-requar');
+        if (!addressRequar || !addressRequar.value || addressRequar.value === '0') return;
+        var ids = addressRequar.value.split(',');
+        ids.forEach(function(id) {
+            id = id.trim();
+            var field = document.querySelector('[name="ORDER_PROP_' + id + '"]');
+            if (field && !field.dataset.eslChangeBound) {
+                field.dataset.eslChangeBound = '1';
+                field.addEventListener('change', function() {
+                    eslAddressChanged = true;
+                    BX.Sale.OrderAjaxComponent.sendRequest();
+                });
+            }
+        });
+    }
+
     function eslRun() {
         const delivery = document.querySelector('input[name=DELIVERY_ID]')
         esl.run()
@@ -230,7 +248,12 @@ function isNumeric(value) {
                 first_load = false
             }
 
-            if (!init_esl && e.order && search_city) {
+            if (eslAddressChanged) {
+                eslAddressChanged = false;
+                setTimeout(function () {
+                    esl.run('city')
+                }, 500);
+            } else if (!init_esl && e.order && search_city) {
                 setTimeout(function () {
                     esl.run('city')
                     search_city = false
@@ -290,13 +313,14 @@ function isNumeric(value) {
 
     window.addEventListener('load', function (event) {
         eslRun()
-
+        eslBindAddressChange()
     });
 
     BX.addCustomEvent(window, 'onAjaxSuccess', function (e, t) {
         if(!global_check){
             eslRun()
         }
+        eslBindAddressChange()
     })
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -456,7 +480,6 @@ function isNumeric(value) {
     function validate() {
         let fieldTerminal = document.getElementById('terminalEsl')
         let nameErrorDiv = 'errorPvzEsl'
-        console.log(fieldTerminal.value)
         if(fieldTerminal){
             if (!fieldTerminal.value) {
                 let element = document.createElement('div')

@@ -36,7 +36,33 @@ class CalculateHandler
         $locationCode = $props->getDeliveryLocation();
         if ($locationCode) {
             $locationCode = $locationCode->getValue();
-        } else {
+        }
+        
+        $addressFieldCityName = null;
+        if (!$locationCode) {
+            $addressRequarOption = \Bitrix\Main\Config\Option::get(Config::MODULE_ID, 'api_address_requar');
+            if ($addressRequarOption) {
+                $addressRequarIds = array_filter(explode(',', $addressRequarOption));
+                foreach ($props as $prop) {
+                    if ($prop->isUtil()) continue;
+                    $arProp = $prop->getProperty();
+                    if (in_array((string)$arProp['ID'], $addressRequarIds)) {
+                        $val = $prop->getValue();
+                        if ($val) {
+                            if ($arProp['TYPE'] === 'LOCATION') {
+                                $locationCode = $val;
+                            } else {
+                                $addressFieldCityName = $val;
+                                $locationCode = $val;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!$locationCode) {
             $locationCode = Helpers\OrderHandler::getCodeCityByApi();
         }
 
@@ -62,7 +88,12 @@ class CalculateHandler
 
         $deliveriesListFrom = $sendPoint['services'];
         $from = $deliveriesListFrom[$service]['city_code'];
-        $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationCode);
+        if ($addressFieldCityName !== null) {
+            $cityList = Api\Search::getCity($addressFieldCityName);
+            $deliveriesListTo = LocationHandler::parseSelectedCity($cityList, $addressFieldCityName, '', '');
+        } else {
+            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationCode);
+        }
         $to = $deliveriesListTo['services'][$service]??$deliveriesListTo['fias'];
 
 
