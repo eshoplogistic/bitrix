@@ -13,6 +13,8 @@ use Bitrix\Main\Request;
 use Bitrix\Main\Web\Json;
 use Eshoplogistic\Delivery\Event\Unloading;
 use Eshoplogistic\Delivery\Helpers\OrderHandler;
+use Eshoplogistic\Delivery\Api\Search;
+use Eshoplogistic\Delivery\Helpers\LocationHandler;
 
 Loader::includeModule('sale');
 
@@ -73,10 +75,26 @@ class AjaxHandler extends Controller
      * @param integer $paymentId
      * @return array
      */
-    public static function getPvzListAction($profileId= '', $locationCode = '', $paymentId = 0)
+    public static function getPvzListAction($profileId= '', $locationCode = '', $paymentId = 0, $isAddressName = 0, $fallbackLocationCode = '')
     {
         $pvz = array();
         if(!$profileId || !$locationCode) return $pvz;
+
+        // Если передано текстовое поле (имя города/адрес), проверяем что оно резолвится в город
+        if ($isAddressName) {
+            $cityList = Search::getCity($locationCode);
+            $parsedCity = LocationHandler::parseSelectedCity($cityList, $locationCode, '', '');
+            if (empty($parsedCity['fias'])) {
+                // Город не найден — если есть fallback (bitrix location code), используем его
+                if ($fallbackLocationCode) {
+                    $locationCode = $fallbackLocationCode;
+                    $isAddressName = 0;
+                } else {
+                    // Город не найден и fallback отсутствует — возвращаем пустой массив
+                    return [$pvz];
+                }
+            }
+        }
 
         $rsDelivery = Table::getList(array(
             'filter' => array('ACTIVE'=>'Y', 'ID' => $profileId),
@@ -94,7 +112,7 @@ class AjaxHandler extends Controller
             $vars = $cache->getVars();
             return ($vars['pvz']);
         } elseif ($cache->startDataCache()) {
-            $pvz = $profileClass::getPvzData($locationCode, $paymentId);
+            $pvz = $profileClass::getPvzData($locationCode, $paymentId, (bool)$isAddressName);
 
             if ($pvz['success'] == true) {
                 $cache->endDataCache(array("pvz" => $pvz));

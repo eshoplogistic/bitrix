@@ -16,23 +16,35 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
 
             let locationFieldId = '';
             let locationInput = '';
+            let isAddressName = false;
             let paymentInput = document.querySelector('input[name=PAY_SYSTEM_ID]:checked');
+
+            // Всегда получаем стандартный bitrix location code как fallback
+            let fallbackLocationCode = '';
+            let bitrixLocId = BX.Sale.OrderAjaxComponent.deliveryLocationInfo ? BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc : '';
+            if (bitrixLocId) {
+                let bitrixField = document.querySelector('input[name=ORDER_PROP_' + bitrixLocId + ']');
+                if (bitrixField) fallbackLocationCode = bitrixField.value;
+            }
 
             let addressRequar =  document.getElementById('eslogic-address-requar');
             if (typeof(addressRequar) != 'undefined' && addressRequar != null) {
                 if (addressRequar.value && addressRequar.value !== '0') {
                     const addressRequarArr = addressRequar.value.split(',')
                     addressRequarArr.forEach((val) => {
-                        if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
-                            locationInput = document.querySelector('input[name=ORDER_PROP_'+val+']');
+                        let el = document.querySelector('[name=ORDER_PROP_'+val+']');
+                        if (typeof(el) != 'undefined' && el != null){
+                            locationInput = el;
+                            isAddressName = true;
                         }
                     })
                 }
             }
 
             if(!locationInput){
-                locationFieldId = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc;
+                locationFieldId = bitrixLocId;
                 locationInput = document.querySelector('input[name=ORDER_PROP_'+locationFieldId+']')
+                isAddressName = false;
             }
 
             if(!locationInput){
@@ -40,15 +52,15 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
 
                 request.then(function(response){
                     locationInput = response.data[0]
-                    BX.EShopLogistic.Delivery.sale_order_ajax.initPvzList(locationFieldId, locationInput, paymentInput, profileId)
+                    BX.EShopLogistic.Delivery.sale_order_ajax.initPvzList(locationFieldId, locationInput, paymentInput, profileId, false, '')
                 });
             }else{
-                BX.EShopLogistic.Delivery.sale_order_ajax.initPvzList(locationFieldId, locationInput.value, paymentInput, profileId)
+                BX.EShopLogistic.Delivery.sale_order_ajax.initPvzList(locationFieldId, locationInput.value, paymentInput, profileId, isAddressName, fallbackLocationCode)
             }
 
         },
 
-        initPvzList: function (locationFieldId, locationInput, paymentInput, profileId) {
+        initPvzList: function (locationFieldId, locationInput, paymentInput, profileId, isAddressName, fallbackLocationCode) {
             let width = window.screen.width/2;
             let height = window.screen.height/2;
 
@@ -103,7 +115,9 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
                 data: {
                     profileId: profileId,
                     locationCode: locationInput,
-                    paymentId: paymentInput.value
+                    paymentId: paymentInput.value,
+                    isAddressName: isAddressName ? 1 : 0,
+                    fallbackLocationCode: fallbackLocationCode || ''
                 }
             });
 

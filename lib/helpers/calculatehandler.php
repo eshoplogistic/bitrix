@@ -212,7 +212,7 @@ class CalculateHandler
      * @param $paymentId
      * @return array
      */
-    public static function getDefaultPvzData($locationCode, $service, $paymentId)
+    public static function getDefaultPvzData($locationCode, $service, $paymentId, $isAddressName = false)
     {
 
         $sendPoint = self::getSendPoint();
@@ -229,7 +229,12 @@ class CalculateHandler
         $deliveriesListFrom = $sendPoint['services'];
         $from = $deliveriesListFrom[$service]['city_code'];
 
-        $deliveriesListTo = Helpers\LocationHandler::getAvailableDeliveriesByLocation($locationCode);
+        if ($isAddressName) {
+            $cityList = Api\Search::getCity($locationCode);
+            $deliveriesListTo = Helpers\LocationHandler::parseSelectedCity($cityList, $locationCode, '', '');
+        } else {
+            $deliveriesListTo = Helpers\LocationHandler::getAvailableDeliveriesByLocation($locationCode);
+        }
         $to = $deliveriesListTo['fias'];
 
         $deliveryProfileData = Api\Delivery::getLocationDeliveryData($service, $from, $to, $orderData);

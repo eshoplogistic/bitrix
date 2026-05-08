@@ -84,9 +84,9 @@ class CustomDoor extends \Bitrix\Sale\Delivery\Services\Base
         return $result;
     }
 
-    public static function getPvzData($locationCode, $paymentId)
+    public static function getPvzData($locationCode, $paymentId, $isAddressName = false)
     {
-        $deliveryProfileData = Helpers\CalculateHandler::getDefaultPvzData($locationCode, self::$service, $paymentId);
+        $deliveryProfileData = Helpers\CalculateHandler::getDefaultPvzData($locationCode, self::$service, $paymentId, $isAddressName);
         return $deliveryProfileData['data'];
     }
 }
