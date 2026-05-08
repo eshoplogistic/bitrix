@@ -207,8 +207,12 @@ function isNumeric(value) {
             if (typeof(addressRequar) != 'undefined' && addressRequar != null)
             {
                 if(addressRequar.value && addressRequar.value !== '0'){
+                    let locationFields = document.getElementById('eslogic-location-fields');
+                    let locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(s => s.trim()) : [];
                     const addressRequarArr = addressRequar.value.split(',')
                     addressRequarArr.forEach((val) => {
+                        val = val.trim();
+                        if (locationIds.indexOf(val) !== -1) return;
                         if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
                             document.querySelector('[name=ORDER_PROP_'+val+']').value = response.address;
                         }
@@ -224,9 +228,13 @@ function isNumeric(value) {
     function eslBindAddressChange() {
         var addressRequar = document.getElementById('eslogic-address-requar');
         if (!addressRequar || !addressRequar.value || addressRequar.value === '0') return;
+        var locationFields = document.getElementById('eslogic-location-fields');
+        var locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(function(s){ return s.trim(); }) : [];
         var ids = addressRequar.value.split(',');
         ids.forEach(function(id) {
             id = id.trim();
+            // LOCATION-поля обслуживает Bitrix — не привязываем change listener
+            if (locationIds.indexOf(id) !== -1) return;
             var field = document.querySelector('[name="ORDER_PROP_' + id + '"]');
             if (field && !field.dataset.eslChangeBound) {
                 field.dataset.eslChangeBound = '1';

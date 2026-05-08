@@ -95,6 +95,20 @@ class ComponentOrder
 						if ($isDeliveryHasPvz && $profile['CODE']) {
                             $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
 
+                            // Собираем IDs LOCATION полей для JS
+                            $locationTypeIdsClassic = [];
+                            $registryClassic = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
+                            $orderClassNameClassic = $registryClassic->getOrderClassName();
+                            $orderClassic = $orderClassNameClassic::create(\Bitrix\Main\Application::getInstance()->getContext()->getSite());
+                            foreach ($orderClassic->getPropertyCollection() as $propClassic) {
+                                if ($propClassic->isUtil()) continue;
+                                $arPropClassic = $propClassic->getProperty();
+                                if ($arPropClassic['TYPE'] === 'LOCATION') {
+                                    $locationTypeIdsClassic[] = $arPropClassic['ID'];
+                                }
+                            }
+                            $locationTypeIdsClassicStr = implode(',', $locationTypeIdsClassic);
+
                             $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
 								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
 								'<div class="eslog-deliverey-desc-lk">' . $arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'] . '</div>' .
@@ -123,6 +137,10 @@ class ComponentOrder
                             id="eslogic-address-requar" 
                             name="ESHOPLOGISTIC_ADDRESS_REQUAR"
                             type="hidden" value="' . $addressRequar . '"
+                        >' .
+                                '<input 
+                            id="eslogic-location-fields"
+                            type="hidden" value="' . $locationTypeIdsClassicStr . '"
                         >';
 						} else {
 							$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
@@ -375,6 +393,7 @@ class ComponentOrder
         $order = $orderClassName::create(\Bitrix\Main\Application::getInstance()->getContext()->getSite());
         $propertyCollection = $order->getPropertyCollection();
         $requestDataLocation = '';
+        $locationTypeIds = [];
         foreach ($propertyCollection as $property){
             if ($property->isUtil())
                 continue;
@@ -382,6 +401,7 @@ class ComponentOrder
             $arProperty = $property->getProperty();
             if($arProperty['TYPE'] === 'LOCATION' && isset($arUserResult['ORDER_PROP'][$arProperty['ID']])){
                 $requestDataLocation = $arProperty['ID'];
+                $locationTypeIds[] = $arProperty['ID'];
             }
         }
         if(!$requestDataLocation)
@@ -609,6 +629,8 @@ class ComponentOrder
         }
         $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
         $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-address-requar' value='$addressRequar' type='hidden'>";
+        $locationTypeIdsStr = implode(',', $locationTypeIds);
+        $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-location-fields' value='$locationTypeIdsStr' type='hidden'>";
 
         $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
         if($priceEmpty && $deliveryResult['PRICE'] == 0.0){

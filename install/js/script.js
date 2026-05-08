@@ -30,8 +30,13 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
             let addressRequar =  document.getElementById('eslogic-address-requar');
             if (typeof(addressRequar) != 'undefined' && addressRequar != null) {
                 if (addressRequar.value && addressRequar.value !== '0') {
+                    let locationFields = document.getElementById('eslogic-location-fields');
+                    let locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(s => s.trim()) : [];
                     const addressRequarArr = addressRequar.value.split(',')
                     addressRequarArr.forEach((val) => {
+                        val = val.trim();
+                        // LOCATION-поля пропускаем — их обслуживает Bitrix сам
+                        if (locationIds.indexOf(val) !== -1) return;
                         let el = document.querySelector('[name=ORDER_PROP_'+val+']');
                         if (typeof(el) != 'undefined' && el != null){
                             locationInput = el;
@@ -247,8 +252,12 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
             if (typeof(addressRequar) != 'undefined' && addressRequar != null)
             {
                 if(addressRequar.value && addressRequar.value !== '0'){
+                    let locationFields = document.getElementById('eslogic-location-fields');
+                    let locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(s => s.trim()) : [];
                     const addressRequarArr = addressRequar.value.split(',')
                     addressRequarArr.forEach((val) => {
+                        val = val.trim();
+                        if (locationIds.indexOf(val) !== -1) return;
                         if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
                             document.querySelector('[name=ORDER_PROP_'+val+']').value = pvzTitle;
                         }
@@ -266,9 +275,13 @@ BX.namespace('EShopLogistic.Delivery.sale_order_ajax');
     function eslBindAddressChange() {
         var addressRequar = document.getElementById('eslogic-address-requar');
         if (!addressRequar || !addressRequar.value || addressRequar.value === '0') return;
+        var locationFields = document.getElementById('eslogic-location-fields');
+        var locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(function(s){ return s.trim(); }) : [];
         var ids = addressRequar.value.split(',');
         ids.forEach(function(id) {
             id = id.trim();
+            // LOCATION-поля обслуживает Bitrix — не привязываем change listener
+            if (locationIds.indexOf(id) !== -1) return;
             var field = document.querySelector('[name="ORDER_PROP_' + id + '"]');
             if (field && !field.dataset.eslChangeBound) {
                 field.dataset.eslChangeBound = '1';
