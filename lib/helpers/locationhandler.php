@@ -182,4 +182,32 @@ class LocationHandler
         return $name;
     }
 
+    public static function resolveCityFromText($text)
+    {
+        $cityList = Search::getCity($text);
+        $parsedCity = self::parseSelectedCity($cityList, $text, '', '');
+        if (!empty($parsedCity['fias'])) {
+            return ['parsedCity' => $parsedCity, 'resolvedName' => $text];
+        }
+
+        // Попробуем извлечь название города из полного адреса:
+        // берём первую часть до запятой или точки и убираем префиксы «г.» / «город»
+        if (mb_strpos($text, ',') !== false || mb_strpos($text, '.') !== false) {
+            $delimiter = mb_strpos($text, ',') !== false ? ',' : '.';
+            $parts = explode($delimiter, $text);
+            $cityPart = trim($parts[0]);
+            $cityPart = preg_replace('/^(г\.?|город)\s+/ui', '', $cityPart);
+            $cityPart = trim($cityPart);
+            if ($cityPart && $cityPart !== $text) {
+                $cityList2 = Search::getCity($cityPart);
+                $parsedCity2 = self::parseSelectedCity($cityList2, $cityPart, '', '');
+                if (!empty($parsedCity2['fias'])) {
+                    return ['parsedCity' => $parsedCity2, 'resolvedName' => $cityPart];
+                }
+            }
+        }
+
+        return [];
+    }
+
 }

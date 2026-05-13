@@ -26,38 +26,52 @@ class OrderHandler
 	public static function getCurrentBasketItems($basket)
 	{
 		$offers = array();
-		$width = (int)Option::get(Config::MODULE_ID, 'width_default', 0);
-		$height = (int)Option::get(Config::MODULE_ID, 'height_default', 0);
-		$length = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
-        $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
+		$widthDefault  = (int)Option::get(Config::MODULE_ID, 'width_default', 0);
+		$heightDefault = (int)Option::get(Config::MODULE_ID, 'height_default', 0);
+		$lengthDefault = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
+		$weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
-        foreach ($basket as $basketItem) {
+		// Собираем активные позиции и их product ID за один проход
+		$basketItems = array();
+		$productIds  = array();
+		foreach ($basket as $basketItem) {
+			if (!$basketItem->canBuy() || $basketItem->isDelay()) continue;
+			$basketItems[] = $basketItem;
+			$productIds[]  = $basketItem->getProductId();
+		}
 
-			if(!$basketItem->canBuy() || $basketItem->isDelay()) continue;
-
-
+		// Один батч-запрос вместо N запросов в цикле
+		$productDimensions = array();
+		if ($productIds) {
 			$result = Catalog\ProductTable::getList(array(
-				'filter' => array('=ID'=>$basketItem->getProductId()),
-				'select' => array('WIDTH', 'LENGTH', 'HEIGHT')
+				'filter' => array('=ID' => $productIds),
+				'select' => array('ID', 'WIDTH', 'LENGTH', 'HEIGHT')
 			));
-			if($product=$result->fetch())
+			while ($product = $result->fetch()) {
+				$productDimensions[$product['ID']] = $product;
+			}
+		}
 
-			{
-				if($product['WIDTH']) $width = $product['WIDTH'] / 10;
-				if($product['LENGTH']) $height = $product['LENGTH'] / 10;
-				if($product['HEIGHT']) $length = $product['HEIGHT'] / 10;
+		$width  = $widthDefault;
+		$height = $heightDefault;
+		$length = $lengthDefault;
+		foreach ($basketItems as $basketItem) {
+			$productId = $basketItem->getProductId();
+			if (isset($productDimensions[$productId])) {
+				$product = $productDimensions[$productId];
+				if ($product['WIDTH'])  $width  = $product['WIDTH']  / 10;
+				if ($product['LENGTH']) $height = $product['LENGTH'] / 10;
+				if ($product['HEIGHT']) $length = $product['HEIGHT'] / 10;
 			}
 
-
 			$item = array(
-				"article" => $basketItem->getProductId(),
-				"name" => $basketItem->getField('NAME'),
-				"count" => $basketItem->getQuantity(),
-				"price" => $basketItem->getPrice(),
-				"weight" => ($basketItem->getWeight() > 0)? $basketItem->getWeight() / 1000 : $weightDefault,
-				"dimensions" => $width."*".$height."*".$length
+				"article"    => $productId,
+				"name"       => $basketItem->getField('NAME'),
+				"count"      => $basketItem->getQuantity(),
+				"price"      => $basketItem->getPrice(),
+				"weight"     => ($basketItem->getWeight() > 0) ? $basketItem->getWeight() / 1000 : $weightDefault,
+				"dimensions" => $width . "*" . $height . "*" . $length,
 			);
-
 
 			$offers[] = $item;
 		}

@@ -89,8 +89,8 @@ class CalculateHandler
         $deliveriesListFrom = $sendPoint['services'];
         $from = $deliveriesListFrom[$service]['city_code'];
         if ($addressFieldCityName !== null) {
-            $cityList = Api\Search::getCity($addressFieldCityName);
-            $deliveriesListTo = LocationHandler::parseSelectedCity($cityList, $addressFieldCityName, '', '');
+            $resolved = LocationHandler::resolveCityFromText($addressFieldCityName);
+            $deliveriesListTo = $resolved['parsedCity'] ?? [];
         } else {
             $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationCode);
         }
@@ -230,8 +230,8 @@ class CalculateHandler
         $from = $deliveriesListFrom[$service]['city_code'];
 
         if ($isAddressName) {
-            $cityList = Api\Search::getCity($locationCode);
-            $deliveriesListTo = Helpers\LocationHandler::parseSelectedCity($cityList, $locationCode, '', '');
+            $resolved = Helpers\LocationHandler::resolveCityFromText($locationCode);
+            $deliveriesListTo = $resolved['parsedCity'] ?? [];
         } else {
             $deliveriesListTo = Helpers\LocationHandler::getAvailableDeliveriesByLocation($locationCode);
         }

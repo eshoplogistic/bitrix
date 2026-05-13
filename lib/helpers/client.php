@@ -24,6 +24,7 @@ class Client
     {
 
         $this->httpClient = new HttpClient();
+        $this->httpClient->setTimeout(5);
         $this->url = 'https://api.esplc.ru/' . $apiObject;
         $this->apiKey = Option::get(Config::MODULE_ID, 'api_key');
 

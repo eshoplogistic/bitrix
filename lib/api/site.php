@@ -33,20 +33,31 @@ class Site
      */
     public function getAuthStatus()
     {
-        $httpClient = self::getHttpClient();
-        $httpMethod = 'POST';
-        $params = array();
-        $response = $httpClient->request($httpMethod, $params);
+        $cacheKey = 'authstatus';
+        $cache = Cache::createInstance();
 
-        $result = array(
-            'success'   => $response['http_status_message'],
-            'blocked'   => $response['data']['blocked'],
-            'free_days' => $response['data']['free_days'],
-            'balance'   => $response['data']['balance'],
-            'paid_days' => $response['data']['paid_days'],
-            'settings'  => $response['data']['services'],
-        );
-        return $result;
+        if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
+            $vars = $cache->getVars();
+            return $vars['authstatus'];
+        } elseif ($cache->startDataCache()) {
+            $httpClient = self::getHttpClient();
+            $httpMethod = 'POST';
+            $params = array();
+            $response = $httpClient->request($httpMethod, $params);
+
+            $result = array(
+                'success'   => $response['http_status_message'],
+                'blocked'   => $response['data']['blocked'],
+                'free_days' => $response['data']['free_days'],
+                'balance'   => $response['data']['balance'],
+                'paid_days' => $response['data']['paid_days'],
+                'settings'  => $response['data']['services'],
+            );
+            $cache->endDataCache(array('authstatus' => $result));
+            return $result;
+        }
+
+        return array();
     }
 
     /** Getting default setting of send point

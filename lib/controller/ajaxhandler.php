@@ -80,11 +80,12 @@ class AjaxHandler extends Controller
         $pvz = array();
         if(!$profileId || !$locationCode) return $pvz;
 
-        // Если передано текстовое поле (имя города/адрес), проверяем что оно резолвится в город
+        // Если передано текстовое поле — пробуем найти город.
+        // Если поле содержит полный адрес (например «Тверь, ул. Оснабрюкская, 36»),
+        // извлекаем город из первой части до запятой.
         if ($isAddressName) {
-            $cityList = Search::getCity($locationCode);
-            $parsedCity = LocationHandler::parseSelectedCity($cityList, $locationCode, '', '');
-            if (empty($parsedCity['fias'])) {
+            $resolved = LocationHandler::resolveCityFromText($locationCode);
+            if (empty($resolved)) {
                 // Город не найден — если есть fallback (bitrix location code), используем его
                 if ($fallbackLocationCode) {
                     $locationCode = $fallbackLocationCode;
@@ -93,6 +94,9 @@ class AjaxHandler extends Controller
                     // Город не найден и fallback отсутствует — возвращаем пустой массив
                     return [$pvz];
                 }
+            } else {
+                // Используем нормализованное имя города (может быть извлечено из полного адреса)
+                $locationCode = $resolved['resolvedName'];
             }
         }
 

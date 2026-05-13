@@ -80,6 +80,24 @@ class ComponentOrder
 					'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $delivery['ID'], 'ID' => $profileIds),
 					'select' => array('ID', 'CODE', 'DESCRIPTION')
 				));
+
+                // Собираем IDs LOCATION-полей один раз через SQL, а не через Order::create()
+                $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
+                $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
+                $priceHide  = Option::get(Config::MODULE_ID, 'price_hide');
+                $locationTypeIdsClassic = [];
+                $dbLocationProps = \CSaleOrderProps::GetList(
+                    array('SORT' => 'ASC'),
+                    array('TYPE' => 'LOCATION', 'UTIL' => 'N'),
+                    false,
+                    false,
+                    array('ID')
+                );
+                while ($locProp = $dbLocationProps->Fetch()) {
+                    $locationTypeIdsClassic[] = $locProp['ID'];
+                }
+                $locationTypeIdsClassicStr = implode(',', $locationTypeIdsClassic);
+
 				while ($profile = $rsProfile->fetch()) {
 
 					if ($arResult['DELIVERY'][$profile['ID']]['OWN_NAME'])
@@ -93,21 +111,6 @@ class ComponentOrder
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($profile['CODE']);
 
 						if ($isDeliveryHasPvz && $profile['CODE']) {
-                            $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
-
-                            // Собираем IDs LOCATION полей для JS
-                            $locationTypeIdsClassic = [];
-                            $registryClassic = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
-                            $orderClassNameClassic = $registryClassic->getOrderClassName();
-                            $orderClassic = $orderClassNameClassic::create(\Bitrix\Main\Application::getInstance()->getContext()->getSite());
-                            foreach ($orderClassic->getPropertyCollection() as $propClassic) {
-                                if ($propClassic->isUtil()) continue;
-                                $arPropClassic = $propClassic->getProperty();
-                                if ($arPropClassic['TYPE'] === 'LOCATION') {
-                                    $locationTypeIdsClassic[] = $arPropClassic['ID'];
-                                }
-                            }
-                            $locationTypeIdsClassicStr = implode(',', $locationTypeIdsClassic);
 
                             $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
 								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
@@ -154,11 +157,9 @@ class ComponentOrder
                             }
 						}
 
-                        $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
                         if($priceEmpty && $arResult['DELIVERY'][$profile['ID']]['PRICE'] == 0.0){
                             $arResult['DELIVERY'][$profile['ID']]['PRICE_FORMATED'] = $priceEmpty;
                         }
-                        $priceHide = Option::get(Config::MODULE_ID, 'price_hide');
                         if($priceHide == 'Y'){
                             $arResult['DELIVERY'][$profile['ID']]['PRICE_FORMATED'] = '';
                         }
@@ -297,9 +298,9 @@ class ComponentOrder
                             $propertyPvz = '';
                             $propertyAddress = '';
                             $typeError = array();
+                            $requaryPvz = Option::get(Config::MODULE_ID, 'requary_pvz');
 
 							foreach ($propertyCollection as $propertyItem) {
-                                $requaryPvz = Option::get(Config::MODULE_ID, 'requary_pvz');
 								$propertyCode = $propertyItem->getField("CODE");
 
                                 if ($propertyCode == 'ESHOPLOGISTIC_CHOSE_FRAME') {
@@ -502,12 +503,13 @@ class ComponentOrder
             }
         }
         if ($addressCityName !== null) {
-            $city = Search::getCity($addressCityName);
-            $cityFirst = LocationHandler::parseSelectedCity($city, $addressCityName, '', '');
+            $resolved = LocationHandler::resolveCityFromText($addressCityName);
+            $cityFirst = $resolved['parsedCity'] ?? [];
         } else {
             $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($arUserResult['ORDER_PROP'][$requestDataLocation]);
-            $city = Search::getCity($deliveriesListTo['name']);
-            $cityFirst = LocationHandler::parseSelectedCity($city, $deliveriesListTo['name'], $deliveriesListTo['sub_region'], $deliveriesListTo['region']);
+            // getAvailableDeliveriesByLocation уже вернул распарсенный объект города —
+            // повторный запрос Search::getCity не нужен
+            $cityFirst = $deliveriesListTo;
         }
 		$jsonValueCity = \Bitrix\Main\Web\Json::encode($cityFirst);
 		$calcDesc = (isset($deliveryResult['CALCULATE_DESCRIPTION'])) ? $deliveryResult['CALCULATE_DESCRIPTION'] : '';
