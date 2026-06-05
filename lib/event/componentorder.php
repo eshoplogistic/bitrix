@@ -54,11 +54,11 @@ class ComponentOrder
 					if ($delivery['ID'] == $requestData['current-profile-id'] && in_array($requestData['RECENT_DELIVERY_VALUE'], $cityCheck)) {
 						$tmpTitle = explode(',', $requestData['ESHOPLOGISTIC_PVZ']);
 						unset($tmpTitle[0]);
-						$pvzTitle = trim(implode(', ', $tmpTitle));
-						$pvzValue = trim($requestData['ESHOPLOGISTIC_PVZ']);
+						$pvzTitle = htmlspecialchars(trim(implode(', ', $tmpTitle)), ENT_QUOTES, 'UTF-8');
+						$pvzValue = htmlspecialchars(trim($requestData['ESHOPLOGISTIC_PVZ']), ENT_QUOTES, 'UTF-8');
 					}
                     if(isset($requestData['ESHOPLOGISTIC_FULL_ADDRESS']) && $requestData['ESHOPLOGISTIC_FULL_ADDRESS']){
-                        $fullAdressValue = $requestData['ESHOPLOGISTIC_FULL_ADDRESS'];
+                        $fullAdressValue = htmlspecialchars($requestData['ESHOPLOGISTIC_FULL_ADDRESS'], ENT_QUOTES, 'UTF-8');
                     }
 					break;
 				}

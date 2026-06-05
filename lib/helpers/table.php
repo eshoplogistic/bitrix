@@ -80,7 +80,7 @@ class Table
                             echo '<td ' . $attributes . '></td>';
                         }
                     }else{
-                        echo '<td ' . $attributes . '><input type="text" data-count="' . $i . '" name="products[' . $i . '][' . $column_name . ']" value="' . stripslashes($rec[$column_name]) . '"/></td>';
+                        echo '<td ' . $attributes . '><input type="text" data-count="' . $i . '" name="products[' . $i . '][' . $column_name . ']" value="' . htmlspecialchars(stripslashes($rec[$column_name]), ENT_QUOTES, 'UTF-8') . '"/></td>';
                     }
                 }
 

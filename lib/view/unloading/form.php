@@ -178,15 +178,15 @@ if (isset($authStatus['settings']['pochtalion'])) {
 }
 
 
-$orderShipping = isset($orderShipping) ? $orderShipping : [];
-$address = isset($address) ? $address : [];
-$addressShipping = isset($addressShipping) ? $addressShipping : [];
-$typeMethod = isset($typeMethod) ? $typeMethod : [];
-$additionalFields = isset($additionalFields) ? $additionalFields : [];
-$exportFormSettings = isset($exportFormSettings) ? $exportFormSettings : [];
-$shippingMethods = isset($shippingMethods) ? $shippingMethods : [];
-$fieldDelivery = isset($fieldDelivery) ? $fieldDelivery : [];
-$orderShippingId = isset($orderShippingId) ? $orderShippingId : '';
+$orderShipping = $orderShipping ?? [];
+$address = $address ?? [];
+$addressShipping = $addressShipping ?? [];
+$typeMethod = $typeMethod ?? [];
+$additionalFields = $additionalFields ?? [];
+$exportFormSettings = $exportFormSettings ?? [];
+$shippingMethods = $shippingMethods ?? [];
+$fieldDelivery = $fieldDelivery ?? [];
+$orderShippingId = $orderShippingId ?? '';
 
 $APPLICATION->SetTitle(($ID > 0 ? GetMessage("UNLOADING_TITLE_EDIT") . $ID : ''));
 

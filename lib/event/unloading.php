@@ -75,7 +75,7 @@ class Unloading
     public static function OrderDetailAdminContextMenuShow(&$items)
     {
         $moduleId = Config::MODULE_ID;
-        $elementId = $_REQUEST['ID'];
+        $elementId = (int)$_REQUEST['ID'];
         $currectDeliveryEsl = null;
         $checkUnloading = false;
 
