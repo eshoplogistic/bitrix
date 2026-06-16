@@ -70,8 +70,8 @@ class Client
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
         $result = curl_exec($curl);
@@ -88,7 +88,8 @@ class Client
         $d = date("j-M-Y H:i:s e");
         $header = ' ####################### ';
 
-        $path = $_SERVER["DOCUMENT_ROOT"] . '/upload/esl.log';
+        $path = \Bitrix\Main\Application::getDocumentRoot() . '/bitrix/tmp/eshoplogistic/esl.log';
+        \CheckDirPath($path);
         if (file_exists($path)) {
             $size = filesize($path);
             $sizeMb = round($size / 1024 / 1024, 2);
@@ -97,14 +98,15 @@ class Client
             }
         }
 
+        $sanitizedParams = $params;
+        unset($sanitizedParams['key'], $sanitizedParams['partner_key']);
+
         if (is_array($log) || is_object($log) || $log = json_decode($log, true)) {
-            if ($params) {
-                $urlRequest = $url;
-                $tmp['sendRequest'] = $params;
-                $tmp['sendRequest']['url'] = $urlRequest;
-                array_unshift($log, $tmp);
-            }
-            error_log($header . $d . $header . print_r($log, true), 3, $path);
+            $logRecord = [
+                'request'  => $sanitizedParams,
+                'response' => $log,
+            ];
+            error_log($header . $d . $header . print_r($logRecord, true), 3, $path);
         } else {
             error_log($header . $d . $header . $log, 3, $path);
         }

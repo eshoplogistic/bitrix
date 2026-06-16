@@ -8,18 +8,21 @@ use Bitrix\Main,
 use Bitrix\Main\Localization\Loc;
 
 require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/subscribe/include.php");
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/subscribe/prolog.php");
 
 Loader::includeModule("sale");
 Loader::includeModule("eshoplogistic.delivery");
 IncludeModuleLangFile(__FILE__);
 
-$POST_RIGHT = $APPLICATION->GetGroupRight("subscribe");
-if ($POST_RIGHT == "D")
-    $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+$request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
+$SALE_RIGHT = $APPLICATION->GetGroupRight('sale');
+if ($SALE_RIGHT === 'D') {
+    $APPLICATION->AuthForm(GetMessage('ACCESS_DENIED'));
+}
 
-$ID = intval($_REQUEST['elementId']);
+$ID = (int)$request->getQuery('elementId');
+if ($ID <= 0) {
+    die('Bad request');
+}
 
 $order = Sale\Order::load($ID);
 $propertyCollection = $order->getPropertyCollection();

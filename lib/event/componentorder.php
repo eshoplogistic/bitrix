@@ -541,7 +541,11 @@ class ComponentOrder
                 $descriptionTerminal = '';
 		}
 
-		$descUser = ($requestDataEsl['selectPvz'])?Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN").' '.$requestDataEsl['selectPvz']:'';
+		$selectPvz = (string)($requestDataEsl['selectPvz'] ?? '');
+		$selectPvzHtml = htmlspecialcharsbx($selectPvz);
+		$descUser = $selectPvzHtml !== ''
+			? Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN") . ' ' . $selectPvzHtml
+			: '';
 
         $cityNotFound = empty($cityFirst);
 
@@ -574,11 +578,11 @@ class ComponentOrder
                          >';
 		if ($requestDataEsl['mode'] === 'terminal') {
 			if ($requestDataEsl['selectPvz']) {
-				$deliveryResult['DESCRIPTION'] .= '<input 
-                            id="terminalEsl" 
-                            name="ESHOPLOGISTIC_PVZ" 
-                            type="hidden"                         
-                            value="' . $requestDataEsl['selectPvz'] . '"
+				$deliveryResult['DESCRIPTION'] .= '<input
+                            id="terminalEsl"
+                            name="ESHOPLOGISTIC_PVZ"
+                            type="hidden"
+                            value="' . $selectPvzHtml . '"
                         >';
             } else {
 				$deliveryResult['DESCRIPTION'] .= '<input 
@@ -590,11 +594,11 @@ class ComponentOrder
 		}
 
         if(!isset($requestDataEsl['mode'])){
-            $deliveryResult['DESCRIPTION'] .= '<input 
-                            id="terminalEsl" 
-                            name="ESHOPLOGISTIC_PVZ" 
-                            type="hidden"                         
-                            value="' . $requestDataEsl['selectPvz'] . '"
+            $deliveryResult['DESCRIPTION'] .= '<input
+                            id="terminalEsl"
+                            name="ESHOPLOGISTIC_PVZ"
+                            type="hidden"
+                            value="' . $selectPvzHtml . '"
                         >';
             $deliveryResult['DESCRIPTION'] .= '<input 
                             id="eslChoseFrame" 
@@ -659,7 +663,8 @@ class ComponentOrder
         $length = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
-        $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKey . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
+        $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey);
+        $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
         $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {
@@ -679,8 +684,8 @@ class ComponentOrder
                 "dimensions" => $width."*".$height."*".$length
 			);
 		}
-		$jsonValueOffers = \Bitrix\Main\Web\Json::encode($offers);
-		$html .= "<input id='widgetOffersEsl' value='$jsonValueOffers' type='hidden'>";
+		$jsonValueOffers = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($offers));
+		$html .= "<input id='widgetOffersEsl' value='" . $jsonValueOffers . "' type='hidden'>";
 
 		$configClass = new Config();
 		$paymentTypesList = $configClass->getPaymentTypes();
@@ -693,8 +698,8 @@ class ComponentOrder
             $paymentResult[$paymentType] = $payment;
         }
 
-		$jsonValuePayment = \Bitrix\Main\Web\Json::encode($paymentResult);
-            $html .= "<input id='widgetPaymentEsl' value='$jsonValuePayment' type='hidden'>";
+		$jsonValuePayment = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($paymentResult));
+		$html .= "<input id='widgetPaymentEsl' value='" . $jsonValuePayment . "' type='hidden'>";
 
 		return $html;
 	}

@@ -41,16 +41,16 @@ if($element['offers_exists']){
     CUtil::InitJSCore(array('esl_modal_v2'));
     ?>
     <button type="button"
-            class="<?=$arParams['BUTTON_ONE_CLICK_CLASS']?> esl-button_modal esl-button_data"
-            data-id="<?=$arParams['ELEMENT_ID']?>"
+            class="<?=htmlspecialcharsbx((string)$arParams['BUTTON_ONE_CLICK_CLASS'])?> esl-button_modal esl-button_data"
+            data-id="<?=htmlspecialcharsbx((string)$arParams['ELEMENT_ID'])?>"
             data-widget-load=""
             data-esl-widget>
-        <?=$arParams['BUTTON_ONE_CLICK']?>
+        <?=htmlspecialcharsbx((string)$arParams['BUTTON_ONE_CLICK'])?>
     </button>
     <div id="eShopLogisticWidgetModal"
          data-lazy-load="true"
          data-debug="1"
-         data-key="<?=$arParams['ESL_WIDGET_KEY']?>"
+         data-key="<?=htmlspecialcharsbx((string)$arParams['ESL_WIDGET_KEY'])?>"
          data-offers="<?=$jsonItem?>"
     ></div>
 

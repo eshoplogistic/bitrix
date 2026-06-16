@@ -12,16 +12,16 @@ use Eshoplogistic\Delivery\Api\Site;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Api\Additional;
 
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php"); // первый общий пролог
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/subscribe/include.php"); // инициализация модуля
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/subscribe/prolog.php"); // пролог модуля
+require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
 
 Loader::includeModule("sale");
 Loader::includeModule("eshoplogistic.delivery");
 IncludeModuleLangFile(__FILE__);
 
-$POST_RIGHT = $APPLICATION->GetGroupRight("subscribe");
-if ($POST_RIGHT == "D") {
+global $USER;
+$moduleRight = $APPLICATION->GetGroupRight(Config::MODULE_ID);
+$saleRight   = $APPLICATION->GetGroupRight("sale");
+if ($moduleRight < "R" || $saleRight < "R") {
     $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 }
 
@@ -52,11 +52,17 @@ $aTabs = [
     ],
 ];
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
-$ID = intval($_REQUEST['elementId']);
+$ID = (int)($_REQUEST['elementId'] ?? 0);
+if ($ID <= 0) {
+    $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
 $message = null;
-$bVarsFromForm = false; // флаг "Данные получены с формы", обозначающий, что выводимые данные получены с формы, а не из БД.
+$bVarsFromForm = false;
 
-$order = Sale\Order::load($_REQUEST['elementId']);
+$order = Sale\Order::load($ID);
+if (!$order) {
+    $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
 $basket = $order->getBasket();
 $basketItems = $basket->getBasketItems();
 $orderItems = [];
@@ -255,14 +261,12 @@ echo $ID ?>"
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("TERMINAL_CODE") ?></td>
-        <td><input type="text" name="terminal-code" value="<?php
-            echo $addressShipping['terminal_code'] ?>"></td>
+        <td><input type="text" name="terminal-code" value="<?= htmlspecialcharsbx((string)($addressShipping['terminal_code'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("TERMINAL_ADDRESS") ?></td>
-        <td><input type="text" name="terminal-address" value="<?php
-            echo $addressShipping['terminal_address'] ?>"></td>
+        <td><input type="text" name="terminal-address" value="<?= htmlspecialcharsbx((string)($addressShipping['terminal_address'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><?php
@@ -313,14 +317,14 @@ echo $ID ?>"
             ?>
 
             <?php
+            $fieldValue  = htmlspecialcharsbx((string)$value);
+            $fieldName   = htmlspecialcharsbx((string)$name);
+            $fieldArr    = htmlspecialcharsbx((string)$nameArr);
             if ($type === 'text'): ?>
                 <tr>
                     <td><?php
                         echo GetMessage("ADDFIELDS_" . $name) ?></td>
-                    <td><input type="text" name="<?php
-                        echo $nameArr ?>[<?php
-                        echo $name ?>]" value="<?php
-                        echo $value ?>"></td>
+                    <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
             endif; ?>
@@ -329,10 +333,7 @@ echo $ID ?>"
                 <tr>
                     <td><?php
                         echo GetMessage("ADDFIELDS_" . $name) ?></td>
-                    <td><input type="date" name="<?php
-                        echo $nameArr ?>[<?php
-                        echo $name ?>]" value="<?php
-                        echo $value ?>"></td>
+                    <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
             endif; ?>
@@ -397,34 +398,29 @@ echo $ID ?>"
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_NAME") ?></td>
-        <td><input type="text" name="receiver-name" value="<?php
-            echo $propertyCodeValue['FIO'] ?>"></td>
+        <td><input type="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_PHONE") ?></td>
-        <td><input type="text" name="receiver-phone" value="<?php
-            echo $propertyCodeValue['PHONE'] ?>"></td>
+        <td><input type="text" name="receiver-phone" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['PHONE'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_REGION") ?></td>
         <td><input type="text" name="receiver-region"
-                   value="<?php
-                   echo (isset($shippingMethods['region_to'])) ? $shippingMethods['region_to'] : '' ?>">
+                   value="<?= htmlspecialcharsbx((string)($shippingMethods['region_to'] ?? '')) ?>">
         </td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_CITY") ?></td>
-        <td><input type="text" name="receiver-city" value="<?php
-            echo $propertyCodeValue['CITY'] ?>"></td>
+        <td><input type="text" name="receiver-city" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['CITY'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_STREET") ?></td>
-        <td><input type="text" name="receiver-street" value="<?php
-            echo $propertyCodeValue['ADDRESS'] ?>"></td>
+        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['ADDRESS'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php

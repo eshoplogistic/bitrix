@@ -9,6 +9,9 @@ use \Bitrix\Main\Engine\Controller,
     \Bitrix\Main\Data\Cache,
     \Bitrix\Sale\Delivery\Services\Table,
     \Eshoplogistic\Delivery\Config;
+use Bitrix\Main\Engine\ActionFilter\Authentication;
+use Bitrix\Main\Engine\ActionFilter\Csrf;
+use Bitrix\Main\Engine\ActionFilter\HttpMethod;
 use Bitrix\Main\Request;
 use Bitrix\Main\Web\Json;
 use Eshoplogistic\Delivery\Event\Unloading;
@@ -46,10 +49,14 @@ class AjaxHandler extends Controller
                 'prefilters' => []
             ],
             'widgetData' => [
-                'prefilters' => []
+                'prefilters' => [],
             ],
             'unloadingForm' => [
-                'prefilters' => []
+                'prefilters' => [
+                    new Authentication(),
+                    new Csrf(),
+                    new HttpMethod([HttpMethod::METHOD_POST]),
+                ],
             ]
         ];
     }
@@ -151,7 +158,12 @@ class AjaxHandler extends Controller
         $out    = [];
         $request = Application::getInstance()->getContext()->getRequest();
 
-        $method = $request->getPost("method");
+        $method = trim((string)$request->getPost('method'));
+
+        if (!empty($method) && strpos($method, 'widget/') !== 0) {
+            echo Json::encode(['error' => 'Method is not allowed']);
+            exit();
+        }
 
         if ( ! empty( $method ) ) {
             $query_data = @$_POST;
@@ -165,7 +177,7 @@ class AjaxHandler extends Controller
             } elseif($cache->startDataCache()) {
                 $raw = ( $method == 'widget/send' ) ? $request->getPost( 'raw' ) : '';
 
-                if ( $requestOut = self::ApiQuery( trim( $method ), $query_data, $raw ) ) {
+                if ( $requestOut = self::ApiQuery( $method, $query_data, $raw ) ) {
                     if ( ! empty( $requestOut ) && $requestOut['http_status'] == 200 ) {
                         $cache->endDataCache($requestOut);
                     }
@@ -280,21 +292,29 @@ class AjaxHandler extends Controller
         return false;
     }
 
-    public static function unloadingFormAction()
+    public function unloadingFormAction()
     {
-        if(!$_POST)
-            return false;
+        global $APPLICATION;
 
-        $request = $_POST;
-        $unloading = new Unloading();
-
-        $result = $unloading->params_delivery_init($request);
-        if(isset($result['errors'])){
-            echo json_encode(['success' => false, 'errors' => $result['errors']]);
-            exit();
-        }else{
-           return $result['http_status_message'];
+        if ($APPLICATION->GetGroupRight('sale') !== 'W') {
+            $this->addError(new \Bitrix\Main\Error('Access denied'));
+            return null;
         }
+
+        $request = $this->getRequest()->getPostList()->toArray();
+        $request['order_id'] = (int)($request['order_id'] ?? 0);
+        if ($request['order_id'] <= 0) {
+            $this->addError(new \Bitrix\Main\Error('Bad request'));
+            return null;
+        }
+
+        $unloading = new Unloading();
+        $result = $unloading->params_delivery_init($request);
+        if (isset($result['errors'])) {
+            return ['success' => false, 'errors' => $result['errors']];
+        }
+
+        return ['success' => true, 'message' => $result['http_status_message'] ?? 'OK'];
     }
 
 }

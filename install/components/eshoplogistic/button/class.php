@@ -139,15 +139,24 @@ class EslButtonComponent extends \CBitrixComponent
 
         if(!function_exists("GetIBlockElementListEx"))return array("result"=>"error",'description'=>"Error GetIBlockElementListEx not exist");
 
-        $items= GetIBlockElementListEx("",array(),array(),array(),0,array("ID"=>$element_id));
-        while($arItem =  $items->GetNext())
-            $arRet['detail_page_url']=$arItem["DETAIL_PAGE_URL"];
+        $elementId = (int)$element_id;
+        $elementFilter = array(
+            '=ID'               => $elementId,
+            '=ACTIVE'           => 'Y',
+            '=ACTIVE_DATE'      => 'Y',
+            'CHECK_PERMISSIONS' => 'Y',
+        );
 
-        if($sale_module)$arRet['price']=CCatalogProduct::GetOptimalPrice($element_id)['RESULT_PRICE']['DISCOUNT_PRICE'];
-        //else $arRet['price']=CPrice::GetBasePrice($element_id)['PRICE'];
+        $items = CIBlockElement::GetList(array(), $elementFilter, false, false, array('ID', 'DETAIL_PAGE_URL'));
+        if ($arItem = $items->GetNext()) {
+            $arRet['detail_page_url'] = $arItem['DETAIL_PAGE_URL'];
+        }
+
+        if($sale_module)$arRet['price']=CCatalogProduct::GetOptimalPrice($elementId)['RESULT_PRICE']['DISCOUNT_PRICE'];
+        //else $arRet['price']=CPrice::GetBasePrice($elementId)['PRICE'];
         else {
             $arRet['price']=0;
-            $props=self::getElementPropValues($element_id,$fields_price);
+            $props=self::getElementPropValues($elementId,$fields_price);
             foreach($props['offers'] as $ar)
                 foreach($ar as $arr)
                     foreach($arr as $arrr)
@@ -165,7 +174,7 @@ class EslButtonComponent extends \CBitrixComponent
         $arSelect  = array_unique(array_merge($arSelect, $fields));
 
 
-        $rezE = CIBlockElement::GetList(array(), array('=ID'=> $element_id), false, false, $arSelect);
+        $rezE = CIBlockElement::GetList(array(), $elementFilter, false, false, $arSelect);
         if($arElement = $rezE->Fetch()) {
             $picture='';
             if($arElement['PREVIEW_PICTURE'] || $arElement['DETAIL_PICTURE']) {
@@ -192,10 +201,10 @@ class EslButtonComponent extends \CBitrixComponent
             else
                 if(count($fields_price)>0)
                 {
-                    $props=self::getElementPropValues($element_id,$fields);
+                    $props=self::getElementPropValues($elementId,$fields);
                     $this->arProps=array();
                     $iii=0;
-                    foreach ($props['offers'][$element_id] as $code => $ar)
+                    foreach ($props['offers'][$elementId] as $code => $ar)
                     {
                         if(isset($ar['value']))$this->arProps[$iii][$code]=$ar;
                         $iii++;
@@ -211,7 +220,7 @@ class EslButtonComponent extends \CBitrixComponent
                 }
                 else $ret_self=true;
 
-            if($ret_self)$arRet["offers"]=array("offers"=>array($element_id=>array("price"=>$arRet['price'])));
+            if($ret_self)$arRet["offers"]=array("offers"=>array($elementId=>array("price"=>$arRet['price'])));
 
             return $arRet;
         }

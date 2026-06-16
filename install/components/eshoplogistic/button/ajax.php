@@ -9,7 +9,16 @@ global $USER, $APPLICATION;
 switch($_GET['type'])
 {
     case "get_offers_array": {CBitrixComponent::includeComponentClass('eshoplogistic:button'); $component = new EslButtonComponent(); print \Bitrix\Main\Web\Json::encode($component->getElementById($_GET['element_id'])); break;}
-    case "create_order": {CBitrixComponent::includeComponentClass('eshoplogistic:button'); $component = new EslButtonComponent(); print  \Bitrix\Main\Web\Json::encode($component->create_order()); break;}
+    case "create_order": {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !check_bitrix_sessid()) {
+            http_response_code(403);
+            die();
+        }
+        CBitrixComponent::includeComponentClass('eshoplogistic:button');
+        $component = new EslButtonComponent();
+        print \Bitrix\Main\Web\Json::encode($component->create_order());
+        break;
+    }
 }
 
 ?>
