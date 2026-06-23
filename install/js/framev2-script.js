@@ -368,7 +368,9 @@ function isNumeric(value) {
                     });
                 }, 100)
             }
-            if(data.typeDelivery === 'door') {
+            // typeEvent: 'trigger' — виджет сам переэмитит выбор после каждой перезагрузки сервисов (смена города и т.п.),
+            // без фильтра это вызывает confirm -> ajax -> ререндер блока доставки -> виджет переинициализируется -> новый trigger -> бесконечный цикл
+            if(data.typeDelivery === 'door' && data.typeEvent !== 'trigger') {
                 if(document.getElementById('terminalEsl')){
                     document.getElementById('terminalEsl').value = ''
                 }
@@ -488,8 +490,9 @@ function isNumeric(value) {
     function validate() {
         let fieldTerminal = document.getElementById('terminalEsl')
         let nameErrorDiv = 'errorPvzEsl'
+        let cityNotFound = document.querySelector('.eslog-city-not-found')
         if(fieldTerminal){
-            if (!fieldTerminal.value) {
+            if (!fieldTerminal.value && !cityNotFound) {
                 let element = document.createElement('div')
                 element.id = nameErrorDiv
                 element.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_ERROR_PVZ')

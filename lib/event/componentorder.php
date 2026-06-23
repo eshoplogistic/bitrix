@@ -664,7 +664,76 @@ class ComponentOrder
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
         $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey);
+        $widgetErrorMsg = htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_WIDGET_CALC_ERROR'));
         $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
+        $widgetScript = <<<JS
+            <script>
+            (function () {
+                var errorMessage = '{$widgetErrorMsg}';
+                var loadTimer   = null;
+
+                function clearError() {
+                    var el = document.getElementById('eslCalcErrorMsg');
+                    if (el) el.remove();
+                }
+
+                function showError() {
+                    var widget = document.getElementById('eShopLogisticWidgetCart');
+                    if (!widget) return;
+                    clearError();
+                    var div = document.createElement('div');
+                    div.id = 'eslCalcErrorMsg';
+                    div.style.cssText = 'color:#dc2626;padding:12px 16px;border:1px solid #fecaca;'
+                        + 'border-radius:6px;background:#fef2f2;margin:8px 0;font-size:14px;line-height:1.5;';
+                    div.textContent = errorMessage;
+                    widget.insertAdjacentElement('afterbegin', div);
+                }
+
+                // Вызывается когда виджет начинает новый запрос (смена города)
+                function onWidgetRequest() {
+                    if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+                    clearError();
+                }
+
+                // Перехват XHR
+                var origOpen = XMLHttpRequest.prototype.open;
+                XMLHttpRequest.prototype.open = function (method, url) {
+                    if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
+                        onWidgetRequest();
+                    }
+                    return origOpen.apply(this, arguments);
+                };
+
+                // Перехват fetch
+                if (window.fetch) {
+                    var origFetch = window.fetch;
+                    window.fetch = function (url) {
+                        if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
+                            onWidgetRequest();
+                        }
+                        return origFetch.apply(this, arguments);
+                    };
+                }
+
+                // JS-ошибка внутри скриптов виджета (api.esplc.ru)
+                window.addEventListener('error', function (e) {
+                    if (!e.filename || e.filename.indexOf('api.esplc.ru') === -1) return;
+                    if (!document.getElementById('eShopLogisticWidgetCart')) return;
+                    showError();
+                }, true);
+
+                // Таймаут 10 секунд: если кнопка всё ещё в состоянии загрузки — показать ошибку
+                loadTimer = setTimeout(function () {
+                    var btn = document.getElementById('container_widget_esl_button');
+                    if (btn && btn.classList.contains('loading-esl')) {
+                        btn.classList.remove('loading-esl');
+                        showError();
+                    }
+                }, 15000);
+            }());
+            </script>
+        JS;
+        $html .= $widgetScript;
         $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {
