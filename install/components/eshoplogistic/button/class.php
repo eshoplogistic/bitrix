@@ -277,14 +277,12 @@ class EslButtonComponent extends \CBitrixComponent
             $selectedPayment    = $paymentData;
             $city               = ['name' => $settlement['name'] ?? '', 'postal_code' => $settlement['postal_code'] ?? ''];
             $addressForDelivery = $delivery['pvz']['address'] ?? $delivery['pvz']['name'] ?? '';
-            $costDelivery       = $delivery['data']['price']['value'] ?? 0;
         } else {
             $idShipper        = is_string($request['idShipper'])        ? json_decode($request['idShipper'],        true) : $request['idShipper'];
             $selectedDelivery = is_string($request['selectedDelivery']) ? json_decode($request['selectedDelivery'], true) : $request['selectedDelivery'];
             $selectedPayment  = is_string($request['selectedPayment'])  ? json_decode($request['selectedPayment'],  true) : $request['selectedPayment'];
             $city             = is_string($request['city'])             ? json_decode($request['city'],             true) : $request['city'];
             $addressForDelivery = $request['addressForDelivery'];
-            $costDelivery       = $request['costDelivery'];
         }
 
         if($sale_module)
@@ -351,7 +349,6 @@ class EslButtonComponent extends \CBitrixComponent
             $shipmentItemCollection = $shipment->getShipmentItemCollection();
             $shipmentItem = $shipmentItemCollection->createItem($item);
             $shipmentItem->setQuantity($item_count);
-            $shipment->setBasePriceDelivery($costDelivery);
 
             $paymentCollection = $order->getPaymentCollection();
             $payment = $paymentCollection->createItem();
@@ -394,6 +391,16 @@ class EslButtonComponent extends \CBitrixComponent
             //$locationProp->setValue($addressForDelivery);
             //if($addressProp = self::getPropertyByCode($propertyCollection, 'ADDRESS'))
             //$addressProp->setValue($addressForDelivery);
+
+            $calculationResult = $shipment->calculateDelivery();
+            if (!$calculationResult->isSuccess()) {
+                return array(
+                    'success' => false,
+                    'error'   => 'delivery_calculate_error',
+                    'message' => implode('; ', $calculationResult->getErrorMessages()) ?: Loc::getMessage('ESL_BUTTON_ORDER_CREATE_ERROR'),
+                );
+            }
+            $shipment->setBasePriceDelivery($calculationResult->getPrice());
 
             $order->doFinalAction(true);
             $result = $order->save();

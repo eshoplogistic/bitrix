@@ -738,7 +738,7 @@ class ComponentOrder
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {
             if($item['DIMENSIONS']){
-                $dimensions = is_array($item['DIMENSIONS']) ? $item['DIMENSIONS'] : unserialize($item['DIMENSIONS']);
+                $dimensions = is_array($item['DIMENSIONS']) ? $item['DIMENSIONS'] : unserialize($item['DIMENSIONS'], ['allowed_classes' => false]);
                 if($dimensions['WIDTH']) $width = $dimensions['WIDTH'] / 10;
                 if($dimensions['HEIGHT']) $height = $dimensions['HEIGHT'] / 10;
                 if($dimensions['LENGTH']) $length = $dimensions['LENGTH'] / 10;

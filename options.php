@@ -464,7 +464,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         ),
 	);
 
-	if($request->isPost() && check_bitrix_sessid()){
+	if($request->isPost() && check_bitrix_sessid() && $LOG_ELEMUPD_RIGHT>="W"){
 
 		Cache::clearCache(true, $cacheDir);
 

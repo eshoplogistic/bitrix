@@ -67,6 +67,12 @@ class AjaxHandler extends Controller
      */
     public function clearCacheAction()
     {
+        global $USER;
+        if (!$USER->IsAdmin()) {
+            $this->addError(new \Bitrix\Main\Error('Access denied'));
+            return null;
+        }
+
         $cache = Cache::createInstance();
         $cache->CleanDir(Config::CACHE_DIR);
 
@@ -165,6 +171,18 @@ class AjaxHandler extends Controller
             exit();
         }
 
+        if (!self::isSameOriginRequest($request)) {
+            http_response_code(403);
+            echo Json::encode(['error' => 'Forbidden origin']);
+            exit();
+        }
+
+        if (!self::checkWidgetRateLimit($request)) {
+            http_response_code(429);
+            echo Json::encode(['error' => 'Too many requests']);
+            exit();
+        }
+
         if ( ! empty( $method ) ) {
             $query_data = @$_POST;
             unset( $query_data['method'] );
@@ -190,6 +208,51 @@ class AjaxHandler extends Controller
         echo $json;
         exit();
 
+    }
+
+    /** widgetData has no Authentication/Csrf filters by design — it's called anonymously by the
+     * api.esplc.ru widget script embedded on storefront pages, which doesn't carry a bitrix_sessid.
+     * Origin/Referer is the only available defense against direct cross-site calls to this proxy.
+     * @param Request $request
+     * @return bool
+     */
+    private static function isSameOriginRequest($request): bool
+    {
+        $host = $request->getHttpHost();
+        $origin = $request->getHeader('Origin') ?: $request->getHeader('Referer');
+        if (!$origin) {
+            return true;
+        }
+
+        $originHost = parse_url($origin, PHP_URL_HOST);
+        return $originHost && strcasecmp($originHost, $host) === 0;
+    }
+
+    /** Limits anonymous calls to widgetData per remote IP to reduce abuse of the proxied external API
+     * @param Request $request
+     * @param int $limit
+     * @param int $period seconds
+     * @return bool
+     */
+    private static function checkWidgetRateLimit($request, int $limit = 30, int $period = 60): bool
+    {
+        $ip = $request->getRemoteAddress() ?: 'unknown';
+        $cacheKey = 'widget_rl_' . md5($ip);
+        $cache = Cache::createInstance();
+
+        $count = 0;
+        if ($cache->initCache($period, $cacheKey, Config::CACHE_DIR)) {
+            $count = (int)$cache->getVars();
+        }
+
+        $count++;
+
+        $cache->clean($cacheKey, Config::CACHE_DIR);
+        if ($cache->startDataCache($period, $cacheKey, Config::CACHE_DIR)) {
+            $cache->endDataCache($count);
+        }
+
+        return $count <= $limit;
     }
 
 

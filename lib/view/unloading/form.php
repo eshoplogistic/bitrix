@@ -75,7 +75,7 @@ foreach ($basket as $item) {
     $weight = $item->getWeight();
     $dimensions = $item->getField('DIMENSIONS');
     if ($dimensions) {
-        $dimensions = unserialize($dimensions);
+        $dimensions = unserialize($dimensions, ['allowed_classes' => false]);
         if ($dimensions['WIDTH']) {
             $width = $dimensions['WIDTH'] / 10;
         }
