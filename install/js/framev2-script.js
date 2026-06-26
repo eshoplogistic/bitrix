@@ -251,7 +251,9 @@ function isNumeric(value) {
         esl.run()
 
         BX.addCustomEvent(window, 'onAjaxSuccess', function (e, t) {
-            if (t.url === '/bitrix/components/bitrix/sale.location.selector.search/get.php'){
+            // t.url обычно содержит query-параметры поиска (?q=...), поэтому строгое
+            // сравнение с путём компонента никогда не совпадает — ищем подстроку.
+            if (typeof t.url === 'string' && t.url.indexOf('/sale.location.selector.search/get.php') !== -1){
                 search_city = true
                 first_load = false
             }

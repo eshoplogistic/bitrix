@@ -234,21 +234,24 @@ class AjaxHandler extends Controller
      * @param int $period seconds
      * @return bool
      */
-    private static function checkWidgetRateLimit($request, int $limit = 30, int $period = 60): bool
+    private static function checkWidgetRateLimit($request, int $limit = 120, int $period = 60): bool
     {
         $ip = $request->getRemoteAddress() ?: 'unknown';
-        $cacheKey = 'widget_rl_' . md5($ip);
+        // Bucketing the key by time window (instead of a rolling TTL that gets re-extended
+        // on every hit) makes the window actually expire under continuous traffic.
+        $bucket = (int)floor(time() / $period);
+        $cacheKey = 'widget_rl_' . md5($ip) . '_' . $bucket;
         $cache = Cache::createInstance();
 
         $count = 0;
-        if ($cache->initCache($period, $cacheKey, Config::CACHE_DIR)) {
+        if ($cache->initCache($period * 2, $cacheKey, Config::CACHE_DIR)) {
             $count = (int)$cache->getVars();
         }
 
         $count++;
 
         $cache->clean($cacheKey, Config::CACHE_DIR);
-        if ($cache->startDataCache($period, $cacheKey, Config::CACHE_DIR)) {
+        if ($cache->startDataCache($period * 2, $cacheKey, Config::CACHE_DIR)) {
             $cache->endDataCache($count);
         }
 
