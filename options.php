@@ -30,12 +30,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 	if($authStatus['success'] == true) {
 
 		if ($authStatus['blocked']) {
-			$accountStatus = Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ACTIVE");
-		} elseif ($authStatus['free_days'] > 0) {
-			$accountStatus = Loc::getMessage(
-				"ESHOP_LOGISTIC_OPTIONS_FREE_PERIOD",
-				array("#DAYS#" => $authStatus['free_days'])
-			);
+			$accountStatus = Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_BLOCKED");
 		} else {
 			$accountStatus = Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ACTIVE");
 		}
@@ -43,8 +38,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 		$note = Loc::getMessage(
 			"ESHOP_LOGISTIC_AUTH_STATUS",
 			array(
-				'#BLOCKED#'   => $accountStatus,
-				'#BALANSE#'   => $authStatus['balance'],
+				'#BLOCKED#'    => $accountStatus,
+				'#BALANSE#'    => $authStatus['balance'],
+				'#FREE_DAYS#'  => $authStatus['free_days'],
 				'#PAID_DAYS#' => $authStatus['paid_days'],
 			)
 		);
@@ -571,16 +567,16 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                                                 ?>
                                                 <div class="esl-inner_item">
                                                     <div class="esl-status_api">
-                                                        <?php echo $name ?>
+                                                        <?php echo htmlspecialcharsbx((string)$name) ?>
                                                     </div>
-                                                    <ul class="js-inner-connected sortable" name="<?php echo $key ?>"
+                                                    <ul class="js-inner-connected sortable" name="<?php echo htmlspecialcharsbx((string)$key) ?>"
                                                         aria-dropeffect="move">
                                                         <?php if(isset($status_form[$key]) && $status_form[$key]): ?>
                                                             <?php foreach ( $status_form[$key] as $item ): ?>
-                                                                <li name="<?php echo $item['name'] ?>"
-                                                                    data-desc="<?php echo $item['desc'] ?>" class="esl-status__wp"
+                                                                <li name="<?php echo htmlspecialcharsbx((string)$item['name']) ?>"
+                                                                    data-desc="<?php echo htmlspecialcharsbx((string)$item['desc']) ?>" class="esl-status__wp"
                                                                     role="option" aria-grabbed="false">
-                                                                    <span class="" draggable="true"><?php echo $item['desc'] ?></span>
+                                                                    <span class="" draggable="true"><?php echo htmlspecialcharsbx((string)$item['desc']) ?></span>
                                                                     <span class="sortable-delete" onclick="sortableDelete(this)">х</span>
                                                                 </li>
                                                             <?php endforeach; ?>
@@ -594,9 +590,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 
                                             <ul class="js-connected sortable-copy" aria-dropeffect="move">
                                                 <?php foreach ( $statusBx as $key => $value ): ?>
-                                                    <li name="<?php echo $key ?>" data-desc="<?php echo $value ?>"
+                                                    <li name="<?php echo htmlspecialcharsbx((string)$key) ?>" data-desc="<?php echo htmlspecialcharsbx((string)$value) ?>"
                                                         class="esl-status__wp" role="option" aria-grabbed="false">
-                                                        <span class="" draggable="true"><?php echo $value ?></span>
+                                                        <span class="" draggable="true"><?php echo htmlspecialcharsbx((string)$value) ?></span>
                                                     </li>
                                                 <?php endforeach; ?>
                                             </ul>

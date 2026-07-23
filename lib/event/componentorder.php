@@ -608,7 +608,7 @@ class ComponentOrder
                         >';
         }
 
-		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl' value='$jsonValueCity' type='hidden'>";
+		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl' value='" . htmlspecialcharsbx($jsonValueCity) . "' type='hidden'>";
 
 		if ($check)
 			$deliveryResult['CHECKED'] = 'Y';

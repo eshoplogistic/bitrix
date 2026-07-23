@@ -18,7 +18,7 @@ class Client
     private $url;
     private $apiKey;
     private $log;
-    private $partnerKey = '264a7a5d5882787.70413622';
+    private $partnerKey = Config::PARTNER_KEY;
 
     function __construct($apiObject)
     {
@@ -90,6 +90,12 @@ class Client
 
         $path = \Bitrix\Main\Application::getDocumentRoot() . '/bitrix/tmp/eshoplogistic/esl.log';
         \CheckDirPath($path);
+
+        $htaccess = dirname($path) . '/.htaccess';
+        if (!file_exists($htaccess)) {
+            file_put_contents($htaccess, "Deny from All");
+        }
+
         if (file_exists($path)) {
             $size = filesize($path);
             $sizeMb = round($size / 1024 / 1024, 2);

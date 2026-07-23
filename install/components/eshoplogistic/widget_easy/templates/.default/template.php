@@ -15,8 +15,8 @@ $this->addExternalJs('/bitrix/components/eshoplogistic/widget_easy/js/script'.(m
     CUtil::InitJSCore(array('esl_easy_widget'));
     ?>
     <div id="eShopLogisticWidgetForm" data-lazy-load="false" class="eshoplogistic-widget-calculate"
-         data-key="<?=$arParams['ESL_WIDGET_KEY']?>"
-         data-title="<?=$arParams['ESL_WIDGET_TITLE']?>"
+         data-key="<?=htmlspecialcharsbx((string)$arParams['ESL_WIDGET_KEY'])?>"
+         data-title="<?=htmlspecialcharsbx((string)$arParams['ESL_WIDGET_TITLE'])?>"
     ></div>
 <?php endif; ?>
 

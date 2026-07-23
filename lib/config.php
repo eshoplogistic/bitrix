@@ -20,6 +20,7 @@ class Config
 	const CACHE_TIME = 3600;
 	const CACHE_DIR = 'eshoplogistic';
 	const API_UNLOADIG = 'https://api.esplc.ru/';
+	const PARTNER_KEY = '264a7a5d5882787.70413622';
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;

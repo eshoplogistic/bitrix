@@ -42,6 +42,16 @@ class LogotipHandler
      */
     public static function deleteLogotipFile($logotipFileId)
     {
+        $logotipFileId = (int)$logotipFileId;
+        if ($logotipFileId <= 0) {
+            return 0;
+        }
+
+        $fileInfo = CFile::GetByID($logotipFileId)->Fetch();
+        if (!$fileInfo || $fileInfo['MODULE_ID'] !== Config::MODULE_ID) {
+            return 0;
+        }
+
         CFile::Delete($logotipFileId);
         return 0;
     }

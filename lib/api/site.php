@@ -47,11 +47,11 @@ class Site
 
             $result = array(
                 'success'   => $response['http_status_message'],
-                'blocked'   => $response['data']['blocked'],
-                'free_days' => $response['data']['free_days'],
-                'balance'   => $response['data']['balance'],
-                'paid_days' => $response['data']['paid_days'],
-                'settings'  => $response['data']['services'],
+                'blocked'   => $response['data']['blocked'] ?? 0,
+                'free_days' => $response['data']['free_days'] ?? 0,
+                'balance'   => $response['data']['balance'] ?? 0,
+                'paid_days' => $response['data']['paid_days'] ?? 0,
+                'settings'  => $response['data']['services'] ?? array(),
             );
             $cache->endDataCache(array('authstatus' => $result));
             return $result;

@@ -2,7 +2,7 @@
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB_NAME"] = "Настройки модуля";
 $MESS["ESHOP_LOGISTIC_OPTIONS_TITLE_NAME"] = "Общие настройки";
 $MESS["ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_BTN"] = "Очистить кэш";
-$MESS["ESHOP_LOGISTIC_AUTH_STATUS"] = "Статус: #BLOCKED#, баланс: #BALANSE#, количество дней до блокировки: #PAID_DAYS#";
+$MESS["ESHOP_LOGISTIC_AUTH_STATUS"] = "Статус: #BLOCKED#, баланс: #BALANSE#, бесплатных дней: #FREE_DAYS#, количество дней до блокировки: #PAID_DAYS#";
 $MESS["ESHOP_LOGISTIC_CURRENT_CITY"] = "Город отправления: <strong>#CITY#</strong></br>. В случае изменения настроек в личном кабинете eShopLogistic требуется сбросить кеш модуля";
 $MESS["ESHOP_LOGISTIC_CURRENT_CITY_EMPTY"] = "Город отправления не определен";
 $MESS["ESHOP_LOGISTIC_CURRENT_CITY_V2"] = "В случае изменения настроек в личном кабинете eShopLogistic требуется сбросить кеш модуля";

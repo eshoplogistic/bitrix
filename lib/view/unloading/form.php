@@ -367,8 +367,8 @@ echo $ID ?>"
                             <?php
                             foreach ($value as $k => $v): ?>
                                 <option value="<?php
-                                echo $k ?>"><?php
-                                    echo $v ?></option>
+                                echo htmlspecialcharsbx((string)$k) ?>"><?php
+                                    echo htmlspecialcharsbx((string)$v) ?></option>
                             <?php
                             endforeach; ?>
                         </select>
@@ -453,41 +453,41 @@ echo $ID ?>"
             echo GetMessage("SENDER_NAME") ?></td>
         <td><input type="text" name="sender-name"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-name') ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-name')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_PHONE") ?></td>
         <td><input type="text" name="sender-phone"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-phone') ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-phone')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_EMAIL") ?></td>
         <td><input type="text" name="sender-email"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-email') ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-email')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_TERMINAL") ?></td>
         <td><input type="text" name="sender-terminal"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name']) ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name'])) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_REGION") ?></td>
         <td><input type="text" name="sender-region"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-region') ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-region')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_CITY") ?></td>
         <td><input type="text" name="sender-city" value="<?php
-            echo Option::get(Config::MODULE_ID, 'sender-city') ?>">
+            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-city')) ?>">
         </td>
     </tr>
     <tr>
@@ -495,20 +495,20 @@ echo $ID ?>"
             echo GetMessage("SENDER_STREET") ?></td>
         <td><input type="text" name="sender-street"
                    value="<?php
-                   echo Option::get(Config::MODULE_ID, 'sender-street') ?>"></td>
+                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-street')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_HOUSE") ?></td>
         <td><input type="text" name="sender-house" value="<?php
-            echo Option::get(Config::MODULE_ID, 'sender-house') ?>">
+            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-house')) ?>">
         </td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_ROOM") ?></td>
         <td><input type="text" name="sender-room" value="<?php
-            echo Option::get(Config::MODULE_ID, 'sender-room') ?>">
+            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-room')) ?>">
         </td>
     </tr>
 

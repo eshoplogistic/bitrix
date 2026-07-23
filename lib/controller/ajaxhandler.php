@@ -213,6 +213,8 @@ class AjaxHandler extends Controller
     /** widgetData has no Authentication/Csrf filters by design — it's called anonymously by the
      * api.esplc.ru widget script embedded on storefront pages, which doesn't carry a bitrix_sessid.
      * Origin/Referer is the only available defense against direct cross-site calls to this proxy.
+     * Requests without either header (e.g. forged via curl) are rejected rather than allowed through,
+     * since a real browser call to this same-origin endpoint always carries at least one of them.
      * @param Request $request
      * @return bool
      */
@@ -221,7 +223,7 @@ class AjaxHandler extends Controller
         $host = $request->getHttpHost();
         $origin = $request->getHeader('Origin') ?: $request->getHeader('Referer');
         if (!$origin) {
-            return true;
+            return false;
         }
 
         $originHost = parse_url($origin, PHP_URL_HOST);
