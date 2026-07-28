@@ -583,7 +583,7 @@ echo $ID ?>"
     <?php
     $tabControl->Buttons(
         [
-            "disabled" => ($POST_RIGHT < "W"),
+            "disabled" => ($saleRight < "W"),
             "back_url" => "/bitrix/admin/sale_order_view.php?ID=" . $orderData['ID'] . "&lang=" . LANG,
 
         ],
