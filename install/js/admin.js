@@ -1,4 +1,57 @@
+// Условная видимость полей на форме выгрузки заказа — портировано из МойСклад
+// (assets/js/script.js: displayForm/displayFormInitVisible). Контроллер (select/
+// чекбокс) хранит значение, при совпадении с которым перечисленные поля показываются,
+// иначе скрываются. Поля адресуются по name (как в остальном модуле).
+var ESL_UNLOADING_VISIBILITY_RULES = [
+    // "Курьер" (door) — доставка по адресу, код/адрес ПВЗ не нужны;
+    // "Пункт выдачи" (terminal) — нужен код и адрес терминала/ПВЗ.
+    { controller: 'delivery_type', values: ['terminal'], targets: ['terminal-code', 'terminal-address'] },
+    // Габариты/вес итогового места имеют смысл только если места объединяются в одно.
+    { controller: 'order[combine_places][apply]', values: ['1'], targets: ['order[combine_places][dimensions]', 'order[combine_places][weight]'] }
+];
+
+function eslUnloadingControllerValue(el) {
+    if (!el) {
+        return null;
+    }
+    return el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+}
+
+function eslUnloadingApplyVisibilityRules() {
+    ESL_UNLOADING_VISIBILITY_RULES.forEach(function (rule) {
+        var controller = document.getElementsByName(rule.controller)[0];
+        if (!controller) {
+            return;
+        }
+        var match = rule.values.indexOf(eslUnloadingControllerValue(controller)) !== -1;
+        rule.targets.forEach(function (targetName) {
+            var target = document.getElementsByName(targetName)[0];
+            var row = target && target.closest('tr');
+            if (row) {
+                row.style.display = match ? '' : 'none';
+            }
+        });
+    });
+}
+
+function eslUnloadingWireVisibilityRules() {
+    var bound = {};
+    ESL_UNLOADING_VISIBILITY_RULES.forEach(function (rule) {
+        if (bound[rule.controller]) {
+            return;
+        }
+        bound[rule.controller] = true;
+        var controller = document.getElementsByName(rule.controller)[0];
+        if (controller) {
+            controller.addEventListener('change', eslUnloadingApplyVisibilityRules);
+        }
+    });
+    eslUnloadingApplyVisibilityRules();
+}
+
 BX.ready(function() {
+    eslUnloadingWireVisibilityRules();
+
     let deleteElemTable = function(e) {
         e.preventDefault();
         e.target.closest('tr').remove();

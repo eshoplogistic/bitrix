@@ -340,6 +340,63 @@ function initSettingsTable(table) {
 
     wireAccordion(sections);
     wireToolbar(table, sections);
+    wireVisibilityRules();
+}
+
+// Условная видимость полей — портировано из МойСклад (Iframe.php:
+// visible_by_params_parent). Контроллер (чекбокс/селект) хранит значение, при
+// совпадении с которым перечисленные поля показываются, иначе скрываются. Поля
+// адресуются по name, как и везде в этом файле (совпадает с ключом настройки).
+var ESL_VISIBILITY_RULES = [
+    // СДЭК: "Габариты итогового места" имеет смысл только при включённом
+    // "Объединить все места" (см. Iframe.php:981-990).
+    { controller: 'combine-places-apply-sdek', values: ['1'], targets: ['combine-places-dimensions-sdek'] },
+    // Байкал Сервис: юрлицо -> реквизиты организации, физлицо -> серия/номер
+    // документа (см. Iframe.php:1871-1945, группы sender-org-baikal / sender-identity-baikal).
+    { controller: 'sender-type-baikal', values: ['1'], targets: ['sender-org-form-baikal', 'sender-company-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'] },
+    { controller: 'sender-type-baikal', values: ['2'], targets: ['sender-identity-series-baikal', 'sender-identity-number-baikal'] }
+];
+
+function eslControllerValue(el) {
+    if (!el) {
+        return null;
+    }
+    return el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+}
+
+// Вызывается повторно при каждом показе строк (переключение вкладки ТК,
+// разворачивание секции) — иначе tabs/accordion затирают скрытое правилами состояние
+// плоским "display = ''" для всех строк своей группы.
+function eslApplyVisibilityRules() {
+    ESL_VISIBILITY_RULES.forEach(function (rule) {
+        var controller = document.getElementsByName(rule.controller)[0];
+        if (!controller) {
+            return;
+        }
+        var match = rule.values.indexOf(eslControllerValue(controller)) !== -1;
+        rule.targets.forEach(function (targetName) {
+            var target = document.getElementsByName(targetName)[0];
+            var row = target && target.closest('tr');
+            if (row) {
+                row.style.display = match ? '' : 'none';
+            }
+        });
+    });
+}
+
+function wireVisibilityRules() {
+    var bound = {};
+    ESL_VISIBILITY_RULES.forEach(function (rule) {
+        if (bound[rule.controller]) {
+            return;
+        }
+        bound[rule.controller] = true;
+        var controller = document.getElementsByName(rule.controller)[0];
+        if (controller) {
+            controller.addEventListener('change', eslApplyVisibilityRules);
+        }
+    });
+    eslApplyVisibilityRules();
 }
 
 // Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
@@ -424,6 +481,7 @@ function buildCarrierTabs(table) {
             targetBtn.classList.add('esl-carrier-tab--active');
         }
         active = targetGroup;
+        eslApplyVisibilityRules();
     }
 
     groups.forEach(function (g, i) {
@@ -505,6 +563,7 @@ function expandSection(section) {
     }
     section.headingRow.classList.remove('esl-collapsed');
     section.collapsed = false;
+    eslApplyVisibilityRules();
 }
 
 function wireAccordion(sections) {
