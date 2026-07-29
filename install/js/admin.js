@@ -6,8 +6,14 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     // "Курьер" (door) — доставка по адресу, код/адрес ПВЗ не нужны;
     // "Пункт выдачи" (terminal) — нужен код и адрес терминала/ПВЗ.
     { controller: 'delivery_type', values: ['terminal'], targets: ['terminal-code', 'terminal-address'] },
+    // Улица/дом/квартира получателя имеют смысл только при доставке курьером до двери.
+    { controller: 'delivery_type', values: ['door'], targets: ['receiver-street', 'receiver-house', 'receiver-room'] },
     // Габариты/вес итогового места имеют смысл только если места объединяются в одно.
-    { controller: 'order[combine_places][apply]', values: ['1'], targets: ['order[combine_places][dimensions]', 'order[combine_places][weight]'] }
+    { controller: 'order[combine_places][apply]', values: ['1'], targets: ['order[combine_places][dimensions]', 'order[combine_places][weight]'] },
+    // "Груз заберёт ТК" (1) — нужен код терминала отгрузки;
+    // "Сами привезём на терминал" (0) — нужен адрес отправителя.
+    { controller: 'pick_up', values: ['1'], targets: ['sender-terminal'] },
+    { controller: 'pick_up', values: ['0'], targets: ['sender-region', 'sender-city', 'sender-street', 'sender-house', 'sender-room'] }
 ];
 
 function eslUnloadingControllerValue(el) {

@@ -273,6 +273,43 @@ echo $ID ?>"
         <td><input type="text" name="terminal-address" value="<?= htmlspecialcharsbx((string)($addressShipping['terminal_address'] ?? '')) ?>"></td>
     </tr>
     <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_REGION") ?></td>
+        <td><input type="text" name="receiver-region"
+                   value="<?= htmlspecialcharsbx((string)($shippingMethods['region_to'] ?? '')) ?>">
+        </td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_CITY") ?></td>
+        <td><input type="text" name="receiver-city" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['CITY'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_STREET") ?></td>
+        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['ADDRESS'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_HOUSE") ?></td>
+        <td><input type="text" name="receiver-house" value=""></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_ROOM") ?></td>
+        <td><input type="text" name="receiver-room" value=""></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_NAME") ?></td>
+        <td><input ty pe="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_PHONE") ?></td>
+        <td><input type="text" name="receiver-phone" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['PHONE'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
         <td><?php
             echo GetMessage("PAYMENT_TYPE") ?>:
         </td>
@@ -289,28 +326,18 @@ echo $ID ?>"
             </select>
         </td>
     </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("UNLOAD_PRICE") ?></td>
-        <td><input type="text" name="esl-unload-price" value="<?php
-            echo $orderData['PRICE_DELIVERY'] ?>"></td>
-    </tr>
-    <tr>
-        <td><?php
-            echo GetMessage("COMMENT") ?></td>
-        <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
-    </tr>
-
-    <tr>
-        <td>
-            <hr>
-        </td>
-        <td><h3><?php
-                echo GetMessage("ADD_FIELDS") ?></h3></td>
-    </tr>
 
     <?php
+    // Динамические поля выгрузки текущей ТК (lib/helpers/exportfileds.php). Группы с ключом
+    // "sender"/"sender[...]"/"delivery[location_from]..." относятся к отправителю и рендерятся
+    // на вкладке «Данные отправителя» (см. ниже); здесь — всё, что относится к получателю/заказу.
     foreach ($fieldDelivery as $nameArr => $arr):
+        if ($nameArr === 'hr' || $nameArr === 'hr2' || $nameArr === 'hr3') {
+            continue;
+        }
+        if ($nameArr === 'sender' || strpos($nameArr, 'sender[') === 0 || strpos($nameArr, 'delivery[location_from') === 0) {
+            continue;
+        }
         ?>
 
         <?php
@@ -397,48 +424,20 @@ echo $ID ?>"
     <?php
     endforeach; ?>
 
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("UNLOAD_PRICE") ?></td>
+        <td><input type="text" name="esl-unload-price" value="<?php
+            echo $orderData['PRICE_DELIVERY'] ?>"></td>
+    </tr>
+    <tr>
+        <td><?php
+            echo GetMessage("COMMENT") ?></td>
+        <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
+    </tr>
+
     <?php
     $tabControl->BeginNextTab(); ?>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_NAME") ?></td>
-        <td><input type="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_PHONE") ?></td>
-        <td><input type="text" name="receiver-phone" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['PHONE'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_REGION") ?></td>
-        <td><input type="text" name="receiver-region"
-                   value="<?= htmlspecialcharsbx((string)($shippingMethods['region_to'] ?? '')) ?>">
-        </td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_CITY") ?></td>
-        <td><input type="text" name="receiver-city" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['CITY'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_STREET") ?></td>
-        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['ADDRESS'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_HOUSE") ?></td>
-        <td><input type="text" name="receiver-house" value=""></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_ROOM") ?></td>
-        <td><input type="text" name="receiver-room" value=""></td>
-    </tr>
-
-    <hr>
-
     <tr>
         <td><?php
             echo GetMessage("DELIVERY_METHOD_TERMINAL") ?>:
@@ -515,6 +514,91 @@ echo $ID ?>"
             echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-room')) ?>">
         </td>
     </tr>
+
+    <?php
+    // Динамические поля отправителя (группы "sender"/"sender[...]"/"delivery[location_from]...",
+    // отфильтрованные из общего цикла на вкладке «Данные получателя» выше).
+    foreach ($fieldDelivery as $nameArr => $arr):
+        if ($nameArr === 'hr' || $nameArr === 'hr2' || $nameArr === 'hr3') {
+            continue;
+        }
+        if (!($nameArr === 'sender' || strpos($nameArr, 'sender[') === 0 || strpos($nameArr, 'delivery[location_from') === 0)) {
+            continue;
+        }
+        ?>
+
+        <?php
+        foreach ($arr as $key => $value):
+            $explodeKey = explode('||', $key);
+            $name = $explodeKey[0];
+            $type = $explodeKey[1];
+            ?>
+
+            <?php
+            $fieldValue  = htmlspecialcharsbx((string)$value);
+            $fieldName   = htmlspecialcharsbx((string)$name);
+            $fieldArr    = htmlspecialcharsbx((string)$nameArr);
+            if ($type === 'text'): ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                    <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'date'): ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                    <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'checkbox'):
+                ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                    <td>
+                        <label class="esl-toggle">
+                            <input type="checkbox" name="<?php
+                            echo $nameArr ?>[<?php
+                            echo $name ?>]" <?php echo $value ?>>
+                            <span class="esl-toggle__track"></span>
+                        </label>
+                    </td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'select'): ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?>:
+                    </td>
+                    <td>
+                        <select name="<?php
+                        echo $nameArr ?>[<?php
+                        echo $name ?>]">
+                            <?php
+                            foreach ($value as $k => $v): ?>
+                                <option value="<?php
+                                echo htmlspecialcharsbx((string)$k) ?>"><?php
+                                    echo htmlspecialcharsbx((string)$v) ?></option>
+                            <?php
+                            endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+            <?php
+            endif; ?>
+
+        <?php
+        endforeach; ?>
+    <?php
+    endforeach; ?>
 
     <?php
     $tabControl->BeginNextTab(); ?>

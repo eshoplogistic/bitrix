@@ -1,7 +1,7 @@
 <?php
 $MESS["UNLOADING_TITLE_EDIT"] = "Выгрузка заказа ";
-$MESS["FORM_SECTION_1"] = "Общее";
-$MESS["FORM_SECTION_2"] = "Получатель / Отправитель";
+$MESS["FORM_SECTION_1"] = "Данные получателя";
+$MESS["FORM_SECTION_2"] = "Данные отправителя";
 $MESS["FORM_SECTION_3"] = "Места";
 $MESS["FORM_SECTION_4"] = "Дополнительные услуги";
 
