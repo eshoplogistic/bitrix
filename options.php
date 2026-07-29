@@ -547,10 +547,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 ),
 			),
 		),
-		array(
-			"DIV"       => "faq",
-			"TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"),
-		),
         array(
             "DIV"       => "unloading",
             "TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_UNLOADING_TITLE"),
@@ -689,6 +685,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER")
             )),
         ),
+		array(
+			"DIV"       => "faq",
+			"TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"),
+		),
 	);
 
 	if($request->isPost() && check_bitrix_sessid() && $LOG_ELEMUPD_RIGHT>="W"){
