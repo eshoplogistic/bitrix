@@ -302,7 +302,7 @@ echo $ID ?>"
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_NAME") ?></td>
-        <td><input ty pe="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
+        <td><input type="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
