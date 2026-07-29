@@ -322,21 +322,57 @@ BX.ready(function () {
     syncStatusForm();
 });
 
-// Строки настроек каждой ТК на странице "Настройки выгрузки заказов" (options.php)
-// рендерятся нативным __AdmSettingsDrawList плоским списком (сам он вкладки не
-// поддерживает) — группируем их по службам на лету и рисуем поверх обычную панель
-// вкладок, используя маркеры-границы и подписи служб, которые options.php вставил
-// в заголовочные строки (см. $transportOptions).
+// Страница настроек модуля перерисовывается поверх плоских таблиц, которые рисует
+// нативный __AdmSettingsDrawList (сам он не умеет ни вкладки, ни свёртывание секций,
+// ни поиск). Всё ниже — надстройка над готовым DOM: группировка полей каждой ТК по
+// вкладкам служб доставки, сворачиваемые секции (аккордеон) и живой поиск по полям.
 BX.ready(function () {
-    var startMarker = document.getElementById('esl-carriers-boundary-start');
-    var endMarker = document.getElementById('esl-carriers-boundary-end');
+    Array.prototype.slice.call(document.querySelectorAll('table.edit-table')).forEach(function (table) {
+        initSettingsTable(table);
+    });
+});
+
+function initSettingsTable(table) {
+    relocateInlineButtons(table);
+
+    var carrier = buildCarrierTabs(table);
+    var sections = buildSections(table, carrier);
+
+    wireAccordion(sections);
+    wireToolbar(table, sections);
+}
+
+// Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
+// __AdmSettingsDrawRow — у 'note'-элементов нет своей ячейки-лейбла, только
+// colspan=2), но по смыслу относятся к полю в предыдущей строке — переносим их
+// в ячейку с инпутом, чтобы они стояли рядом, а не отдельным блоком снизу.
+function relocateInlineButtons(table) {
+    Array.prototype.slice.call(table.querySelectorAll('.esl-inline-btn')).forEach(function (btn) {
+        var noteRow = btn.closest('tr');
+        var targetRow = noteRow && noteRow.previousElementSibling;
+        var targetCell = targetRow && targetRow.cells && targetRow.cells[1];
+        if (!noteRow || !targetCell) {
+            return;
+        }
+        targetCell.appendChild(btn);
+        noteRow.parentNode.removeChild(noteRow);
+    });
+}
+
+// Строки настроек каждой ТК рендерятся плоским списком между служебными
+// маркерами-границами и подписями служб, которые options.php вставил в заголовочные
+// строки (см. $transportOptions в options.php) — группируем их по службам на лету и
+// рисуем поверх обычную панель вкладок.
+function buildCarrierTabs(table) {
+    var startMarker = table.querySelector('#esl-carriers-boundary-start');
+    var endMarker = table.querySelector('#esl-carriers-boundary-end');
     if (!startMarker || !endMarker) {
-        return;
+        return null;
     }
     var startRow = startMarker.closest('tr');
     var endRow = endMarker.closest('tr');
     if (!startRow || !endRow) {
-        return;
+        return null;
     }
 
     var groups = [];
@@ -346,7 +382,11 @@ BX.ready(function () {
         var next = row.nextElementSibling;
         var headingSpan = row.querySelector('.esl-carrier-heading[data-esl-service]');
         if (headingSpan) {
-            current = { service: headingSpan.getAttribute('data-esl-service'), label: headingSpan.textContent.replace(/^.*?:\s*/, ''), rows: [] };
+            current = {
+                service: headingSpan.getAttribute('data-esl-service'),
+                label: headingSpan.textContent.replace(/^.*?:\s*/, ''),
+                rows: []
+            };
             groups.push(current);
             row.style.display = 'none';
         } else if (current) {
@@ -357,7 +397,7 @@ BX.ready(function () {
     startRow.style.display = 'none';
     endRow.style.display = 'none';
     if (!groups.length) {
-        return;
+        return null;
     }
 
     var tabsRow = document.createElement('tr');
@@ -366,21 +406,42 @@ BX.ready(function () {
     var bar = document.createElement('div');
     bar.className = 'esl-carrier-tabs';
 
-    function activate(activeGroup, activeBtn) {
+    var active = groups[0];
+
+    function activate(targetGroup) {
+        var targetBtn = null;
         groups.forEach(function (g) {
             g.rows.forEach(function (r) { r.style.display = 'none'; });
         });
-        bar.querySelectorAll('.esl-carrier-tab').forEach(function (b) { b.classList.remove('esl-carrier-tab--active'); });
-        activeGroup.rows.forEach(function (r) { r.style.display = ''; });
-        activeBtn.classList.add('esl-carrier-tab--active');
+        bar.querySelectorAll('.esl-carrier-tab').forEach(function (b) {
+            b.classList.remove('esl-carrier-tab--active');
+            if (b.__eslGroup === targetGroup) {
+                targetBtn = b;
+            }
+        });
+        targetGroup.rows.forEach(function (r) { r.style.display = ''; });
+        if (targetBtn) {
+            targetBtn.classList.add('esl-carrier-tab--active');
+        }
+        active = targetGroup;
     }
 
     groups.forEach(function (g, i) {
         var btn = document.createElement('a');
         btn.href = 'javascript:void(0)';
         btn.className = 'esl-carrier-tab' + (i === 0 ? ' esl-carrier-tab--active' : '');
-        btn.textContent = g.label;
-        btn.addEventListener('click', function () { activate(g, btn); });
+        btn.__eslGroup = g;
+
+        var badge = document.createElement('span');
+        badge.className = 'esl-carrier-tab-badge';
+        badge.textContent = g.label.replace(/[^0-9A-Za-zА-Яа-яЁё]/g, '').slice(0, 2).toUpperCase() || '?';
+        btn.appendChild(badge);
+
+        var text = document.createElement('span');
+        text.textContent = g.label;
+        btn.appendChild(text);
+
+        btn.addEventListener('click', function () { activate(g); });
         bar.appendChild(btn);
         g.rows.forEach(function (r) { r.style.display = (i === 0 ? '' : 'none'); });
     });
@@ -388,5 +449,95 @@ BX.ready(function () {
     tabsCell.appendChild(bar);
     tabsRow.appendChild(tabsCell);
     startRow.parentNode.insertBefore(tabsRow, startRow.nextSibling);
-});
+
+    return {
+        groups: groups,
+        tabsRow: tabsRow,
+        startRow: startRow,
+        endRow: endRow,
+        activate: activate,
+        getActive: function () { return active; }
+    };
+}
+
+// Разбивает строки таблицы на сворачиваемые секции по заголовкам вида
+// <span class="esl-section-heading">, которые options.php расставил между блоками
+// связанных полей. Секция, содержащая панель вкладок служб доставки, помечается
+// ссылкой на carrier — её раскрытие/схлопывание работает как с единым целым.
+function buildSections(table, carrier) {
+    var sections = [];
+    var current = null;
+    var rows = Array.prototype.slice.call(table.rows);
+
+    rows.forEach(function (row) {
+        var headingSpan = row.classList.contains('heading') ? row.querySelector('.esl-section-heading') : null;
+        if (headingSpan) {
+            current = { headingRow: row, headingSpan: headingSpan, rows: [], carrier: null, collapsed: false };
+            sections.push(current);
+            return;
+        }
+        if (current) {
+            current.rows.push(row);
+        }
+    });
+
+    sections.forEach(function (section) {
+        if (carrier && section.rows.indexOf(carrier.tabsRow) !== -1) {
+            section.carrier = carrier;
+        }
+    });
+
+    return sections;
+}
+
+function collapseSection(section) {
+    section.rows.forEach(function (r) { r.style.display = 'none'; });
+    section.headingRow.classList.add('esl-collapsed');
+    section.collapsed = true;
+}
+
+function expandSection(section) {
+    if (section.carrier) {
+        section.carrier.tabsRow.style.display = '';
+        section.carrier.activate(section.carrier.getActive());
+    } else {
+        section.rows.forEach(function (r) { r.style.display = ''; });
+    }
+    section.headingRow.classList.remove('esl-collapsed');
+    section.collapsed = false;
+}
+
+function wireAccordion(sections) {
+    sections.forEach(function (section) {
+        section.headingRow.classList.add('esl-collapsible');
+        section.headingRow.addEventListener('click', function () {
+            if (section.collapsed) {
+                expandSection(section);
+            } else {
+                collapseSection(section);
+            }
+        });
+    });
+}
+
+function wireToolbar(table, sections) {
+    var toolbar = table.querySelector('[data-esl-toolbar]');
+    if (!toolbar) {
+        return;
+    }
+
+    var expandBtn = toolbar.querySelector('[data-esl-action="expand-all"]');
+    var collapseBtn = toolbar.querySelector('[data-esl-action="collapse-all"]');
+
+    if (expandBtn) {
+        expandBtn.addEventListener('click', function () {
+            sections.forEach(expandSection);
+        });
+    }
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', function () {
+            sections.forEach(collapseSection);
+        });
+    }
+}
 

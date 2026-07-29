@@ -36,6 +36,15 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_TERMINAL_PVZ"] = "Изменить названи�
 $MESS["ESHOP_LOGISTIC_OPTIONS_PRICE_EMPTY"] = "Заменить расчётную стоимость «0 руб» на текст";
 $MESS["ESHOP_LOGISTIC_OPTIONS_PRICE_HIDE"] = "Скрыть стоимость доставки";
 
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_ACCESS"] = "Доступ и авторизация";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_BEHAVIOR"] = "Поведение и режимы";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_PACKAGE"] = "Габариты и вес по умолчанию";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_DISPLAY"] = "Адрес, ПВЗ и отображение ошибок";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_PAYMENT"] = "Способы оплаты";
+
+$MESS["ESHOP_LOGISTIC_OPTIONS_EXPAND_ALL"] = "Развернуть всё";
+$MESS["ESHOP_LOGISTIC_OPTIONS_COLLAPSE_ALL"] = "Свернуть всё";
+
 
 $MESS["ESHOP_LOGISTIC_OPTIONS_TAB2_NAME"] = "Описание установки";
 
@@ -84,6 +93,8 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_S_STREET"] = "Улица";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_HOUSE"] = "Здание";
 $MESS["ESHOP_LOGISTIC_OPTIONS_S_ROOM"] = "Квартира / офис";
 $MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER"] = "Настройка статусов";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_SENDER"] = "Данные отправителя";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_CARRIERS"] = "Настройки служб доставки";
 $MESS["ESHOP_LOGISTIC_OPTIONS_ADD_FIELD"] = "Дополнительные услуги";
 $MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"] = "Планировщик выгрузки заказов";
 $MESS["ESHOP_LOGISTIC_OPTIONS_CRON_UNLOADING_STATUS"] = "Статусы заказов для работы агента";

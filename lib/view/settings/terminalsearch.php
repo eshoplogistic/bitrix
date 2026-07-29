@@ -53,16 +53,81 @@ if ($request->isPost()) {
 $actionUrl = $APPLICATION->GetCurPage() . '?service=' . urlencode($service) . '&target=' . urlencode($target);
 ?>
 <style>
-    .esl-terminal-search { margin: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .esl-terminal-search__row { margin-bottom: 10px; }
-    .esl-terminal-search__row label { display: block; margin-bottom: 4px; font-size: 13px; color: #3d4f6e; }
-    .esl-terminal-search__row input[type="text"] { width: 100%; box-sizing: border-box; }
-    .esl-terminal-search__results { margin-top: 14px; border: 1px solid #d3dade; border-radius: 5px; max-height: 260px; overflow-y: auto; }
-    .esl-terminal-search__item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eef1f3; font-size: 13px; }
+    .esl-terminal-search {
+        --esl-accent: #4a7dff;
+        --esl-accent-dark: #3563e0;
+        --esl-accent-soft: rgba(74, 125, 255, 0.12);
+        --esl-text: #1a2540;
+        --esl-text-muted: #5a6782;
+        --esl-text-faint: #93a0bd;
+        --esl-border: #dde3ed;
+        --esl-bg-subtle: #f8f9fc;
+        --esl-radius: 10px;
+        --esl-radius-sm: 6px;
+        margin: 18px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--esl-text);
+    }
+    .esl-terminal-search__row { margin-bottom: 14px; }
+    .esl-terminal-search__row label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--esl-text-muted); }
+    .esl-terminal-search__row input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #c8d0e0;
+        border-radius: var(--esl-radius-sm);
+        padding: 8px 12px;
+        font-size: 13px;
+        color: var(--esl-text);
+        background: #fafbfd;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .esl-terminal-search__row input[type="text"]:focus {
+        border-color: var(--esl-accent);
+        box-shadow: 0 0 0 3px var(--esl-accent-soft);
+        background: #fff;
+    }
+    .esl-terminal-search__submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 18px;
+        border: 1px solid var(--esl-accent);
+        border-radius: 999px;
+        background: var(--esl-accent);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    .esl-terminal-search__submit:hover { background: var(--esl-accent-dark); border-color: var(--esl-accent-dark); }
+    .esl-terminal-search__results {
+        margin-top: 18px;
+        border: 1px solid var(--esl-border);
+        border-radius: var(--esl-radius);
+        max-height: 260px;
+        overflow-y: auto;
+        background: #fff;
+    }
+    .esl-terminal-search__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--esl-bg-subtle);
+        font-size: 13px;
+        color: var(--esl-text);
+        transition: background 0.12s;
+    }
     .esl-terminal-search__item:last-child { border-bottom: none; }
-    .esl-terminal-search__item:hover { background: #f4f8ff; font-weight: 600; }
-    .esl-terminal-search__item small { color: #8a97a3; font-weight: normal; }
-    .esl-terminal-search__empty { padding: 10px 0; font-size: 13px; color: #8a97a3; }
+    .esl-terminal-search__item:hover { background: var(--esl-accent-soft); }
+    .esl-terminal-search__item-icon { flex: none; color: var(--esl-text-faint); }
+    .esl-terminal-search__item:hover .esl-terminal-search__item-icon { color: var(--esl-accent); }
+    .esl-terminal-search__item-name { font-weight: 600; }
+    .esl-terminal-search__item-desc { color: var(--esl-text-muted); font-weight: normal; }
+    .esl-terminal-search__empty { padding: 24px 4px; text-align: center; font-size: 13px; color: var(--esl-text-faint); }
 </style>
 <div class="esl-terminal-search" id="esl-terminal-root">
     <form id="esl-terminal-form">
@@ -85,7 +150,10 @@ $actionUrl = $APPLICATION->GetCurPage() . '?service=' . urlencode($service) . '&
             . "x.onerror=function(){alert('Запрос не удался');};"
             . "x.send(new FormData(f));";
         ?>
-        <button type="button" class="button button-primary" onclick="<?= htmlspecialchars($searchJs) ?>"><?= GetMessage("ESHOP_LOGISTIC_SETTINGS_TERMINAL_SEARCH_BUTTON") ?></button>
+        <button type="button" class="esl-terminal-search__submit" onclick="<?= htmlspecialchars($searchJs) ?>">
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.6 10.6L14 14M12.3 6.65C12.3 9.73 9.73 12.3 6.65 12.3C3.57 12.3 1 9.73 1 6.65C1 3.57 3.57 1 6.65 1C9.73 1 12.3 3.57 12.3 6.65Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <?= GetMessage("ESHOP_LOGISTIC_SETTINGS_TERMINAL_SEARCH_BUTTON") ?>
+        </button>
     </form>
 
     <?php if ($searched): ?>
@@ -103,8 +171,11 @@ $actionUrl = $APPLICATION->GetCurPage() . '?service=' . urlencode($service) . '&
                         . "if(window.__eslTerminalDialog){window.__eslTerminalDialog.Close();}";
                     ?>
                     <div class="esl-terminal-search__item" onclick="<?= htmlspecialchars($onSelectJs) ?>">
-                        <?= htmlspecialchars((string)($terminal['name'] ?? $code)) ?>
-                        — <small><?= htmlspecialchars((string)($terminal['settlement'] ?? '')) ?>, <?= htmlspecialchars((string)($terminal['address'] ?? '')) ?></small>
+                        <svg class="esl-terminal-search__item-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 15s5-4.6 5-8.5A5 5 0 0 0 3 6.5C3 10.4 8 15 8 15Z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="6.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
+                        <span>
+                            <span class="esl-terminal-search__item-name"><?= htmlspecialchars((string)($terminal['name'] ?? $code)) ?></span>
+                            <span class="esl-terminal-search__item-desc"> — <?= htmlspecialchars((string)($terminal['settlement'] ?? '')) ?>, <?= htmlspecialchars((string)($terminal['address'] ?? '')) ?></span>
+                        </span>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>

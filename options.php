@@ -32,8 +32,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 
 		if ($authStatus['blocked']) {
 			$accountStatus = Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_BLOCKED");
+			$noteStatusClass = 'esl-status-note--warn';
 		} else {
 			$accountStatus = Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ACTIVE");
+			$noteStatusClass = 'esl-status-note--ok';
 		}
 
 		$note = Loc::getMessage(
@@ -47,7 +49,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 		);
 	} else {
 		$note = Loc::getMessage("ESHOP_LOGISTIC_UNAUTHORIZED");
+		$noteStatusClass = 'esl-status-note--error';
 	}
+	$note = '<div class="esl-status-note ' . $noteStatusClass . '">' . $note . '</div>';
 
     $currentSendPoint = Loc::getMessage("ESHOP_LOGISTIC_CURRENT_CITY_V2");
 
@@ -422,11 +426,14 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         // Поиск терминала по адресу доступен только там, где он есть в МойСклад
         // (в 5Post он там же отключён, а у остальных служб этого поля вообще нет).
         if (in_array($svcCode, $terminalSearchServices, true)) {
+            // Кнопка переезжает в ячейку поля "Код терминала отгрузки" рядом с инпутом
+            // (см. relocateInlineButtons() в settings.js) — здесь она лишь временно
+            // рендерится отдельной строкой, которую JS сразу убирает.
             $transportOptions[] = array(
-                'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON")) . '" onclick="window.__eslTerminalDialog=(new BX.CAdminDialog({'
+                'note' => '<button type="button" class="esl-inline-btn esl-terminal-search-btn" title="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON")) . '" onclick="window.__eslTerminalDialog=(new BX.CAdminDialog({'
                     . "'content_url': '/bitrix/admin/eshoplogistic_delivery_terminalsearch.php?service=" . $svcCode . "&target=sender-terminal-" . $svcCode . "',"
                     . "'draggable': true, 'resizable': true, 'width': 620, 'height': 480"
-                    . '}));window.__eslTerminalDialog.Show();">'
+                    . '}));window.__eslTerminalDialog.Show();"><svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.6 10.6L14 14M12.3 6.65C12.3 9.73 9.73 12.3 6.65 12.3C3.57 12.3 1 9.73 1 6.65C1 3.57 3.57 1 6.65 1C9.73 1 12.3 3.57 12.3 6.65Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
             );
         }
         $transportOptions[] = array(
@@ -491,7 +498,21 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 			"DIV"       => "edit",
 			"TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TAB_NAME"),
 			"OPTIONS" => array(
-				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TITLE_NAME"),
+				array(
+					'note' => '<div class="esl-toolbar" data-esl-toolbar>'
+						. '<div class="esl-toolbar-info">'
+						. '<svg class="esl-toolbar-info-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 6.8V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="4.5" r="0.9" fill="currentColor"/></svg>'
+						. '<span>' . htmlspecialcharsbx($currentSendPoint) . '</span>'
+						. '</div>'
+						. '<div class="esl-toolbar-actions">'
+						. '<button type="button" class="esl-toolbar-btn esl-toolbar-btn--accent" onclick="eslogClearCach()">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_BTN")) . '</button>'
+						. '<span class="esl-toolbar-sep"></span>'
+						. '<button type="button" class="esl-toolbar-btn" data-esl-action="expand-all">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_EXPAND_ALL")) . '</button>'
+						. '<button type="button" class="esl-toolbar-btn" data-esl-action="collapse-all">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COLLAPSE_ALL")) . '</button>'
+						. '</div>'
+						. '</div>'
+				),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_ACCESS")) . '</span>',
 				array(
 					'note' => $note
 				),
@@ -510,6 +531,13 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_YAMAP_KEY_DESC")
                 ),
+                array(
+                    "widget_key",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"),
+                    "",
+                    array("text")
+                ),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_BEHAVIOR")) . '</span>',
 				array(
 					"api_log",
 					Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_LOG"),
@@ -540,12 +568,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("checkbox")
                 ),
-                array(
-                    "widget_key",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"),
-                    "",
-                    array("text")
-                ),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_PACKAGE")) . '</span>',
                 array(
                     "weight_default",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WEIGHT_DEFAULT"),
@@ -570,6 +593,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "0",
                     array("text")
                 ),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_DISPLAY")) . '</span>',
                 array(
                     "api_address_requar",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"),
@@ -600,7 +624,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("checkbox")
                 ),
-				Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION"),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_PAYMENT")) . '</span>',
+                array(
+                    'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_DESCRIPTION")
+                ),
 				array(
 					"api_payment_card",
 					Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CARD"),
@@ -637,6 +664,15 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             "DIV"       => "unloading",
             "TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_UNLOADING_TITLE"),
             "OPTIONS" => array_merge(array(
+                array(
+                    'note' => '<div class="esl-toolbar" data-esl-toolbar>'
+                        . '<div class="esl-toolbar-actions">'
+                        . '<button type="button" class="esl-toolbar-btn" data-esl-action="expand-all">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_EXPAND_ALL")) . '</button>'
+                        . '<button type="button" class="esl-toolbar-btn" data-esl-action="collapse-all">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COLLAPSE_ALL")) . '</button>'
+                        . '</div>'
+                        . '</div>'
+                ),
+                '<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_SENDER")) . '</span>',
                 array(
                     "sender-name",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_NAME"),
@@ -685,8 +721,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
+            ), array(
+                '<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_CARRIERS")) . '</span>',
             ), $transportOptions, array(
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"),
+                '<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING")) . '</span>',
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CRON_URL_UNLOADING")
                 ),
@@ -702,7 +740,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER")
+                '<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER")) . '</span>',
             )),
         ),
 		array(
@@ -760,17 +798,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 			if($aTab["DIV"] == 'edit') {
 
 				$tabControl->BeginNextTab();
-				?>
-				<tr>
-					<td style='vertical-align:center;'>
-						<?= $currentSendPoint ?>
-					</td>
-					<td style='text-align:center'>
-						<input type='button' value='<?= Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_BTN") ?>'
-						       onclick='eslogClearCach()'>
-					</td>
-				</tr>
-				<?
 				__AdmSettingsDrawList($module_id, $aTab["OPTIONS"]);
 			}
 			if($aTab["DIV"] == 'faq'){
