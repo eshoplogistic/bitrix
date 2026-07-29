@@ -181,6 +181,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         ),
         'delline' => array(
             array(
+                "sender-uid-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE"),
+                "",
+                $counterFields
+            ),
+            array(
+                "sender-counter-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_COUNTER_DELLINE"),
+                "",
+                array("text")
+            ),
+            array(
                 "mode-delline",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_MODE_DELLINE"),
                 "auto",
@@ -232,6 +244,16 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array("text")
             ),
         ),
+        'kit' => array(
+            array(
+                "sender-uid-kit",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT"),
+                "",
+                array("text"),
+                "",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT_HINT")
+            ),
+        ),
         'pecom' => array(
             array(
                 "order-content-pecom",
@@ -258,6 +280,65 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER"),
                 "sender",
                 array('selectbox', $payerValues2)
+            ),
+            array(
+                "sender-email-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_EMAIL_BAIKAL"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-type-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SENDER_TYPE_BAIKAL"),
+                "1",
+                array('selectbox', array(
+                    '1' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_LEGAL"),
+                    '2' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
+                ))
+            ),
+            array(
+                "sender-org-form-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ORG_FORM_BAIKAL"),
+                "5",
+                array('selectbox', array(
+                    '1'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
+                    '5'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OOO"),
+                    '6'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OAO"),
+                    '7'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ZAO"),
+                    '8'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAO"),
+                    '9'  => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_IP"),
+                    '12' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_AO"),
+                ))
+            ),
+            array(
+                "sender-company-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COMPANY_BAIKAL"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-inn-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_INN_BAIKAL"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-kpp-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_KPP_BAIKAL"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-series-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_SERIES_BAIKAL"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-number-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_NUMBER_BAIKAL"),
+                "",
+                array("text")
             ),
         ),
         'dpd' => array(
@@ -308,8 +389,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
     $terminalSearchServices = array('sdek', 'boxberry', 'yandex', 'kit', 'pecom', 'delline', 'dpd', 'baikal');
 
     $transportOptions = array();
+    // Пустые маркеры-границы нужны JS-скрипту в конце файла, который группирует
+    // все строки таблицы между ними по службам и рисует вкладки поверх обычного
+    // плоского списка настроек (нативный __AdmSettingsDrawList вкладок не поддерживает).
+    $transportOptions[] = '<span id="esl-carriers-boundary-start" style="display:none"></span>';
     foreach ($transportServices as $svcCode => $svcHeading) {
-        $transportOptions[] = $svcHeading;
+        $transportOptions[] = '<span class="esl-carrier-heading" data-esl-service="' . htmlspecialcharsbx($svcCode) . '">' . htmlspecialcharsbx($svcHeading) . '</span>';
         $transportOptions[] = array(
             'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
                 . "'content_url': '/bitrix/admin/eshoplogistic_delivery_additionalservices.php?service=" . $svcCode . "',"
@@ -399,6 +484,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             }
         }
     }
+    $transportOptions[] = '<span id="esl-carriers-boundary-end" style="display:none"></span>';
 
     $aTabs = array(
 		array(
@@ -552,24 +638,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             "TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_UNLOADING_TITLE"),
             "OPTIONS" => array_merge(array(
                 array(
-                    "sender-uid-kit",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-uid-delline",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE"),
-                    "",
-                    $counterFields
-                ),
-                array(
-                    "sender-counter-delline",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_COUNTER_DELLINE"),
-                    "",
-                    array("text")
-                ),
-                array(
                     "sender-name",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_NAME"),
                     "",
@@ -614,54 +682,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array(
                     "sender-room",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_ROOM"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-legal",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SENDER_LEGAL"),
-                    "",
-                    array('selectbox',
-                        array(
-                            '1' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_LEGAL"),
-                            '2' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
-                        )
-                    )
-                ),
-                array(
-                    "sender-type",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SENDER_TYPE"),
-                    "",
-                    array('selectbox',
-                        array(
-                            '1' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
-                            '5' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OOO"),
-                            '9' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_IP"),
-                            '12' =>  Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_AO"),
-                        )
-                    )
-                ),
-                array(
-                    "sender-series",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SERIES"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-number",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NUMBER"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-inn",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_INN"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-kpp",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_KPP"),
                     "",
                     array("text")
                 ),

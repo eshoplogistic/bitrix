@@ -322,3 +322,71 @@ BX.ready(function () {
     syncStatusForm();
 });
 
+// Строки настроек каждой ТК на странице "Настройки выгрузки заказов" (options.php)
+// рендерятся нативным __AdmSettingsDrawList плоским списком (сам он вкладки не
+// поддерживает) — группируем их по службам на лету и рисуем поверх обычную панель
+// вкладок, используя маркеры-границы и подписи служб, которые options.php вставил
+// в заголовочные строки (см. $transportOptions).
+BX.ready(function () {
+    var startMarker = document.getElementById('esl-carriers-boundary-start');
+    var endMarker = document.getElementById('esl-carriers-boundary-end');
+    if (!startMarker || !endMarker) {
+        return;
+    }
+    var startRow = startMarker.closest('tr');
+    var endRow = endMarker.closest('tr');
+    if (!startRow || !endRow) {
+        return;
+    }
+
+    var groups = [];
+    var current = null;
+    var row = startRow.nextElementSibling;
+    while (row && row !== endRow) {
+        var next = row.nextElementSibling;
+        var headingSpan = row.querySelector('.esl-carrier-heading[data-esl-service]');
+        if (headingSpan) {
+            current = { service: headingSpan.getAttribute('data-esl-service'), label: headingSpan.textContent.replace(/^.*?:\s*/, ''), rows: [] };
+            groups.push(current);
+            row.style.display = 'none';
+        } else if (current) {
+            current.rows.push(row);
+        }
+        row = next;
+    }
+    startRow.style.display = 'none';
+    endRow.style.display = 'none';
+    if (!groups.length) {
+        return;
+    }
+
+    var tabsRow = document.createElement('tr');
+    var tabsCell = document.createElement('td');
+    tabsCell.colSpan = 2;
+    var bar = document.createElement('div');
+    bar.className = 'esl-carrier-tabs';
+
+    function activate(activeGroup, activeBtn) {
+        groups.forEach(function (g) {
+            g.rows.forEach(function (r) { r.style.display = 'none'; });
+        });
+        bar.querySelectorAll('.esl-carrier-tab').forEach(function (b) { b.classList.remove('esl-carrier-tab--active'); });
+        activeGroup.rows.forEach(function (r) { r.style.display = ''; });
+        activeBtn.classList.add('esl-carrier-tab--active');
+    }
+
+    groups.forEach(function (g, i) {
+        var btn = document.createElement('a');
+        btn.href = 'javascript:void(0)';
+        btn.className = 'esl-carrier-tab' + (i === 0 ? ' esl-carrier-tab--active' : '');
+        btn.textContent = g.label;
+        btn.addEventListener('click', function () { activate(g, btn); });
+        bar.appendChild(btn);
+        g.rows.forEach(function (r) { r.style.display = (i === 0 ? '' : 'none'); });
+    });
+
+    tabsCell.appendChild(bar);
+    tabsRow.appendChild(tabsCell);
+    startRow.parentNode.insertBefore(tabsRow, startRow.nextSibling);
+});
+

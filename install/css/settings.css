@@ -482,3 +482,14 @@ input[name="status-form"] {
 #faq .edit-table td.esl-faq-text p:last-child {
     margin-bottom: 0;
 }
+
+/* Вкладки служб доставки на странице "Настройки выгрузки заказов" (options.php) */
+.esl-carrier-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 0 4px; }
+.esl-carrier-tab {
+    display: inline-block; padding: 6px 12px; border: 1px solid #d3dade; border-bottom: none;
+    border-radius: 4px 4px 0 0; background: #f4f6f8; color: #3d4f6e; font-size: 13px;
+    text-decoration: none; cursor: pointer;
+}
+.esl-carrier-tab:hover { background: #eaf0f7; text-decoration: none; }
+.esl-carrier-tab--active { background: #fff; border-bottom: 1px solid #fff; margin-bottom: -1px; font-weight: 700;
+}

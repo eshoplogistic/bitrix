@@ -470,16 +470,18 @@ class ExportFileds {
                     'sender||hr' => ''
                 ),
                 'sender'   => array(
-                    'legal||text'    => Option::get(Config::MODULE_ID, 'sender-legal'),
+                    'legal||text'    => Option::get(Config::MODULE_ID, 'sender-type-baikal'),
+                    'email||text'    => Option::get(Config::MODULE_ID, 'sender-email-baikal'),
+                    'company||text'  => Option::get(Config::MODULE_ID, 'sender-company-baikal'),
                 ),
                 'sender[identity]' => array(
-                    'type||text' => Option::get(Config::MODULE_ID, 'sender-type'),
-                    'series||text' => Option::get(Config::MODULE_ID, 'sender-series'),
-                    'number||text' => Option::get(Config::MODULE_ID, 'sender-number'),
+                    'type||text' => Option::get(Config::MODULE_ID, 'sender-org-form-baikal'),
+                    'series||text' => Option::get(Config::MODULE_ID, 'sender-identity-series-baikal'),
+                    'number||text' => Option::get(Config::MODULE_ID, 'sender-identity-number-baikal'),
                 ),
                 'sender[requisites]' => array(
-                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-inn'),
-                    'kpp||text' => Option::get(Config::MODULE_ID, 'sender-kpp'),
+                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-inn-baikal'),
+                    'kpp||text' => Option::get(Config::MODULE_ID, 'sender-kpp-baikal'),
                 ),
                 'hr2' => array(
                     'receiver||hr' => ''
