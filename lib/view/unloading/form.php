@@ -92,7 +92,6 @@ foreach ($basket as $item) {
         "product_id" => $item->getProductId(),
         "name" => $item->getField('NAME'),
         "quantity" => $item->getQuantity(),
-        "total" => $item->getFinalPrice(),
         "price" => $item->getPrice(),
         "weight" => isset($weight) && $weight != '0.00' ? $weight / 1000 : 1,
         "width" => isset($width) && $width != '0.00' ? $width : 0,
@@ -345,8 +344,12 @@ echo $ID ?>"
     // Динамические поля выгрузки текущей ТК (lib/helpers/exportfileds.php). Группы с ключом
     // "sender"/"sender[...]"/"delivery[location_from]..." относятся к отправителю и рендерятся
     // на вкладке «Данные отправителя» (см. ниже); здесь — всё, что относится к получателю/заказу.
+    // "order[combine_places]" рендерится отдельно на вкладке «Места», сразу под таблицей.
     foreach ($fieldDelivery as $nameArr => $arr):
         if ($nameArr === 'hr' || $nameArr === 'hr2' || $nameArr === 'hr3') {
+            continue;
+        }
+        if ($nameArr === 'order[combine_places]') {
             continue;
         }
         if ($nameArr === 'sender' || strpos($nameArr, 'sender[') === 0 || strpos($nameArr, 'delivery[location_from') === 0) {
@@ -616,10 +619,47 @@ echo $ID ?>"
 
     <?php
     $tabControl->BeginNextTab(); ?>
+    <tr>
+        <td colspan="2">
+            <?php
+            $eslTable->prepare_items($orderItems);
+            $eslTable->display();
+            ?>
+        </td>
+    </tr>
+
     <?php
-    $eslTable->prepare_items($orderItems);
-    $eslTable->display();
-    ?>
+    // "Объединить все грузовые места в одно" — под таблицей мест, а не среди полей получателя
+    // (как в МС/WP: unloading.html.php / unloading-form.php, секция с таблицей мест).
+    // Тело вкладки — table.edit-table, поэтому свой блок тоже оборачиваем в <tr><td colspan="2">,
+    // иначе браузер выносит "голый" <div> из <tbody> и рвёт границы вкладок (foster parenting).
+    if (isset($fieldDelivery['order[combine_places]'])): ?>
+        <tr>
+            <td colspan="2">
+                <div class="esl-combine-places">
+                    <?php foreach ($fieldDelivery['order[combine_places]'] as $key => $value):
+                        $explodeKey = explode('||', $key);
+                        $name = $explodeKey[0];
+                        $type = $explodeKey[1];
+                        $fieldId = 'esl-combine-places-' . htmlspecialcharsbx($name);
+                        ?>
+                        <div class="esl-combine-places__field<?= $type === 'checkbox' ? ' esl-combine-places__field--checkbox' : '' ?>">
+                            <label class="esl-combine-places__label" for="<?= $fieldId ?>"><?php
+                                echo GetMessage("ADDFIELDS_" . $name) ?></label>
+                            <?php if ($type === 'checkbox'): ?>
+                                <label class="esl-toggle">
+                                    <input id="<?= $fieldId ?>" type="checkbox" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" <?php echo $value ?>>
+                                    <span class="esl-toggle__track"></span>
+                                </label>
+                            <?php else: ?>
+                                <input id="<?= $fieldId ?>" type="text" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" value="<?= htmlspecialcharsbx((string)$value) ?>">
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+        </tr>
+    <?php endif; ?>
 
     <?php
     $tabControl->BeginNextTab(); ?>

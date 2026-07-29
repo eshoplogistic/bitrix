@@ -202,20 +202,30 @@ form[name^=unloading_form] #edit3 .adm-detail-content-item-block {
     padding: 20px !important;
 }
 
-/* Таблица-карточка */
-form[name^=unloading_form] #edit3 table {
-    width: 100%;
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
+/* Обёртка таблицы мест + кнопка "Добавить место" (см. lib/helpers/table.php) —
+   вид и разметка портированы из wp-content/plugins/eshoplogisticru (unloading.css). */
+form[name^=unloading_form] .esl-places__main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+form[name^=unloading_form] .esl-table-scroll {
+    overflow-x: auto;
     background: #ffffff;
     border: 1px solid #dde3ed;
     border-radius: 8px;
-    overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+form[name^=unloading_form] .esl-places-table {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
 /* Заголовки колонок */
-form[name^=unloading_form] #edit3 thead th {
+form[name^=unloading_form] .esl-places-table thead th {
     font-size: 11px !important;
     font-weight: 700 !important;
     text-transform: uppercase;
@@ -229,24 +239,27 @@ form[name^=unloading_form] #edit3 thead th {
 }
 
 /* Строки тела таблицы */
-form[name^=unloading_form] #edit3 .mainTbody tr {
+form[name^=unloading_form] .esl-places-table tbody tr {
     transition: background 0.12s ease;
 }
 
-form[name^=unloading_form] #edit3 .mainTbody tr:hover td {
+form[name^=unloading_form] .esl-places-table tbody tr:hover td {
     background: #f7f9fd;
 }
 
-form[name^=unloading_form] #edit3 .mainTbody tr td,
-form[name^=unloading_form] .mainTbody .adm-detail-content-cell-r,
-form[name^=unloading_form] .mainTbody .adm-detail-content-cell-l {
+form[name^=unloading_form] .esl-places-table td {
     padding: 5px 8px !important;
     border-bottom: 1px solid #f0f2f7 !important;
     vertical-align: middle;
 }
 
+form[name^=unloading_form] .esl-places-table td.column-delete {
+    width: 40px;
+    text-align: center;
+}
+
 /* Инпуты в таблице мест */
-form[name^=unloading_form] .mainTbody tr td input {
+form[name^=unloading_form] .esl-places-table td input {
     border: 1px solid #c8d0e0 !important;
     border-radius: 4px !important;
     padding: 4px 7px !important;
@@ -260,17 +273,15 @@ form[name^=unloading_form] .mainTbody tr td input {
     margin: 0 !important;
 }
 
-form[name^=unloading_form] .mainTbody tr td input:focus {
+form[name^=unloading_form] .esl-places-table td input:focus {
     border-color: #4a7dff !important;
     box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
     background: #fff !important;
 }
 
 /* Кнопка "Добавить место" */
-form[name^=unloading_form] #edit3 #buttonModalUnloadAdd,
-form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button.button-primary,
-form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button {
-    margin-top: 14px !important;
+form[name^=unloading_form] #buttonModalUnloadAdd.esl-places__add {
+    align-self: flex-start;
     padding: 7px 18px !important;
     background: #4a7dff !important;
     color: #ffffff !important;
@@ -280,34 +291,83 @@ form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button {
     font-weight: 600 !important;
     cursor: pointer !important;
     transition: background 0.15s, box-shadow 0.15s !important;
-    display: inline-block !important;
-    opacity: 1 !important;
-    text-shadow: none !important;
-    box-shadow: none !important;
 }
 
-form[name^=unloading_form] #edit3 #buttonModalUnloadAdd:hover,
-form[name^=unloading_form] #edit3 input#buttonModalUnloadAdd.button:hover {
+form[name^=unloading_form] #buttonModalUnloadAdd.esl-places__add:hover {
     background: #3a6de8 !important;
     box-shadow: 0 3px 10px rgba(74, 125, 255, 0.32) !important;
-    color: #ffffff !important;
 }
 
 /* Удаление строки */
 form[name^=unloading_form] .esl-delete_table_elem {
-    padding-left: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto;
+    padding: 0 !important;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
     color: #ef4444 !important;
-    cursor: pointer;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1;
-    display: block;
-    text-align: center;
-    transition: color 0.12s, transform 0.12s;
+    cursor: pointer;
+    transition: background-color 0.12s, color 0.12s;
 }
 
 form[name^=unloading_form] .esl-delete_table_elem:hover {
+    background-color: rgba(239, 68, 68, 0.1);
     color: #dc2626 !important;
-    transform: scale(1.15);
+}
+
+/* "Объединить все грузовые места в одно" — под таблицей мест (см. lib/view/unloading/form.php,
+   вкладка "Места"), а не среди полей получателя. */
+form[name^=unloading_form] .esl-combine-places {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 20px;
+    margin-top: 14px;
+    padding: 14px;
+    background: #f8f9fc;
+    border: 1px solid #dde3ed;
+    border-radius: 8px;
+}
+
+form[name^=unloading_form] .esl-combine-places__field {
+    flex: 1 1 0;
+    min-width: 160px;
+}
+
+form[name^=unloading_form] .esl-combine-places__field--checkbox {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+form[name^=unloading_form] .esl-combine-places__field--checkbox .esl-combine-places__label {
+    margin-bottom: 0;
+}
+
+form[name^=unloading_form] .esl-combine-places__label {
+    display: block;
+    margin-bottom: 6px;
+    color: #6b7a99;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+form[name^=unloading_form] .esl-combine-places__field input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 13px;
+    color: #1a2540;
+    background: #ffffff;
 }
 
 /* =============================================

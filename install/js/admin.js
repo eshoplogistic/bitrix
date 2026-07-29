@@ -32,7 +32,10 @@ function eslUnloadingApplyVisibilityRules() {
         var match = rule.values.indexOf(eslUnloadingControllerValue(controller)) !== -1;
         rule.targets.forEach(function (targetName) {
             var target = document.getElementsByName(targetName)[0];
-            var row = target && target.closest('tr');
+            // "Габариты"/"Вес итогового места" рендерятся вне table.edit-table (см.
+            // .esl-combine-places в lib/view/unloading/form.php), поэтому ищем ближайший
+            // подходящий контейнер — <tr> для обычных полей формы или .esl-combine-places__field.
+            var row = target && target.closest('tr, .esl-combine-places__field');
             if (row) {
                 row.style.display = match ? '' : 'none';
             }
@@ -55,51 +58,68 @@ function eslUnloadingWireVisibilityRules() {
     eslUnloadingApplyVisibilityRules();
 }
 
+// Таблица мест (вкладка "Места") — портировано из wp-content/plugins/eshoplogisticru
+// (assets/js/settings_unloading.js: eslAddPlaceRow/eslDeletePlaceRow/eslPlacesRenumber).
+// После удаления строки остальные строки переиндексируются, иначе имена полей
+// products[N][...] у следующей добавленной строки могли совпасть с уже существующей
+// (счётчик считал только количество оставшихся строк, не фактический максимальный индекс).
+function eslPlacesRenumber(table) {
+    if (!table) {
+        return;
+    }
+
+    table.querySelectorAll('tbody tr').forEach(function (tr, index) {
+        tr.setAttribute('data-number', index);
+        tr.querySelectorAll('td input[data-field]').forEach(function (input) {
+            input.name = 'products[' + index + '][' + input.getAttribute('data-field') + ']';
+        });
+    });
+}
+
+function eslAddPlaceRow(button) {
+    let wrapper = button.closest('.esl-places__main');
+    if (!wrapper) {
+        return;
+    }
+
+    let table = wrapper.querySelector('.esl-places-table');
+    let template = wrapper.querySelector('template.esl-row-template');
+    if (!table || !template) {
+        return;
+    }
+
+    let row = template.content.firstElementChild.cloneNode(true);
+    table.querySelector('tbody').appendChild(row);
+    eslPlacesRenumber(table);
+}
+
+function eslDeletePlaceRow(button) {
+    let table = button.closest('.esl-places-table');
+    let row = button.closest('tr');
+    if (!table || !row) {
+        return;
+    }
+
+    row.remove();
+    eslPlacesRenumber(table);
+}
+
 BX.ready(function() {
     eslUnloadingWireVisibilityRules();
 
-    let deleteElemTable = function(e) {
-        e.preventDefault();
-        e.target.closest('tr').remove();
-    };
+    document.addEventListener('click', function (e) {
+        if (e.target.id === 'buttonModalUnloadAdd') {
+            e.preventDefault();
+            eslAddPlaceRow(e.target);
+            return;
+        }
 
-    let buttonAddTable = document.getElementById('buttonModalUnloadAdd')
-    if(buttonAddTable){
-        buttonAddTable.addEventListener("click", (event) => {
-            event.preventDefault();
-            let table = document.querySelector('#edit3_edit_table');
-            let tbodyTr = table.querySelector('.mainTbody tr');
-            let tbodyTrAll = table.querySelectorAll('.mainTbody tr');
-            let tbodyTd = tbodyTr.querySelectorAll('td');
-            let tbodyTdArray = [...tbodyTd];
-            let tbodyTrArray = [...tbodyTrAll];
-            let tbodyTrArrayCount = Number(tbodyTrArray.length) + 1;
-            let tr = document.createElement('tr');
-            tbodyTdArray.forEach(element => {
-                let td = document.createElement('td');
-                if (element.getAttribute('name') === 'delete') {
-                    let deleteBtn = document.createElement('div');
-                    deleteBtn.className = 'esl-delete_table_elem';
-                    deleteBtn.innerHTML = '&#65794;';
-                    deleteBtn.addEventListener('click', deleteElemTable, false);
-                    td.appendChild(deleteBtn);
-                } else {
-                    let input = document.createElement('input');
-                    input.name = 'products[' + tbodyTrArrayCount + '][' + element.getAttribute('name') + ']';
-                    input.type = 'text';
-                    td.appendChild(input);
-                }
-                tr.appendChild(td);
-            });
-            table.querySelector('.mainTbody').appendChild(tr);
-        });
-    }
-
-    let deleteElements = document.getElementsByClassName("esl-delete_table_elem");
-
-    for (let i = 0; i < deleteElements.length; i++) {
-        deleteElements[i].addEventListener('click', deleteElemTable, false);
-    }
+        let deleteBtn = e.target.closest('.esl-delete_table_elem');
+        if (deleteBtn) {
+            e.preventDefault();
+            eslDeletePlaceRow(deleteBtn);
+        }
+    });
 });
 
 function ajaxFormEsl(obForm, link) {
