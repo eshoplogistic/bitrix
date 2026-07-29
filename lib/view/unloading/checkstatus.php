@@ -52,6 +52,13 @@ if (isset($status['data']['messages'])) {
     $errorMessage = Loc::GetMessage("ESHOP_LOGISTIC_VIEW_CHECKSTATUS_ERROR");
 }
 
+// Для служб с асинхронным подтверждением (например, ПЭК) отсутствие данных сразу
+// после выгрузки — это ожидаемое состояние, а не ошибка.
+if ($isError && !empty($shippingMethods['pending_confirmation'])) {
+    $isError = false;
+    $rows[] = [Loc::GetMessage("ESHOP_LOGISTIC_VIEW_CHECKSTATUS_INFO_NOW"), Loc::GetMessage("ESHOP_LOGISTIC_VIEW_CHECKSTATUS_PENDING")];
+}
+
 if (!$isError) {
     if (isset($status['data']['state']['number'])) {
         $rows[] = [Loc::GetMessage("ESHOP_LOGISTIC_VIEW_CHECKSTATUS_INFOTITILE"), $status['data']['state']['number']];

@@ -21,6 +21,7 @@ $LOG_ELEMUPD_RIGHT = $APPLICATION->GetGroupRight($module_id);
 if ($LOG_ELEMUPD_RIGHT>="R") :
 
 	Loc::loadMessages(__FILE__);
+	Loc::loadMessages($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/eshoplogistic.delivery/lib/helpers/exportfileds.php');
 	Loader::includeModule($module_id);
 	Loader::includeModule('sale');
 
@@ -104,6 +105,287 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
     {
         $fieldsFeatures[$item['ID']] = $item['NAME'];
     }
+
+    // Настройки по умолчанию для выгрузки заказов по каждой службе доставки (ТК).
+    // Общий набор полей строится циклом по списку служб, чтобы не дублировать одинаковые
+    // 11 полей 14 раз; уникальные для отдельных ТК поля описаны в $transportServiceNiche.
+    $paymentTypeValues = array(
+        'not_selected'    => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYMENT_NONE"),
+        'already_paid'    => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYMENT_PAID"),
+        'cash_on_receipt' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYMENT_RECEIPT"),
+    );
+    $pickupValues = array(
+        '1' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_TK"),
+        '0' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_SELF"),
+    );
+    $vatValues = array(
+        '-1' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT_NONE"),
+        '0'  => '0%',
+        '5'  => '5%',
+        '7'  => '7%',
+        '10' => '10%',
+        '22' => '22%',
+    );
+    $payerValues2 = array(
+        'sender'   => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER_SENDER"),
+        'receiver' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER_RECEIVER"),
+    );
+    $payerValues3 = $payerValues2 + array(
+        'third' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER_THIRD"),
+    );
+
+    $transportServiceNiche = array(
+        'sdek' => array(
+            array(
+                "type-order-sdek",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TYPE_ORDER_SDEK"),
+                "1",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"))
+            ),
+        ),
+        'boxberry' => array(
+            array(
+                "type_order-boxberry",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TYPE_ORDER_BB"),
+                "0",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"))
+            ),
+            array(
+                "packing_type-boxberry",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PACKING_BB"),
+                "1",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"))
+            ),
+            array(
+                "order_issue-boxberry",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ISSUE_BB"),
+                "0",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"))
+            ),
+        ),
+        'yandex' => array(
+            array(
+                "platform_id-yandex",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID"),
+                "",
+                array("text")
+            ),
+        ),
+        'fivepost' => array(
+            array(
+                "platform_id-fivepost",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID"),
+                "",
+                array("text")
+            ),
+        ),
+        'delline' => array(
+            array(
+                "mode-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_MODE_DELLINE"),
+                "auto",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_2"))
+            ),
+            array(
+                "sender-payer-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER"),
+                "sender",
+                array('selectbox', $payerValues3)
+            ),
+            array(
+                "order-accept-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ACCEPT_DELLINE"),
+                "1",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_1"))
+            ),
+            array(
+                "order-freight-type-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_FREIGHT_TYPE"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-counteragent-from-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_FORM"),
+                "0x92ee03691f25a9fe4be9910cd87ca9ca",
+                array('selectbox', array(
+                    '0x92ee03691f25a9fe4be9910cd87ca9ca' => 'ООО',
+                    '0xaa9042fea4fa169d4d021c6941f2090f' => 'ИП',
+                    '0x8390b2048d37e0154b845fb22793e865' => 'ОАО',
+                    '0xae7b742e5861514f4f5729fa97b77a42' => 'ЗАО',
+                    '0x81318eb6f150096b494a15ff66c37823' => 'МУ',
+                    '0x80958580c73df96f4c677eefef87422c' => 'ГК',
+                    '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
+                    '0x83180c1320f58a344588220de53696e7' => 'ТОО',
+                ))
+            ),
+            array(
+                "sender-counteragent-name-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_NAME"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-counteragent-inn-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_INN"),
+                "",
+                array("text")
+            ),
+        ),
+        'pecom' => array(
+            array(
+                "order-content-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-payer-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER"),
+                "sender",
+                array('selectbox', $payerValues2)
+            ),
+        ),
+        'baikal' => array(
+            array(
+                "order-content-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-payer-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER"),
+                "sender",
+                array('selectbox', $payerValues2)
+            ),
+        ),
+        'dpd' => array(
+            array(
+                "order-content-dpd",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT"),
+                "",
+                array("text")
+            ),
+            array(
+                "order-costly-dpd",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COSTLY_DPD"),
+                "",
+                array("checkbox")
+            ),
+            array(
+                "produce-time-interval-dpd",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRODUCE_TIME_DPD"),
+                "9-18",
+                array('selectbox', array(
+                    '9-18' => '9-18',
+                    '9-13' => '9-13',
+                    '13-18' => '13-18',
+                ))
+            ),
+        ),
+    );
+
+    $transportServices = array(
+        'sdek'          => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_SDEK"),
+        'boxberry'      => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_BOXBERRY"),
+        'yandex'        => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_YANDEX"),
+        'fivepost'      => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_FIVEPOST"),
+        'delline'       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_DELLINE"),
+        'kit'           => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_KIT"),
+        'postrf'        => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_POSTRF"),
+        'pecom'         => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_PECOM"),
+        'halva'         => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_HALVA"),
+        'baikal'        => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_BAIKAL"),
+        'magnit'        => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_MAGNIT"),
+        'dpd'           => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_DPD"),
+        'sberlogistics' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_SBERLOGISTICS"),
+        'pochtalion'    => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_POCHTALION"),
+    );
+
+    $transportOptions = array();
+    foreach ($transportServices as $svcCode => $svcHeading) {
+        $transportOptions[] = $svcHeading;
+        $transportOptions[] = array(
+            'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
+                . "'content_url': '/bitrix/admin/eshoplogistic_delivery_additionalservices.php?service=" . $svcCode . "',"
+                . "'draggable': true, 'resizable': true, 'width': 700, 'height': 500"
+                . '})).Show();">'
+        );
+        $transportOptions[] = array(
+            "payment_type-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYMENT_TYPE"),
+            "not_selected",
+            array('selectbox', $paymentTypeValues)
+        );
+        $transportOptions[] = array(
+            "type_delivery_from_tk-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP"),
+            "0",
+            array('selectbox', $pickupValues)
+        );
+        $transportOptions[] = array(
+            "sender-terminal-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL"),
+            "",
+            array("text")
+        );
+        $transportOptions[] = array(
+            "type-price-null-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL"),
+            "",
+            array("checkbox")
+        );
+        $transportOptions[] = array(
+            "take-payment-default-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TAKE_PAYMENT"),
+            "",
+            array("checkbox")
+        );
+        $transportOptions[] = array(
+            "combine-places-apply-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES"),
+            "",
+            array("checkbox")
+        );
+        $transportOptions[] = array(
+            "combine-places-dimensions-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS"),
+            "",
+            array("text")
+        );
+        $transportOptions[] = array(
+            "combine-places-weight-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"),
+            "",
+            array("text")
+        );
+        $transportOptions[] = array(
+            "cost-custom-delivery-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT"),
+            "-1",
+            array('selectbox', $vatValues)
+        );
+        $transportOptions[] = array(
+            "seller-name-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME"),
+            "",
+            array("text")
+        );
+        $transportOptions[] = array(
+            "seller-phone-$svcCode",
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE"),
+            "",
+            array("text")
+        );
+
+        if (isset($transportServiceNiche[$svcCode])) {
+            foreach ($transportServiceNiche[$svcCode] as $nicheField) {
+                $transportOptions[] = $nicheField;
+            }
+        }
+    }
+
     $aTabs = array(
 		array(
 			"DIV"       => "edit",
@@ -258,58 +540,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         array(
             "DIV"       => "unloading",
             "TAB"       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_UNLOADING_TITLE"),
-            "OPTIONS" => array(
-                array(
-                    "sender-terminal-sdek",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_SDEK"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-boxberry",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_BOXBERRY"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-yandex",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_YANDEX"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-fivepost",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_FIVEPOST"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-delline",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_DELLINE"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-kit",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_KIT"),
-                    "",
-                    array("text")
-                ),
+            "OPTIONS" => array_merge(array(
                 array(
                     "sender-uid-kit",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-postrf",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_POSTRF"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "sender-terminal-baikal",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_BAIKAL"),
                     "",
                     array("text")
                 ),
@@ -421,24 +655,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
-                array(
-                    "combine-places-apply",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES"),
-                    "",
-                    array("checkbox")
-                ),
-                array(
-                    "combine-places-dimensions",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS"),
-                    "",
-                    array("text")
-                ),
-                array(
-                    "combine-places-weight",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"),
-                    "",
-                    array("text")
-                ),
+            ), $transportOptions, array(
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"),
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CRON_URL_UNLOADING")
@@ -456,7 +673,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     array("text")
                 ),
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER")
-            ),
+            )),
         ),
 	);
 

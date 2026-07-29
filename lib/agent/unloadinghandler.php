@@ -77,6 +77,13 @@ class UnloadingHandler
             } elseif(isset($status['data'])) {
                 $result['unloading'] = $status;
                 $result['updateStatus'] = $unloading->updateStatusById($status['data'], $orderId);
+
+                // Трек/номер у служб с асинхронным подтверждением (например, ПЭК) мог не
+                // прийти сразу при создании заказа — как только он появился, снимаем флаг
+                // "ожидает подтверждения", выставленный в params_delivery_init().
+                if (isset($status['data']['state']['number']) && $unloading->getPendingConfirmation($orderId)) {
+                    $unloading->clearPendingConfirmation($orderId);
+                }
             }else{
                 $result['unloading'] = $status;
             }

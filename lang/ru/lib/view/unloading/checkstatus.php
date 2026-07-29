@@ -4,3 +4,4 @@ $MESS["ESHOP_LOGISTIC_VIEW_CHECKSTATUS_INFOTITILE_2"] = 'Идентификат�
 $MESS["ESHOP_LOGISTIC_VIEW_CHECKSTATUS_INFO_NOW"] = 'Текущий статус';
 $MESS["ESHOP_LOGISTIC_VIEW_CHECKSTATUS_DESCRIPTION"] = 'Описание';
 $MESS["ESHOP_LOGISTIC_VIEW_CHECKSTATUS_ERROR"] = 'Ошибка при загрузке данных';
+$MESS["ESHOP_LOGISTIC_VIEW_CHECKSTATUS_PENDING"] = 'Ожидает подтверждения от транспортной компании. Проверьте позже.';

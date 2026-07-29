@@ -148,6 +148,10 @@ $typeMethod = [
     'type' => $typeMethodTitle,
 ];
 
+// Значения по умолчанию из настроек ТК (options.php, раздел "Настройки транспортных компаний").
+$paymentTypeDefault = Option::get(Config::MODULE_ID, 'payment_type-' . $typeMethod['name']);
+$pickupDefault = Option::get(Config::MODULE_ID, 'type_delivery_from_tk-' . $typeMethod['name']);
+
 $cutAddressShipping = [
     'terminal' => '',
     'terminal_address' => '',
@@ -274,9 +278,9 @@ echo $ID ?>"
         </td>
         <td>
             <select name="payment_type">
-                <option value="already_paid"><?php
+                <option value="already_paid" <?= ($paymentTypeDefault === 'already_paid') ? 'selected' : '' ?>><?php
                     echo GetMessage("ALREADY_PAID") ?></option>
-                <option value="cash_on_receipt"><?php
+                <option value="cash_on_receipt" <?= ($paymentTypeDefault === 'cash_on_receipt') ? 'selected' : '' ?>><?php
                     echo GetMessage("CASH_RECEIPT") ?></option>
                 <option value="card_on_receipt"><?php
                     echo GetMessage("CARD_RECEIPT") ?></option>
@@ -441,9 +445,9 @@ echo $ID ?>"
         </td>
         <td>
             <select name="pick_up">
-                <option value="0"><?php
+                <option value="0" <?= ($pickupDefault === '0') ? 'selected' : '' ?>><?php
                     echo GetMessage("BRING_OURSELVES") ?></option>
-                <option value="1"><?php
+                <option value="1" <?= ($pickupDefault === '1') ? 'selected' : '' ?>><?php
                     echo GetMessage("TRANSPORT_COMPANY_PICK") ?></option>
             </select>
         </td>
@@ -537,6 +541,10 @@ echo $ID ?>"
                                     if (!isset($v['name'])) {
                                         continue;
                                     }
+                                    // Значение по умолчанию берётся из настроек ТК (options.php,
+                                    // кнопка "Настройка дополнительных услуг"), чтобы не отмечать
+                                    // одни и те же услуги вручную в каждом заказе.
+                                    $addFieldDefault = Option::get(Config::MODULE_ID, 'addfield-' . $typeMethod['name'] . '-' . $k);
                                     ?>
                                     <div class="form-field_add">
                                         <label class="label" for="esl-field-<?php echo $k ?>"><?php
@@ -545,17 +553,17 @@ echo $ID ?>"
                                         if ($v['type'] === 'integer'): ?>
                                             <input class="form-value_add form-value_number"
                                                    id="esl-field-<?php echo $k ?>"
-                                                   name="<?php echo $k ?>"
+                                                   name="complement[<?php echo $k ?>]"
                                                    type="number"
-                                                   value="0"
+                                                   value="<?= htmlspecialcharsbx((string)($addFieldDefault !== '' ? $addFieldDefault : 0)) ?>"
                                                    max="<?php echo $v['max_value'] ?>">
                                         <?php
                                         else: ?>
                                             <label class="esl-toggle" for="esl-field-<?php echo $k ?>">
                                                 <input class="form-value_add form-value_check"
                                                        id="esl-field-<?php echo $k ?>"
-                                                       name="<?php echo $k ?>"
-                                                       type="checkbox">
+                                                       name="complement[<?php echo $k ?>]"
+                                                       type="checkbox" <?= ($addFieldDefault === 'Y') ? 'checked' : '' ?>>
                                                 <span class="esl-toggle__track"></span>
                                             </label>
                                         <?php
@@ -598,6 +606,7 @@ echo $ID ?>"
     echo $orderData['STATUS_ID'] ?>">
     <input type="hidden" name="order_shipping_id" value="<?php
     echo $orderData['DELIVERY_ID'] ?>">
+    <input type="hidden" name="platform_id" value="<?= htmlspecialcharsbx((string)Option::get(Config::MODULE_ID, 'platform_id-' . $typeMethod['name'])) ?>">
     <?php
     if ($ID > 0): ?>
         <input type="hidden" name="ID" value="<?= $ID ?>">

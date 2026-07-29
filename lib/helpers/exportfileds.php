@@ -9,6 +9,47 @@ use Eshoplogistic\Delivery\Config;
 
 class ExportFileds {
 
+    /** Форма выгрузки рендерит <select> без атрибута selected — браузер сам выбирает первый
+     * пункт. Чтобы значение из настроек ТК по умолчанию реально было выбрано в форме,
+     * переносим его на первое место в списке значений.
+     * @param array $values
+     * @param string|int|null $default
+     * @return array
+     */
+    private static function moveToFront($values, $default)
+    {
+        if ($default === null || $default === '' || !isset($values[$default])) {
+            return $values;
+        }
+
+        return [$default => $values[$default]] + $values;
+    }
+
+    /** @param string $optionKey
+     * @return bool
+     */
+    private static function isChecked($optionKey)
+    {
+        return Option::get(Config::MODULE_ID, $optionKey) == 'Y';
+    }
+
+    /** @param bool $withThird
+     * @return array
+     */
+    private static function payerValues($withThird = false)
+    {
+        $values = [
+            'sender' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_SENDER"),
+            'receiver' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_RECEIVER"),
+        ];
+
+        if ($withThird) {
+            $values['third'] = Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_THIRD");
+        }
+
+        return $values;
+    }
+
     public function sendExportFields($name){
         $result = array();
         if ( $name === 'boxberry' ) {
@@ -38,6 +79,8 @@ class ExportFileds {
                 ),
                 'delivery' => array(
                     'tariff' => '',
+                    'take_payment' => '',
+                    'delivery-custom-cost' => '',
                 )
             );
         }
@@ -46,9 +89,15 @@ class ExportFileds {
                 'sender'   => array(
                     'requester'    => '',
                     'counterparty' => '',
+                    'counteragent' => array(
+                        'form' => '',
+                        'name' => '',
+                        'inn' => '',
+                    ),
                 ),
                 'order'    => array(
                     'accept' => '',
+                    'freight_type' => '',
                 ),
                 'delivery' => array(
                     'mode' => '',
@@ -90,6 +139,8 @@ class ExportFileds {
             $result = array(
                 'delivery' => array(
                     'tariff' => '',
+                    'take_payment' => '',
+                    'delivery-custom-cost' => '',
                     'location_to' => array(
                         'address' => array(
                             'index' => ''
@@ -108,6 +159,10 @@ class ExportFileds {
                         'number' => '',
                         'date' => '',
                     )
+                ),
+                'order' => array(
+                    'content' => '',
+                    'payer' => '',
                 ),
                 'delivery'   => array(
                     'produce_date' => '',
@@ -148,6 +203,10 @@ class ExportFileds {
                         'inn' => '',
                         'kpp' => '',
                     ),
+                ),
+                'order' => array(
+                    'content' => '',
+                    'payer' => '',
                 ),
                 'delivery' => array(
                     'location_from' => array(
@@ -200,6 +259,24 @@ class ExportFileds {
             );
         }
 
+        if ( $name === 'fivepost' ) {
+            $result = array(
+                'delivery' => array(
+                    'take_payment' => '',
+                    'delivery-custom-cost' => '',
+                ),
+            );
+        }
+
+        if ( $name === 'yandex' ) {
+            $result = array(
+                'delivery' => array(
+                    'take_payment' => '',
+                    'delivery-custom-cost' => '',
+                ),
+            );
+        }
+
         return $result;
     }
 
@@ -210,14 +287,14 @@ class ExportFileds {
             $result = array(
                 'order' => array(
                     'barcode||text' => '',
-                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"),
-                    'packing_type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"),
-                    'issue||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"),
+                    'type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"), Option::get(Config::MODULE_ID, 'type_order-boxberry')),
+                    'packing_type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"), Option::get(Config::MODULE_ID, 'packing_type-boxberry')),
+                    'issue||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"), Option::get(Config::MODULE_ID, 'order_issue-boxberry')),
                 ),
                 'order[combine_places]' => array(
-                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
-                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
-                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                    'apply||checkbox' => self::isChecked('combine-places-apply-boxberry') ? 'checked' : '',
+                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-boxberry') ?? '',
+                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-boxberry') ?? ''
                 ),
             );
         }
@@ -238,15 +315,17 @@ class ExportFileds {
             }
             $result = array(
                 'order' => array(
-                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"),
+                    'type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"), Option::get(Config::MODULE_ID, 'type-order-sdek')),
                 ),
                 'order[combine_places]' => array(
-                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
-                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
-                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                    'apply||checkbox' => self::isChecked('combine-places-apply-sdek') ? 'checked' : '',
+                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-sdek') ?? '',
+                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-sdek') ?? ''
                 ),
                 'delivery' => array(
                     'tariff||select' => $tariffs,
+                    'take_payment||checkbox' => self::isChecked('take-payment-default-sdek') ? 'checked' : '',
+                    'delivery-custom-cost||text' => '0',
                 )
             );
         }
@@ -260,11 +339,27 @@ class ExportFileds {
                     'requester||text'    => (Option::get(Config::MODULE_ID, 'sender-uid-delline'))??'',
                     'counterparty||text' => (Option::get(Config::MODULE_ID, 'sender-counter-delline'))??'',
                 ),
+                'sender[counteragent]' => array(
+                    'form||select' => self::moveToFront([
+                        '0x92ee03691f25a9fe4be9910cd87ca9ca' => 'ООО',
+                        '0xaa9042fea4fa169d4d021c6941f2090f' => 'ИП',
+                        '0x8390b2048d37e0154b845fb22793e865' => 'ОАО',
+                        '0xae7b742e5861514f4f5729fa97b77a42' => 'ЗАО',
+                        '0x81318eb6f150096b494a15ff66c37823' => 'МУ',
+                        '0x80958580c73df96f4c677eefef87422c' => 'ГК',
+                        '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
+                        '0x83180c1320f58a344588220de53696e7' => 'ТОО',
+                    ], Option::get(Config::MODULE_ID, 'sender-counteragent-from-delline')),
+                    'name||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-name-delline') ?? '',
+                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-inn-delline') ?? '',
+                ),
                 'order'    => array(
-                    'accept||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_1"),
+                    'accept||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_1"), Option::get(Config::MODULE_ID, 'order-accept-delline')),
+                    'payer||select' => self::moveToFront(self::payerValues(true), Option::get(Config::MODULE_ID, 'sender-payer-delline')),
+                    'freight_type||text' => Option::get(Config::MODULE_ID, 'order-freight-type-delline') ?? '',
                 ),
                 'delivery' => array(
-                    'mode||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_2"),
+                    'mode||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_2"), Option::get(Config::MODULE_ID, 'mode-delline')),
                     'produce_date||date' => $produce_date,
                 )
             );
@@ -326,6 +421,8 @@ class ExportFileds {
             $result = array(
                 'delivery' => array(
                     'tariff||select' => $tariffsResult,
+                    'take_payment||checkbox' => self::isChecked('take-payment-default-postrf') ? 'checked' : '',
+                    'delivery-custom-cost||text' => '0',
                 ),
                 'delivery[location_to][address]' => array(
                     'index||text' => ''
@@ -344,6 +441,10 @@ class ExportFileds {
                     'series||text' => '',
                     'number||text' => '',
                     'date||date' => '',
+                ),
+                'order' => array(
+                    'content||text' => Option::get(Config::MODULE_ID, 'order-content-pecom') ?? '',
+                    'payer||select' => self::moveToFront(self::payerValues(), Option::get(Config::MODULE_ID, 'sender-payer-pecom')),
                 ),
                 'delivery' => array(
                     'produce_date||date' => $produce_date,
@@ -398,6 +499,10 @@ class ExportFileds {
                 'hr3' => array(
                     'empty||hr' => ''
                 ),
+                'order' => array(
+                    'content||text' => Option::get(Config::MODULE_ID, 'order-content-baikal') ?? '',
+                    'payer||select' => self::moveToFront(self::payerValues(), Option::get(Config::MODULE_ID, 'sender-payer-baikal')),
+                ),
                 'delivery[location_from][pick_up_data]' => array(
                     'date||date' => $produce_date,
                     'time_from||date' => $produce_date,
@@ -414,9 +519,9 @@ class ExportFileds {
                     'last_name||text' => '',
                 ),
                 'order[combine_places]' => array(
-                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
-                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
-                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                    'apply||checkbox' => self::isChecked('combine-places-apply-magnit') ? 'checked' : '',
+                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-magnit') ?? '',
+                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-magnit') ?? ''
                 ),
             );
         }
@@ -444,18 +549,36 @@ class ExportFileds {
                     'email||text' => ''
                 ),
                 'order' => array(
-                    'content||text' => '',
-                    'costly||checkbox' => '',
+                    'content||text' => Option::get(Config::MODULE_ID, 'order-content-dpd') ?? '',
+                    'costly||checkbox' => self::isChecked('order-costly-dpd') ? 'checked' : '',
                 ),
                 'order[combine_places]' => array(
-                    'apply||checkbox' => (Option::get(Config::MODULE_ID, 'combine-places-apply') == 'Y')?'checked':'',
-                    'dimensions||text' => (Option::get(Config::MODULE_ID, 'combine-places-dimensions'))??'',
-                    'weight||text' => (Option::get(Config::MODULE_ID, 'combine-places-weight'))??''
+                    'apply||checkbox' => self::isChecked('combine-places-apply-dpd') ? 'checked' : '',
+                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-dpd') ?? '',
+                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-dpd') ?? ''
                 ),
                 'delivery' => array(
                     'produce_date||date' => $produce_date,
-                    'produce_time||text' => '',
+                    'produce_time||text' => Option::get(Config::MODULE_ID, 'produce-time-interval-dpd') ?? '',
                     'tariff||select' => $tariffs,
+                ),
+            );
+        }
+
+        if ( $name === 'fivepost' ) {
+            $result = array(
+                'delivery' => array(
+                    'take_payment||checkbox' => self::isChecked('take-payment-default-fivepost') ? 'checked' : '',
+                    'delivery-custom-cost||text' => '0',
+                ),
+            );
+        }
+
+        if ( $name === 'yandex' ) {
+            $result = array(
+                'delivery' => array(
+                    'take_payment||checkbox' => self::isChecked('take-payment-default-yandex') ? 'checked' : '',
+                    'delivery-custom-cost||text' => '0',
                 ),
             );
         }

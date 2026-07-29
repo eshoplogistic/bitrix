@@ -7,4 +7,7 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"] = "Обновить статус"
 $MESS["ESHOP_LOGISTIC_UNLOADING_CHECK_STATUS"] = "Проверить статус";
 $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_ASSEMBLY"] = "Сборка заказов";
 $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_2"] = "Выгрузка заказов";
+$MESS["ESHOP_LOGISTIC_UNLOADING_CLEAR"] = "Сбросить выгрузку";
+$MESS["ESHOP_LOGISTIC_UNLOADING_CLEAR_OK"] = "Данные выгрузки сброшены. Заказ можно выгрузить заново.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_CLEAR_NOTFOUND"] = "Не удалось найти данные выгрузки для этого заказа.";
 ?>
