@@ -345,6 +345,22 @@ class Unloading
         if (isset($data['fulfillment']))
             $deliveryId = 'pochtalion';
 
+        // По умолчанию (как в МС): ставка НДС — из формы либо -1 ("без НДС"), стоимость — расчётная.
+        // Поле "Сумма к взятию с получателя" (delivery-custom-cost) подменяет и cost, и vat_rate
+        // ТОЛЬКО когда заказ уже оплачен (payment_type=already_paid) — это декларируемая стоимость
+        // для собственного учёта магазина, а не сумма, которую ТК должен взыскать с получателя.
+        // При наложенном платеже (cash_on_receipt и т.п.) ТК обязан получить реальную esl-unload-price,
+        // подменять её нельзя — иначе с получателя будет запрошена не та сумма при вручении.
+        $vatRate = $data['delivery-vat_rate'] ?? -1;
+        $cost = $data['esl-unload-price'];
+        if (isset($data['delivery']['delivery-custom-cost'])) {
+            if ($data['payment_type'] === 'already_paid' && $data['delivery']['delivery-custom-cost'] !== '') {
+                $vatRate = Option::get(Config::MODULE_ID, 'cost-custom-delivery-' . $deliveryId, $vatRate);
+                $cost = $data['delivery']['delivery-custom-cost'];
+            }
+            unset($data['delivery']['delivery-custom-cost']);
+        }
+
         $defaultFields = array(
             'key' => $apiKey, //Ключ доступа
             'action' => 'create', //Значение: create
@@ -369,19 +385,11 @@ class Unloading
                     'pick_up' => $data['pick_up'] == '1', //Забор груза от отправителя
                 ),
                 'payment' => $data['payment_type'],
-                'vat_rate' => $data['delivery-vat_rate'] ?? Option::get(Config::MODULE_ID, 'cost-custom-delivery-' . $deliveryId, -1), //Значение ставки НДС на доставку
-                'cost' => $data['esl-unload-price'], //Стоимость доставки, рубли.
+                'vat_rate' => $vatRate, //Значение ставки НДС на доставку
+                'cost' => $cost, //Стоимость доставки, рубли.
                 'location_to' => array(),
             ),
         );
-
-        // Если в форме указана отдельная сумма к взятию с получателя (наложенный платёж),
-        // она заменяет базовую cost — те же поля delivery[take_payment]/delivery[delivery-custom-cost],
-        // что и в форме экспорта ExportFileds.
-        if (isset($data['delivery']['delivery-custom-cost']) && $data['delivery']['delivery-custom-cost'] !== '') {
-            $defaultFields['delivery']['cost'] = $data['delivery']['delivery-custom-cost'];
-            unset($data['delivery']['delivery-custom-cost']);
-        }
 
         if ($data['pick_up'] == '1') {
             $defaultFields['delivery']['location_from']['address'] = array( //Адрес забора груза Обязательно, если delivery.location_from.pick_up === true
@@ -416,6 +424,8 @@ class Unloading
             // передаём declared_price = 0 по каждому месту (иначе объявленная стоимость ТК
             // берёт из price места, что не всегда нужно для деклараций малой ценности).
             $priceNull = Option::get(Config::MODULE_ID, 'type-price-null-' . $deliveryId) == 'Y';
+            // Ставка НДС по месту по умолчанию — та же настройка ТК, что и для delivery.vat_rate.
+            $defaultPlaceVatRate = Option::get(Config::MODULE_ID, 'cost-custom-delivery-' . $deliveryId, -1);
 
             foreach ($data['products'] as $item) {
                 if (empty($item['product_id']))
@@ -433,10 +443,10 @@ class Unloading
                     'article' => $article,
                     'name' => $item['name'],
                     'count' => $item['quantity'],
-                    'price' => $item['total'],
+                    'price' => $item['price'], // цена за единицу товара (не итог по позиции)
                     'weight' => $item['weight'], //Вес, в кг.
                     'dimensions' => $item['width'] . '*' . $item['length'] . '*' . $item['height'], //Габариты. Формат: строка вида «Д*Ш*В», в сантиметрах. Например: 15*25*10
-                    'vat_rate' => 0, //Значение ставки НДС Возможные варианты:0, 10, 20, -1 (без НДС)
+                    'vat_rate' => $item['vat'] ?? $defaultPlaceVatRate, //Значение ставки НДС Возможные варианты:0, 10, 20, -1 (без НДС)
                 );
 
                 if ($priceNull) {
@@ -449,9 +459,6 @@ class Unloading
 
         if (isset($data['order']) && $data['order']) {
             foreach ($data['order'] as $key => $value){
-                if(isset($value['apply']) && $value['apply'] == 'on'){
-                    $value['apply'] = true;
-                }
                 $defaultFields['order'][$key] = $value;
             }
         }

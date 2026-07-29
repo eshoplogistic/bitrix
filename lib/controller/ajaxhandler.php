@@ -360,6 +360,27 @@ class AjaxHandler extends Controller
         return false;
     }
 
+    /** Форма выгрузки заказа не задаёт checkbox'ам атрибут value, поэтому браузер шлёт для
+     * отмеченных полей литеральную строку "on" (как и в МС). В МС это нормализуется на клиенте
+     * (assets/js/script.js: serializeForm(), val === 'on' ? '1' : val) перед отправкой — у нас
+     * форма отправляется через raw FormData без такой нормализации, поэтому делаем то же самое
+     * здесь, один раз для всего запроса, чтобы "on" не улетал в API как есть (order[costly],
+     * order[packing], lift, complement[...] и т.д.).
+     * @param mixed $data
+     * @return mixed
+     */
+    private static function normalizeCheckboxValues($data)
+    {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = self::normalizeCheckboxValues($value);
+            }
+            return $data;
+        }
+
+        return $data === 'on' ? '1' : $data;
+    }
+
     public function unloadingFormAction()
     {
         global $APPLICATION;
@@ -370,6 +391,7 @@ class AjaxHandler extends Controller
         }
 
         $request = $this->getRequest()->getPostList()->toArray();
+        $request = self::normalizeCheckboxValues($request);
         $request['order_id'] = (int)($request['order_id'] ?? 0);
         if ($request['order_id'] <= 0) {
             $this->addError(new \Bitrix\Main\Error('Bad request'));
