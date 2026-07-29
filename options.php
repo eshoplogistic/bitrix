@@ -13,6 +13,17 @@ global $APPLICATION;
 
 UI\Extension::load("ui.notification");
 
+// Значок "?" с подсказкой при наведении (портируется текст из МойСклад, поле 'desc').
+// __AdmSettingsDrawRow выводит подпись поля ($Option[1]) как есть, без экранирования,
+// поэтому спан можно просто приклеить к тексту подписи. Сделано чистым CSS (см.
+// .esl-hint в settings.css) вместо родового ui.hint — на этой странице подключаемые
+// через UI\Extension ассеты не долетают до вывода (не тот пролог), а самодостаточный
+// CSS-тултип работает без какого-либо JS вообще.
+function eslHint(string $text): string
+{
+    return $text === '' ? '' : ' <span class="esl-hint" tabindex="0">?<span class="esl-hint__tip">' . htmlspecialcharsbx($text) . '</span></span>';
+}
+
 $request = HttpApplication::getInstance()->getContext()->getRequest();
 $module_id = htmlspecialcharsbx($request["mid"] != "" ? $request["mid"] : $request["id"]);
 $cacheDir = 'eshoplogistic';
@@ -170,7 +181,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'yandex' => array(
             array(
                 "platform_id-yandex",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_YANDEX_HINT")),
                 "",
                 array("text")
             ),
@@ -178,7 +189,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'fivepost' => array(
             array(
                 "platform_id-fivepost",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_FIVEPOST_HINT")),
                 "",
                 array("text")
             ),
@@ -186,7 +197,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'delline' => array(
             array(
                 "sender-uid-delline",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE_HINT")),
                 "",
                 $counterFields
             ),
@@ -204,13 +215,13 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             ),
             array(
                 "sender-payer-delline",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYER_DELLINE_HINT")),
                 "sender",
                 array('selectbox', $payerValues3)
             ),
             array(
                 "order-accept-delline",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ACCEPT_DELLINE"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ACCEPT_DELLINE") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ACCEPT_DELLINE_HINT")),
                 "1",
                 array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_1"))
             ),
@@ -251,17 +262,15 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'kit' => array(
             array(
                 "sender-uid-kit",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT_HINT")),
                 "",
-                array("text"),
-                "",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_KIT_HINT")
+                array("text")
             ),
         ),
         'pecom' => array(
             array(
                 "order-content-pecom",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT"),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_CONTENT_PECOM_HINT")),
                 "",
                 array("text")
             ),
@@ -413,13 +422,13 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         );
         $transportOptions[] = array(
             "type_delivery_from_tk-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_HINT")),
             "0",
             array('selectbox', $pickupValues)
         );
         $transportOptions[] = array(
             "sender-terminal-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_HINT")),
             "",
             array("text")
         );
@@ -438,7 +447,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         }
         $transportOptions[] = array(
             "type-price-null-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL_HINT")),
             "",
             array("checkbox")
         );
@@ -450,13 +459,13 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         );
         $transportOptions[] = array(
             "combine-places-apply-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_SDEK_HINT")) : ''),
             "",
             array("checkbox")
         );
         $transportOptions[] = array(
             "combine-places-dimensions-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS_SDEK_HINT")) : ''),
             "",
             array("text")
         );
@@ -468,19 +477,19 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         );
         $transportOptions[] = array(
             "cost-custom-delivery-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT_SDEK_HINT")) : ''),
             "-1",
             array('selectbox', $vatValues)
         );
         $transportOptions[] = array(
             "seller-name-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME_HINT")) : ''),
             "",
             array("text")
         );
         $transportOptions[] = array(
             "seller-phone-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE"),
+            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE_HINT")) : ''),
             "",
             array("text")
         );

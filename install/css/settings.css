@@ -765,3 +765,61 @@ input[name="status-form"] {
 #faq .edit-table td.esl-faq-text p:last-child {
     margin-bottom: 0;
 }
+
+/* =============================================
+   Значок-подсказка "?" рядом с подписью поля (options.php, eslHint())
+   Чистый CSS, без JS и без зависимости от ui.hint — см. комментарий в options.php.
+   ============================================= */
+
+.esl-hint {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background: #c7cedb;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.esl-hint:hover,
+.esl-hint:focus {
+    background: #8a97a3;
+    outline: none;
+}
+
+.esl-hint__tip {
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 320px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #23283b;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.esl-hint:hover .esl-hint__tip,
+.esl-hint:focus .esl-hint__tip {
+    visibility: visible;
+    opacity: 1;
+}
