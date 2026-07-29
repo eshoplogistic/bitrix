@@ -11,6 +11,7 @@ use Bitrix\Main\Config\Option;
 use Eshoplogistic\Delivery\Api\Site;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Api\Additional;
+use Eshoplogistic\Delivery\Helpers\AddressParser;
 
 require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
 
@@ -147,6 +148,19 @@ $typeMethod = [
     'name' => $nameCurrectDelivery,
     'type' => $typeMethodTitle,
 ];
+
+// В заказе адрес хранится одной строкой (покупатель пишет улицу/дом/квартиру как придётся
+// на чекауте) - для ПВЗ дом/квартира не нужны, поэтому разбираем строку только для доставки
+// курьером. Полю "Улица" в форме оставляем разобранную улицу, а не всю строку целиком.
+$parsedAddress = ['street' => '', 'building' => '', 'room' => ''];
+if ($typeMethod['type'] === 'door' && $propertyAddress !== '') {
+    $parsedAddress = AddressParser::parse(
+        (string)$propertyAddress,
+        '',
+        (string)($propertyCodeValue['CITY'] ?? ''),
+        (string)($shippingMethods['region_to'] ?? '')
+    );
+}
 
 // Значения по умолчанию из настроек ТК (options.php, раздел "Настройки транспортных компаний").
 $paymentTypeDefault = Option::get(Config::MODULE_ID, 'payment_type-' . $typeMethod['name']);
@@ -287,17 +301,17 @@ echo $ID ?>"
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_STREET") ?></td>
-        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['ADDRESS'] ?? '')) ?>"></td>
+        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($parsedAddress['street'] !== '' ? $parsedAddress['street'] : ($propertyCodeValue['ADDRESS'] ?? ''))) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_HOUSE") ?></td>
-        <td><input type="text" name="receiver-house" value=""></td>
+        <td><input type="text" name="receiver-house" value="<?= htmlspecialcharsbx((string)$parsedAddress['building']) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_ROOM") ?></td>
-        <td><input type="text" name="receiver-room" value=""></td>
+        <td><input type="text" name="receiver-room" value="<?= htmlspecialcharsbx((string)$parsedAddress['room']) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
