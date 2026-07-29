@@ -167,3 +167,4 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_NAME"] = "Наименовани�
 $MESS["ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_INN"] = "ИНН организации-отправителя";
 $MESS["ESHOP_LOGISTIC_OPTIONS_TKD_PRODUCE_TIME_DPD"] = "Интервал времени передачи груза по умолчанию";
 $MESS["ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON"] = "Настройка дополнительных услуг";
+$MESS["ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON"] = "Поиск терминала";

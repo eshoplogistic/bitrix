@@ -303,6 +303,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'pochtalion'    => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_POCHTALION"),
     );
 
+    // Службы, для которых МойСклад показывает кнопку поиска терминала (совпадает с
+    // теми, у кого в Iframe.php поле sender-terminal-* имеет type=textNbutton).
+    $terminalSearchServices = array('sdek', 'boxberry', 'yandex', 'kit', 'pecom', 'delline', 'dpd', 'baikal');
+
     $transportOptions = array();
     foreach ($transportServices as $svcCode => $svcHeading) {
         $transportOptions[] = $svcHeading;
@@ -330,6 +334,16 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             "",
             array("text")
         );
+        // Поиск терминала по адресу доступен только там, где он есть в МойСклад
+        // (в 5Post он там же отключён, а у остальных служб этого поля вообще нет).
+        if (in_array($svcCode, $terminalSearchServices, true)) {
+            $transportOptions[] = array(
+                'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON")) . '" onclick="window.__eslTerminalDialog=(new BX.CAdminDialog({'
+                    . "'content_url': '/bitrix/admin/eshoplogistic_delivery_terminalsearch.php?service=" . $svcCode . "&target=sender-terminal-" . $svcCode . "',"
+                    . "'draggable': true, 'resizable': true, 'width': 620, 'height': 480"
+                    . '}));window.__eslTerminalDialog.Show();">'
+            );
+        }
         $transportOptions[] = array(
             "type-price-null-$svcCode",
             Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL"),
