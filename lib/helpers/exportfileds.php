@@ -241,7 +241,10 @@ class ExportFileds {
                             'floor' => '',
                             'comment' => '',
                         )
-                    )
+                    ),
+                    'location_to' => array(
+                        'comment' => '',
+                    ),
                 ),
             );
         }
@@ -555,7 +558,10 @@ class ExportFileds {
                     'lift||checkbox' => '',
                     'floor||text' => '',
                     'comment||text' => Option::get(Config::MODULE_ID, 'sender-pickup-comment-baikal') ?? '',
-                )
+                ),
+                'delivery[location_to]' => array(
+                    'comment||text' => '',
+                ),
             );
         }
 

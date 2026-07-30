@@ -7,7 +7,9 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     // "Пункт выдачи" (terminal) — нужен код и адрес терминала/ПВЗ.
     { controller: 'delivery_type', values: ['terminal'], targets: ['terminal-code', 'terminal-address'] },
     // Улица/дом/квартира получателя имеют смысл только при доставке курьером до двери.
-    { controller: 'delivery_type', values: ['door'], targets: ['receiver-street', 'receiver-house', 'receiver-room'] },
+    // "delivery[location_to][comment]" рендерится только для Байкал Сервиса (см.
+    // exportfileds.php) — на других ТК этого поля в форме просто нет, скрывать нечего.
+    { controller: 'delivery_type', values: ['door'], targets: ['receiver-street', 'receiver-house', 'receiver-room', 'delivery[location_to][comment]'] },
     // Габариты/вес итогового места имеют смысл только если места объединяются в одно.
     { controller: 'order[combine_places][apply]', values: ['1'], targets: ['order[combine_places][dimensions]', 'order[combine_places][weight]'] },
     // "Груз заберёт ТК" (1) — нужен код терминала отгрузки;
