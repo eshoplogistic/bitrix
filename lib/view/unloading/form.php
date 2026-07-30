@@ -520,6 +520,15 @@ echo $ID ?>"
                        : '' ?>"></td>
     </tr>
     <?php endif; ?>
+    <?php if ($typeMethod['name'] === 'yandex' || $typeMethod['name'] === 'fivepost'): ?>
+    <tr>
+        <td><?php
+            echo GetMessage("PLATFORM_ID") ?></td>
+        <td><input type="text" name="platform_id"
+                   value="<?php
+                   echo htmlspecialcharsbx((string)Option::get(Config::MODULE_ID, 'platform_id-' . $typeMethod['name'])) ?>"></td>
+    </tr>
+    <?php endif; ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_REGION") ?></td>
@@ -777,7 +786,9 @@ echo $ID ?>"
     echo $orderData['STATUS_ID'] ?>">
     <input type="hidden" name="order_shipping_id" value="<?php
     echo $orderData['DELIVERY_ID'] ?>">
+    <?php if ($typeMethod['name'] !== 'yandex' && $typeMethod['name'] !== 'fivepost'): ?>
     <input type="hidden" name="platform_id" value="<?= htmlspecialcharsbx((string)Option::get(Config::MODULE_ID, 'platform_id-' . $typeMethod['name'])) ?>">
+    <?php endif; ?>
     <?php
     if ($ID > 0): ?>
         <input type="hidden" name="ID" value="<?= $ID ?>">

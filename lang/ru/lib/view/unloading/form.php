@@ -38,6 +38,7 @@ $MESS["SENDER_ROOM"] = "Квартира / офис";
 $MESS["SENDER_NAME"] = "Имя отправителя";
 $MESS["SENDER_PHONE"] = "Телефон отправителя";
 $MESS["SENDER_EMAIL"] = "Email отправителя";
+$MESS["PLATFORM_ID"] = "Код вашего склада в системе ТК";
 
 $MESS["ERROR_SERVICES"] = "Дополнительные услуги отсутствуют";
 $MESS["UNLOADING_SAVED"] = "Данные успешно выгружены";
