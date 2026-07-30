@@ -293,6 +293,60 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 "sender",
                 array('selectbox', $payerValues2)
             ),
+            array(
+                "sender-requisites-name-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_REQUISITES_NAME_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-requisites-inn-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_REQUISITES_INN_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-type-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_TYPE_PECOM"),
+                "10",
+                array('selectbox', Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_TYPE_PECOM_VALUES"))
+            ),
+            array(
+                "sender-identity-series-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_SERIES_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-number-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_NUMBER_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-date-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_DATE_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-first-name-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_FIRST_NAME_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-last-name-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_LAST_NAME_PECOM"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-identity-patronymic-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_PATRONYMIC_PECOM"),
+                "",
+                array("text")
+            ),
         ),
         'baikal' => array(
             array(
@@ -366,6 +420,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 "",
                 array("text")
             ),
+            array(
+                "sender-pickup-comment-baikal",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_COMMENT_BAIKAL"),
+                "",
+                array("textarea", 3, 40)
+            ),
         ),
         'dpd' => array(
             array(
@@ -389,6 +449,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     '9-13' => '9-13',
                     '13-18' => '13-18',
                 ))
+            ),
+            array(
+                "sender-email-dpd",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_EMAIL_DPD"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-company-dpd",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COMPANY_DPD"),
+                "",
+                array("text")
             ),
         ),
     );

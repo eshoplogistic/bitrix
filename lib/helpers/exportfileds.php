@@ -164,7 +164,14 @@ class ExportFileds {
                         'series' => '',
                         'number' => '',
                         'date' => '',
-                    )
+                        'first_name' => '',
+                        'last_name' => '',
+                        'patronymic' => '',
+                    ),
+                    'requisites' => array(
+                        'name' => '',
+                        'inn' => '',
+                    ),
                 ),
                 'order' => array(
                     'content' => '',
@@ -222,6 +229,7 @@ class ExportFileds {
                             'time_to' => '',
                             'lift' => '',
                             'floor' => '',
+                            'comment' => '',
                         )
                     )
                 ),
@@ -247,6 +255,10 @@ class ExportFileds {
             $result = array(
                 'receiver' => array(
                     'email' => ''
+                ),
+                'sender' => array(
+                    'email' => '',
+                    'company' => '',
                 ),
                 'order' => array(
                     'content' => '',
@@ -448,10 +460,19 @@ class ExportFileds {
 
             $result = array(
                 'sender[identity]'   => array(
-                    'type||select'    => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1")??'',
-                    'series||text' => '',
-                    'number||text' => '',
-                    'date||date' => '',
+                    'type||select'    => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1") ?? [], Option::get(Config::MODULE_ID, 'sender-identity-type-pecom')),
+                    'series||text' => Option::get(Config::MODULE_ID, 'sender-identity-series-pecom') ?? '',
+                    'number||text' => Option::get(Config::MODULE_ID, 'sender-identity-number-pecom') ?? '',
+                    'date||date' => Option::get(Config::MODULE_ID, 'sender-identity-date-pecom') ?? '',
+                    // API ПЭК: в JSON-поле identity.last_name фактически передаётся отчество,
+                    // а в identity.patronymic — фамилия (перепутаны местами на стороне ТК).
+                    'first_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-first-name-pecom') ?? '',
+                    'last_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-last-name-pecom') ?? '',
+                    'patronymic||text' => Option::get(Config::MODULE_ID, 'sender-identity-patronymic-pecom') ?? '',
+                ),
+                'sender[requisites]' => array(
+                    'name||text' => Option::get(Config::MODULE_ID, 'sender-requisites-name-pecom') ?? '',
+                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-requisites-inn-pecom') ?? '',
                 ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-pecom') ?? '',
@@ -522,6 +543,7 @@ class ExportFileds {
                     'time_to||date' => $produce_date,
                     'lift||checkbox' => '',
                     'floor||text' => '',
+                    'comment||text' => Option::get(Config::MODULE_ID, 'sender-pickup-comment-baikal') ?? '',
                 )
             );
         }
@@ -560,6 +582,10 @@ class ExportFileds {
             $result = array(
                 'receiver' => array(
                     'email||text' => ''
+                ),
+                'sender' => array(
+                    'email||text' => Option::get(Config::MODULE_ID, 'sender-email-dpd') ?? '',
+                    'company||text' => Option::get(Config::MODULE_ID, 'sender-company-dpd') ?? '',
                 ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-dpd') ?? '',

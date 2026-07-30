@@ -335,6 +335,7 @@ BX.ready(function () {
 function initSettingsTable(table) {
     relocateInlineButtons(table);
     convertTimeFields(table);
+    convertDateFields(table);
 
     var carrier = buildCarrierTabs(table);
     var sections = buildSections(table, carrier);
@@ -354,6 +355,17 @@ function convertTimeFields(table) {
         var input = table.querySelector('input[name="' + name + '"]');
         if (input && input.type !== 'time') {
             input.type = 'time';
+        }
+    });
+}
+
+var ESL_DATE_FIELDS = ['sender-identity-date-pecom'];
+
+function convertDateFields(table) {
+    ESL_DATE_FIELDS.forEach(function (name) {
+        var input = table.querySelector('input[name="' + name + '"]');
+        if (input && input.type !== 'date') {
+            input.type = 'date';
         }
     });
 }
