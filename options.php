@@ -196,6 +196,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         ),
         'delline' => array(
             array(
+                "sender-time-from-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TIME_FROM_DELLINE"),
+                "",
+                array("text")
+            ),
+            array(
+                "sender-time-to-delline",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TIME_TO_DELLINE"),
+                "",
+                array("text")
+            ),
+            array(
                 "sender-uid-delline",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_S_UID_DELLINE_HINT")),
                 "",
@@ -244,6 +256,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     '0x80958580c73df96f4c677eefef87422c' => 'ГК',
                     '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
                     '0x83180c1320f58a344588220de53696e7' => 'ТОО',
+                    'xaba390e912918cea417d5be67b8d492a' => 'АО',
                 ))
             ),
             array(

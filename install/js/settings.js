@@ -334,6 +334,7 @@ BX.ready(function () {
 
 function initSettingsTable(table) {
     relocateInlineButtons(table);
+    convertTimeFields(table);
 
     var carrier = buildCarrierTabs(table);
     var sections = buildSections(table, carrier);
@@ -341,6 +342,20 @@ function initSettingsTable(table) {
     wireAccordion(sections);
     wireToolbar(table, sections);
     wireVisibilityRules();
+}
+
+// Настройки модуля рендерятся через __AdmSettingsDrawList (bitrix/modules/main/admin/settings.php),
+// который умеет только text/checkbox/selectbox/... — нативного type=time там нет. Поля времени
+// заявлены как обычный "text" (см. options.php), здесь донастраиваем их в реальный time-picker.
+var ESL_TIME_FIELDS = ['sender-time-from-delline', 'sender-time-to-delline'];
+
+function convertTimeFields(table) {
+    ESL_TIME_FIELDS.forEach(function (name) {
+        var input = table.querySelector('input[name="' + name + '"]');
+        if (input && input.type !== 'time') {
+            input.type = 'time';
+        }
+    });
 }
 
 // Условная видимость полей — портировано из МойСклад (Iframe.php:

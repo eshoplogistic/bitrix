@@ -102,6 +102,12 @@ class ExportFileds {
                 'delivery' => array(
                     'mode' => '',
                     'produce_date' => '',
+                    'location_from' => array(
+                        'pick_up_data' => array(
+                            'time_from' => '',
+                            'time_to' => '',
+                        )
+                    )
                 )
             );
         }
@@ -349,6 +355,7 @@ class ExportFileds {
                         '0x80958580c73df96f4c677eefef87422c' => 'ГК',
                         '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
                         '0x83180c1320f58a344588220de53696e7' => 'ТОО',
+                        'xaba390e912918cea417d5be67b8d492a' => 'АО',
                     ], Option::get(Config::MODULE_ID, 'sender-counteragent-from-delline')),
                     'name||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-name-delline') ?? '',
                     'inn||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-inn-delline') ?? '',
@@ -361,7 +368,11 @@ class ExportFileds {
                 'delivery' => array(
                     'mode||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_2"), Option::get(Config::MODULE_ID, 'mode-delline')),
                     'produce_date||date' => $produce_date,
-                )
+                ),
+                'delivery[location_from][pick_up_data]' => array(
+                    'time_from||time' => Option::get(Config::MODULE_ID, 'sender-time-from-delline') ?? '',
+                    'time_to||time' => Option::get(Config::MODULE_ID, 'sender-time-to-delline') ?? '',
+                ),
             );
         }
 

@@ -313,7 +313,9 @@ tr.heading.esl-collapsed .esl-section-heading::before {
 #edit .adm-input,
 #unloading .adm-input,
 #edit input[type="text"],
-#unloading input[type="text"] {
+#unloading input[type="text"],
+#edit input[type="time"],
+#unloading input[type="time"] {
     border: 1px solid #c8d0e0 !important;
     border-radius: var(--esl-radius-sm) !important;
     padding: 5px 10px !important;
@@ -330,7 +332,9 @@ tr.heading.esl-collapsed .esl-section-heading::before {
 #edit .adm-input:focus,
 #unloading .adm-input:focus,
 #edit input[type="text"]:focus,
-#unloading input[type="text"]:focus {
+#unloading input[type="text"]:focus,
+#edit input[type="time"]:focus,
+#unloading input[type="time"]:focus {
     border-color: var(--esl-accent) !important;
     box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
     background: #fff !important;

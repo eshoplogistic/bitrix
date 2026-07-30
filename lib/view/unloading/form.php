@@ -386,6 +386,15 @@ echo $ID ?>"
             <?php
             endif; ?>
             <?php
+            if ($type === 'time'): ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                    <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
             if ($type === 'checkbox'):
                 ?>
                 <tr>
@@ -569,6 +578,15 @@ echo $ID ?>"
                     <td><?php
                         echo GetMessage("ADDFIELDS_" . $name) ?></td>
                     <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'time'): ?>
+                <tr>
+                    <td><?php
+                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                    <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
             endif; ?>
