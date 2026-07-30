@@ -156,6 +156,7 @@ class ExportFileds {
                 'sender' => array(
                     'identity' => array(
                         'type' => '',
+                        'org_type' => '',
                         'series' => '',
                         'number' => '',
                         'date' => '',
@@ -168,12 +169,26 @@ class ExportFileds {
                         'inn' => '',
                     ),
                 ),
+                'receiver' => array(
+                    'last_name' => '',
+                    'identity' => array(
+                        'type' => '',
+                        'document_type' => '',
+                        'passport_series' => '',
+                        'passport_number' => '',
+                        'passport_date_of_issue' => '',
+                    ),
+                    'requisites' => array(
+                        'inn' => '',
+                    ),
+                ),
                 'order' => array(
                     'content' => '',
                     'payer' => '',
                 ),
                 'delivery'   => array(
                     'produce_date' => '',
+                    'simplified_issuance' => '',
                 ),
             );
         }
@@ -438,12 +453,14 @@ class ExportFileds {
 
             $result = array(
                 'sender[identity]'   => array(
+                    // Тип отправителя (юрлицо/ИП/физлицо) — определяет у МС, показывать ли
+                    // поля документа (юрлицо/ИП) или реквизиты организации (физлицо); см.
+                    // ESL_UNLOADING_VISIBILITY_RULES в admin.js.
+                    'org_type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM") ?? [], Option::get(Config::MODULE_ID, 'sender-org-type-pecom')),
                     'type||select'    => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1") ?? [], Option::get(Config::MODULE_ID, 'sender-identity-type-pecom')),
                     'series||text' => Option::get(Config::MODULE_ID, 'sender-identity-series-pecom') ?? '',
                     'number||text' => Option::get(Config::MODULE_ID, 'sender-identity-number-pecom') ?? '',
                     'date||date' => Option::get(Config::MODULE_ID, 'sender-identity-date-pecom') ?? '',
-                    // API ПЭК: в JSON-поле identity.last_name фактически передаётся отчество,
-                    // а в identity.patronymic — фамилия (перепутаны местами на стороне ТК).
                     'first_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-first-name-pecom') ?? '',
                     'last_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-last-name-pecom') ?? '',
                     'patronymic||text' => Option::get(Config::MODULE_ID, 'sender-identity-patronymic-pecom') ?? '',
@@ -452,12 +469,28 @@ class ExportFileds {
                     'name||text' => Option::get(Config::MODULE_ID, 'sender-requisites-name-pecom') ?? '',
                     'inn||text' => Option::get(Config::MODULE_ID, 'sender-requisites-inn-pecom') ?? '',
                 ),
+                'receiver' => array(
+                    'last_name||text' => '',
+                ),
+                'receiver[identity]' => array(
+                    // Тип получателя (юрлицо/ИП/физлицо) — как и у отправителя, определяет
+                    // у МС видимость документа vs реквизитов организации.
+                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM") ?? [],
+                    'document_type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_DOCUMENT_TYPE_PECOM") ?? [],
+                    'passport_series||text' => '',
+                    'passport_number||text' => '',
+                    'passport_date_of_issue||date' => '',
+                ),
+                'receiver[requisites]' => array(
+                    'inn||text' => '',
+                ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-pecom') ?? '',
                     'payer||select' => self::moveToFront(self::payerValues(), Option::get(Config::MODULE_ID, 'sender-payer-pecom')),
                 ),
                 'delivery' => array(
                     'produce_date||date' => $produce_date,
+                    'simplified_issuance||checkbox' => 'checked',
                 )
             );
         }

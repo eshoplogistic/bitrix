@@ -13,7 +13,15 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     // "Груз заберёт ТК" (1) — нужен код терминала отгрузки;
     // "Сами привезём на терминал" (0) — нужен адрес отправителя.
     { controller: 'pick_up', values: ['1'], targets: ['sender-terminal'] },
-    { controller: 'pick_up', values: ['0'], targets: ['sender-region', 'sender-city', 'sender-street', 'sender-house', 'sender-room'] }
+    { controller: 'pick_up', values: ['0'], targets: ['sender-region', 'sender-city', 'sender-street', 'sender-house', 'sender-room'] },
+    // ПЭК: юрлицо/ИП отправителя — нужен документ представителя, физлицо — реквизиты
+    // организации не нужны, зато нужны собственные ФИО (см. Iframe.php / ExportFileds.php МойСклад).
+    { controller: 'sender[identity][org_type]', values: ['1', '2'], targets: ['sender[identity][type]', 'sender[identity][series]', 'sender[identity][number]', 'sender[identity][date]', 'sender[identity][first_name]', 'sender[identity][last_name]', 'sender[identity][patronymic]'] },
+    { controller: 'sender[identity][org_type]', values: ['3'], targets: ['sender[requisites][name]', 'sender[requisites][inn]'] },
+    // ПЭК: то же самое для получателя — юрлицо/ИП удостоверяется документом
+    // представителя, физлицо — только ИНН.
+    { controller: 'receiver[identity][type]', values: ['1', '2'], targets: ['receiver[identity][document_type]', 'receiver[identity][passport_series]', 'receiver[identity][passport_number]', 'receiver[identity][passport_date_of_issue]', 'receiver[last_name]'] },
+    { controller: 'receiver[identity][type]', values: ['3'], targets: ['receiver[requisites][inn]'] }
 ];
 
 function eslUnloadingControllerValue(el) {

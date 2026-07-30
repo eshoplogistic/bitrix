@@ -306,6 +306,16 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array("text")
             ),
             array(
+                "sender-org-type-pecom",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ORG_TYPE_PECOM"),
+                "3",
+                array('selectbox', array(
+                    '1' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_LEGAL"),
+                    '2' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_IP_FULL_PECOM"),
+                    '3' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_NATURAL"),
+                ))
+            ),
+            array(
                 "sender-identity-type-pecom",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_TYPE_PECOM"),
                 "10",

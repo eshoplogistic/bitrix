@@ -66,6 +66,18 @@ $MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1"] = [
     12 => 'ВОЕННЫЙ БИЛЕТ',
 ];
 
+$MESS["ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM"] = array(
+    1 => 'Юридическое лицо',
+    2 => 'Индивидуальный предприниматель',
+    3 => 'Физическое лицо',
+);
+
+$MESS["ESHOP_LOGISTIC_HELPERS_DOCUMENT_TYPE_PECOM"] = array(
+    'passport' => 'Паспорт',
+    'drivingLicence' => 'Водительские права',
+    'foreignPassport' => 'Заграничный паспорт',
+);
+
 $MESS["ESHOP_LOGISTIC_HELPERS_LEGAL_BAIKAL_1"] = array(
     1   => 'Юридическое лицо',
     2   => 'Физическое лицо',
