@@ -211,6 +211,11 @@ class Config
 		'take_payment'     => array('sdek', 'yandex', 'fivepost', 'postrf', 'sberlogistics', 'pochtalion'),
 		'combine_places'   => array('sdek', 'sberlogistics', 'pochtalion'),
 		'seller'           => array('sdek', 'sberlogistics', 'pochtalion'),
+		// Отдельный список — источник другой (unloading.html.php, сама форма выгрузки
+		// заказа у МойСклад, а не Iframe.php с настройками): там блок "Способ отгрузки
+		// в ТК" / "Код терминала" скрыт целиком только у 5Post и Почты России — у Magnit
+		// он показывается, хотя дефолта в настройках для него нет (см. 'pickup_terminal').
+		'pickup_select'    => array('sdek', 'boxberry', 'yandex', 'delline', 'kit', 'pecom', 'halva', 'baikal', 'magnit', 'dpd', 'sberlogistics', 'pochtalion'),
 	);
 
 	/** Доступна ли фича (см. CARRIER_FEATURE_SCOPE) для данной службы доставки

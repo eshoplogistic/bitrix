@@ -466,19 +466,28 @@ echo $ID ?>"
 
     <?php
     $tabControl->BeginNextTab(); ?>
+    <?php
+    // 5POST и Почта России — этот блок в МС скрыт целиком (unloading.html.php), груз
+    // передаётся иначе (постамат/отделение), способ отгрузки в ТК/код терминала
+    // отгрузки для них не запрашиваются.
+    $showPickupSelect = Config::isCarrierFeatureEnabled('pickup_select', $typeMethod['name']);
+    if ($showPickupSelect): ?>
     <tr>
         <td><?php
             echo GetMessage("DELIVERY_METHOD_TERMINAL") ?>:
         </td>
         <td>
             <select name="pick_up">
+                <?php if ($typeMethod['name'] !== 'halva'): ?>
                 <option value="0" <?= ($pickupDefault === '0') ? 'selected' : '' ?>><?php
                     echo GetMessage("BRING_OURSELVES") ?></option>
-                <option value="1" <?= ($pickupDefault === '1') ? 'selected' : '' ?>><?php
+                <?php endif; ?>
+                <option value="1" <?= ($typeMethod['name'] === 'halva' || $pickupDefault === '1') ? 'selected' : '' ?>><?php
                     echo GetMessage("TRANSPORT_COMPANY_PICK") ?></option>
             </select>
         </td>
     </tr>
+    <?php endif; ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_NAME") ?></td>
@@ -500,6 +509,7 @@ echo $ID ?>"
                    value="<?php
                    echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-email')) ?>"></td>
     </tr>
+    <?php if ($showPickupSelect): ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_TERMINAL") ?></td>
@@ -509,6 +519,7 @@ echo $ID ?>"
                        ? htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name']))
                        : '' ?>"></td>
     </tr>
+    <?php endif; ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_REGION") ?></td>
