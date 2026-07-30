@@ -198,4 +198,29 @@ class Config
 		return $paymentTypes;
 	}
 
+	// Сверка с эталонным МойСклад (Iframe.php, по каждой службе): часть общих настроек
+	// доставки там показывается не всем ТК, а только тем, где они осмысленны. Список
+	// служб по каждой фиче держится здесь, единой копией — используется и в options.php
+	// (что показывать в настройках), и в form.php/unloading.php (что реально применять),
+	// чтобы старое сохранённое значение настройки не продолжало тихо действовать для
+	// службы, для которой поле убрали из интерфейса. СберЛогистику и Почталион МойСклад
+	// вообще не поддерживает — сравнивать не с чем, для них поведение не меняем.
+	const CARRIER_FEATURE_SCOPE = array(
+		'pickup_terminal'  => array('sdek', 'boxberry', 'yandex', 'delline', 'kit', 'pecom', 'baikal', 'dpd', 'sberlogistics', 'pochtalion'),
+		'type_price_null'  => array('sdek', 'boxberry', 'yandex', 'fivepost', 'delline', 'kit', 'postrf', 'pecom', 'sberlogistics', 'pochtalion'),
+		'take_payment'     => array('sdek', 'yandex', 'fivepost', 'postrf', 'sberlogistics', 'pochtalion'),
+		'combine_places'   => array('sdek', 'sberlogistics', 'pochtalion'),
+		'seller'           => array('sdek', 'sberlogistics', 'pochtalion'),
+	);
+
+	/** Доступна ли фича (см. CARRIER_FEATURE_SCOPE) для данной службы доставки
+	 * @param string $feature
+	 * @param string $carrierCode
+	 * @return bool
+	 */
+	public static function isCarrierFeatureEnabled($feature, $carrierCode)
+	{
+		return in_array($carrierCode, self::CARRIER_FEATURE_SCOPE[$feature] ?? array(), true);
+	}
+
 }

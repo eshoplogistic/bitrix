@@ -423,7 +423,8 @@ class Unloading
             // Если в настройках ТК включена «нулевая объявленная стоимость по умолчанию»,
             // передаём declared_price = 0 по каждому месту (иначе объявленная стоимость ТК
             // берёт из price места, что не всегда нужно для деклараций малой ценности).
-            $priceNull = Option::get(Config::MODULE_ID, 'type-price-null-' . $deliveryId) == 'Y';
+            $priceNull = Config::isCarrierFeatureEnabled('type_price_null', $deliveryId)
+                && Option::get(Config::MODULE_ID, 'type-price-null-' . $deliveryId) == 'Y';
             // Ставка НДС по месту по умолчанию — та же настройка ТК, что и для delivery.vat_rate.
             $defaultPlaceVatRate = Option::get(Config::MODULE_ID, 'cost-custom-delivery-' . $deliveryId, -1);
 
@@ -490,8 +491,8 @@ class Unloading
             $defaultFields['delivery']['location_from']['platform_id'] = $data['platform_id'];
         }
 
-        $sellerName = Option::get(Config::MODULE_ID, 'seller-name-' . $deliveryId, '');
-        $sellerPhone = Option::get(Config::MODULE_ID, 'seller-phone-' . $deliveryId, '');
+        $sellerName = Config::isCarrierFeatureEnabled('seller', $deliveryId) ? Option::get(Config::MODULE_ID, 'seller-name-' . $deliveryId, '') : '';
+        $sellerPhone = Config::isCarrierFeatureEnabled('seller', $deliveryId) ? Option::get(Config::MODULE_ID, 'seller-phone-' . $deliveryId, '') : '';
         if ($sellerName !== '' || $sellerPhone !== '') {
             $defaultFields['seller'] = array(
                 'name' => $sellerName,

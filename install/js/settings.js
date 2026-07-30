@@ -342,7 +342,7 @@ function initSettingsTable(table) {
 
     wireAccordion(sections);
     wireToolbar(table, sections);
-    wireVisibilityRules();
+    wireVisibilityRules(carrier);
 }
 
 // Настройки модуля рендерятся через __AdmSettingsDrawList (bitrix/modules/main/admin/settings.php),
@@ -394,7 +394,14 @@ function eslControllerValue(el) {
 // Вызывается повторно при каждом показе строк (переключение вкладки ТК,
 // разворачивание секции) — иначе tabs/accordion затирают скрытое правилами состояние
 // плоским "display = ''" для всех строк своей группы.
-function eslApplyVisibilityRules() {
+//
+// activeGroup — текущая активная вкладка ТК (см. buildCarrierTabs). Поле-контроллер
+// (например sender-type-baikal) ищется по имени глобально по всей таблице, поэтому
+// без привязки к активной вкладке правило "показать" пробивало скрытие чужих вкладок
+// насквозь — например, поля организации Байкал Сервис оставались видимыми и на
+// вкладке СДЭК, и на вкладке Почтальон, при каждом переключении. Скрытие (match=false)
+// применяем всегда — оно безопасно независимо от активной вкладки.
+function eslApplyVisibilityRules(activeGroup) {
     ESL_VISIBILITY_RULES.forEach(function (rule) {
         var controller = document.getElementsByName(rule.controller)[0];
         if (!controller) {
@@ -404,14 +411,18 @@ function eslApplyVisibilityRules() {
         rule.targets.forEach(function (targetName) {
             var target = document.getElementsByName(targetName)[0];
             var row = target && target.closest('tr');
-            if (row) {
-                row.style.display = match ? '' : 'none';
+            if (!row) {
+                return;
             }
+            if (match && activeGroup && activeGroup.rows.indexOf(row) === -1) {
+                return;
+            }
+            row.style.display = match ? '' : 'none';
         });
     });
 }
 
-function wireVisibilityRules() {
+function wireVisibilityRules(carrier) {
     var bound = {};
     ESL_VISIBILITY_RULES.forEach(function (rule) {
         if (bound[rule.controller]) {
@@ -420,10 +431,12 @@ function wireVisibilityRules() {
         bound[rule.controller] = true;
         var controller = document.getElementsByName(rule.controller)[0];
         if (controller) {
-            controller.addEventListener('change', eslApplyVisibilityRules);
+            controller.addEventListener('change', function () {
+                eslApplyVisibilityRules(carrier ? carrier.getActive() : null);
+            });
         }
     });
-    eslApplyVisibilityRules();
+    eslApplyVisibilityRules(carrier ? carrier.getActive() : null);
 }
 
 // Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
@@ -508,7 +521,7 @@ function buildCarrierTabs(table) {
             targetBtn.classList.add('esl-carrier-tab--active');
         }
         active = targetGroup;
-        eslApplyVisibilityRules();
+        eslApplyVisibilityRules(targetGroup);
     }
 
     groups.forEach(function (g, i) {
@@ -584,13 +597,16 @@ function collapseSection(section) {
 function expandSection(section) {
     if (section.carrier) {
         section.carrier.tabsRow.style.display = '';
+        // activate() уже переприменяет правила видимости для активной вкладки —
+        // повторный безусловный вызов ниже без контекста вкладки только что
+        // проставленное скрытие бы затёр.
         section.carrier.activate(section.carrier.getActive());
     } else {
         section.rows.forEach(function (r) { r.style.display = ''; });
+        eslApplyVisibilityRules(null);
     }
     section.headingRow.classList.remove('esl-collapsed');
     section.collapsed = false;
-    eslApplyVisibilityRules();
 }
 
 function wireAccordion(sections) {

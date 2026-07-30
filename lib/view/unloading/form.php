@@ -163,7 +163,9 @@ if ($typeMethod['type'] === 'door' && $propertyAddress !== '') {
 
 // Значения по умолчанию из настроек ТК (options.php, раздел "Настройки транспортных компаний").
 $paymentTypeDefault = Option::get(Config::MODULE_ID, 'payment_type-' . $typeMethod['name']);
-$pickupDefault = Option::get(Config::MODULE_ID, 'type_delivery_from_tk-' . $typeMethod['name']);
+$pickupDefault = Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
+    ? Option::get(Config::MODULE_ID, 'type_delivery_from_tk-' . $typeMethod['name'])
+    : null;
 
 $cutAddressShipping = [
     'terminal' => '',
@@ -503,7 +505,9 @@ echo $ID ?>"
             echo GetMessage("SENDER_TERMINAL") ?></td>
         <td><input type="text" name="sender-terminal"
                    value="<?php
-                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name'])) ?>"></td>
+                   echo Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
+                       ? htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name']))
+                       : '' ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php

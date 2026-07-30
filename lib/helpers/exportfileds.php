@@ -59,11 +59,6 @@ class ExportFileds {
                     'type' => '',
                     'packing_type' => '',
                     'issue'        => '',
-                    'combine_places' => array(
-                        'apply' => '',
-                        'dimensions' => '',
-                        'weight' => ''
-                    )
                 )
             );
         }
@@ -241,13 +236,6 @@ class ExportFileds {
                 'receiver' => array(
                     'last_name' => ''
                 ),
-                'order' => array(
-                    'combine_places' => array(
-                        'apply' => '',
-                        'dimensions' => '',
-                        'weight' => ''
-                    )
-                )
             );
         }
 
@@ -263,11 +251,6 @@ class ExportFileds {
                 'order' => array(
                     'content' => '',
                     'costly' => '',
-                    'combine_places' => array(
-                        'apply' => '',
-                        'dimensions' => '',
-                        'weight' => ''
-                    )
                 ),
                 'delivery' => array(
                     'produce_date' => '',
@@ -308,11 +291,6 @@ class ExportFileds {
                     'type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"), Option::get(Config::MODULE_ID, 'type_order-boxberry')),
                     'packing_type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"), Option::get(Config::MODULE_ID, 'packing_type-boxberry')),
                     'issue||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"), Option::get(Config::MODULE_ID, 'order_issue-boxberry')),
-                ),
-                'order[combine_places]' => array(
-                    'apply||checkbox' => self::isChecked('combine-places-apply-boxberry') ? 'checked' : '',
-                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-boxberry') ?? '',
-                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-boxberry') ?? ''
                 ),
             );
         }
@@ -553,11 +531,6 @@ class ExportFileds {
                 'receiver' => array(
                     'last_name||text' => '',
                 ),
-                'order[combine_places]' => array(
-                    'apply||checkbox' => self::isChecked('combine-places-apply-magnit') ? 'checked' : '',
-                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-magnit') ?? '',
-                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-magnit') ?? ''
-                ),
             );
         }
 
@@ -590,11 +563,6 @@ class ExportFileds {
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-dpd') ?? '',
                     'costly||checkbox' => self::isChecked('order-costly-dpd') ? 'checked' : '',
-                ),
-                'order[combine_places]' => array(
-                    'apply||checkbox' => self::isChecked('combine-places-apply-dpd') ? 'checked' : '',
-                    'dimensions||text' => Option::get(Config::MODULE_ID, 'combine-places-dimensions-dpd') ?? '',
-                    'weight||text' => Option::get(Config::MODULE_ID, 'combine-places-weight-dpd') ?? ''
                 ),
                 'delivery' => array(
                     'produce_date||date' => $produce_date,

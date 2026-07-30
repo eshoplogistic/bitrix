@@ -486,6 +486,15 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
     // теми, у кого в Iframe.php поле sender-terminal-* имеет type=textNbutton).
     $terminalSearchServices = array('sdek', 'boxberry', 'yandex', 'kit', 'pecom', 'delline', 'dpd', 'baikal');
 
+    // Сверка с МойСклад (Iframe.php, по каждой службе): часть общих полей там
+    // показывается не всем ТК, а только тем, где они осмысленны. Список служб по
+    // каждой фиче — общий с form.php/unloading.php, см. Config::CARRIER_FEATURE_SCOPE.
+    $pickupTerminalServices = Config::CARRIER_FEATURE_SCOPE['pickup_terminal'];
+    $typePriceNullServices = Config::CARRIER_FEATURE_SCOPE['type_price_null'];
+    $takePaymentServices = Config::CARRIER_FEATURE_SCOPE['take_payment'];
+    $combinePlacesServices = Config::CARRIER_FEATURE_SCOPE['combine_places'];
+    $sellerServices = Config::CARRIER_FEATURE_SCOPE['seller'];
+
     $transportOptions = array();
     // Пустые маркеры-границы нужны JS-скрипту в конце файла, который группирует
     // все строки таблицы между ними по службам и рисует вкладки поверх обычного
@@ -494,96 +503,109 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
     foreach ($transportServices as $svcCode => $svcHeading) {
         $transportOptions[] = '<span class="esl-carrier-heading" data-esl-service="' . htmlspecialcharsbx($svcCode) . '">' . htmlspecialcharsbx($svcHeading) . '</span>';
         $transportOptions[] = array(
-            'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
-                . "'content_url': '/bitrix/admin/eshoplogistic_delivery_additionalservices.php?service=" . $svcCode . "',"
-                . "'draggable': true, 'resizable': true, 'width': 700, 'height': 500"
-                . '})).Show();">'
-        );
-        $transportOptions[] = array(
             "payment_type-$svcCode",
             Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PAYMENT_TYPE"),
             "not_selected",
             array('selectbox', $paymentTypeValues)
         );
-        $transportOptions[] = array(
-            "type_delivery_from_tk-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_HINT")),
-            "0",
-            array('selectbox', $pickupValues)
-        );
-        $transportOptions[] = array(
-            "sender-terminal-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_HINT")),
-            "",
-            array("text")
-        );
-        // Поиск терминала по адресу доступен только там, где он есть в МойСклад
-        // (в 5Post он там же отключён, а у остальных служб этого поля вообще нет).
-        if (in_array($svcCode, $terminalSearchServices, true)) {
-            // Кнопка переезжает в ячейку поля "Код терминала отгрузки" рядом с инпутом
-            // (см. relocateInlineButtons() в settings.js) — здесь она лишь временно
-            // рендерится отдельной строкой, которую JS сразу убирает.
+        if (in_array($svcCode, $pickupTerminalServices, true)) {
             $transportOptions[] = array(
-                'note' => '<button type="button" class="esl-inline-btn esl-terminal-search-btn" title="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON")) . '" onclick="window.__eslTerminalDialog=(new BX.CAdminDialog({'
-                    . "'content_url': '/bitrix/admin/eshoplogistic_delivery_terminalsearch.php?service=" . $svcCode . "&target=sender-terminal-" . $svcCode . "',"
-                    . "'draggable': true, 'resizable': true, 'width': 620, 'height': 480"
-                    . '}));window.__eslTerminalDialog.Show();"><svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.6 10.6L14 14M12.3 6.65C12.3 9.73 9.73 12.3 6.65 12.3C3.57 12.3 1 9.73 1 6.65C1 3.57 3.57 1 6.65 1C9.73 1 12.3 3.57 12.3 6.65Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+                "type_delivery_from_tk-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PICKUP_HINT")),
+                "0",
+                array('selectbox', $pickupValues)
+            );
+            $transportOptions[] = array(
+                "sender-terminal-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_HINT")),
+                "",
+                array("text")
+            );
+            // Поиск терминала по адресу доступен только там, где он есть в МойСклад
+            // (в 5Post он там же отключён, а у остальных служб этого поля вообще нет).
+            if (in_array($svcCode, $terminalSearchServices, true)) {
+                // Кнопка переезжает в ячейку поля "Код терминала отгрузки" рядом с инпутом
+                // (см. relocateInlineButtons() в settings.js) — здесь она лишь временно
+                // рендерится отдельной строкой, которую JS сразу убирает.
+                $transportOptions[] = array(
+                    'note' => '<button type="button" class="esl-inline-btn esl-terminal-search-btn" title="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TERMINAL_SEARCH_BUTTON")) . '" onclick="window.__eslTerminalDialog=(new BX.CAdminDialog({'
+                        . "'content_url': '/bitrix/admin/eshoplogistic_delivery_terminalsearch.php?service=" . $svcCode . "&target=sender-terminal-" . $svcCode . "',"
+                        . "'draggable': true, 'resizable': true, 'width': 620, 'height': 480"
+                        . '}));window.__eslTerminalDialog.Show();"><svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.6 10.6L14 14M12.3 6.65C12.3 9.73 9.73 12.3 6.65 12.3C3.57 12.3 1 9.73 1 6.65C1 3.57 3.57 1 6.65 1C9.73 1 12.3 3.57 12.3 6.65Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+                );
+            }
+        }
+        if (in_array($svcCode, $typePriceNullServices, true)) {
+            $transportOptions[] = array(
+                "type-price-null-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL_HINT")),
+                "",
+                array("checkbox")
             );
         }
-        $transportOptions[] = array(
-            "type-price-null-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PRICE_NULL_HINT")),
-            "",
-            array("checkbox")
-        );
-        $transportOptions[] = array(
-            "take-payment-default-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TAKE_PAYMENT"),
-            "",
-            array("checkbox")
-        );
-        $transportOptions[] = array(
-            "combine-places-apply-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_SDEK_HINT")) : ''),
-            "",
-            array("checkbox")
-        );
-        $transportOptions[] = array(
-            "combine-places-dimensions-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS_SDEK_HINT")) : ''),
-            "",
-            array("text")
-        );
-        $transportOptions[] = array(
-            "combine-places-weight-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"),
-            "",
-            array("text")
-        );
+        if (in_array($svcCode, $takePaymentServices, true)) {
+            $transportOptions[] = array(
+                "take-payment-default-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_TAKE_PAYMENT"),
+                "",
+                array("checkbox")
+            );
+        }
+        if (in_array($svcCode, $combinePlacesServices, true)) {
+            $transportOptions[] = array(
+                "combine-places-apply-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_SDEK_HINT")) : ''),
+                "",
+                array("checkbox")
+            );
+            $transportOptions[] = array(
+                "combine-places-dimensions-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_DIMENSIONS_SDEK_HINT")) : ''),
+                "",
+                array("text")
+            );
+            $transportOptions[] = array(
+                "combine-places-weight-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_COMBINE_PLACES_WEIGHT"),
+                "",
+                array("text")
+            );
+        }
         $transportOptions[] = array(
             "cost-custom-delivery-$svcCode",
             Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_VAT_SDEK_HINT")) : ''),
             "-1",
             array('selectbox', $vatValues)
         );
-        $transportOptions[] = array(
-            "seller-name-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME_HINT")) : ''),
-            "",
-            array("text")
-        );
-        $transportOptions[] = array(
-            "seller-phone-$svcCode",
-            Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE_HINT")) : ''),
-            "",
-            array("text")
-        );
+        if (in_array($svcCode, $sellerServices, true)) {
+            $transportOptions[] = array(
+                "seller-name-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_NAME_HINT")) : ''),
+                "",
+                array("text")
+            );
+            $transportOptions[] = array(
+                "seller-phone-$svcCode",
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE") . ($svcCode === 'sdek' ? eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_SELLER_PHONE_HINT")) : ''),
+                "",
+                array("text")
+            );
+        }
 
         if (isset($transportServiceNiche[$svcCode])) {
             foreach ($transportServiceNiche[$svcCode] as $nicheField) {
                 $transportOptions[] = $nicheField;
             }
         }
+
+        // Кнопка добавления доп.полей — всегда последней строкой блока службы
+        // (после всех общих и нишевых полей), а не сразу под заголовком.
+        $transportOptions[] = array(
+            'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
+                . "'content_url': '/bitrix/admin/eshoplogistic_delivery_additionalservices.php?service=" . $svcCode . "',"
+                . "'draggable': true, 'resizable': true, 'width': 700, 'height': 500"
+                . '})).Show();">'
+        );
     }
     $transportOptions[] = '<span id="esl-carriers-boundary-end" style="display:none"></span>';
 
