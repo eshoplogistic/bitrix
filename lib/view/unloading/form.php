@@ -458,11 +458,18 @@ echo $ID ?>"
         <td><input type="text" name="esl-unload-price" value="<?php
             echo $orderData['PRICE_DELIVERY'] ?>"></td>
     </tr>
+    <?php
+    // В МС комментарий заказа скрыт для dpd/5POST/ПЭК (там его некуда девать в API
+    // этих служб) и для Яндекс.Доставки — кроме случая доставки курьером (door).
+    $showOrderComment = !in_array($typeMethod['name'], ['dpd', 'fivepost', 'pecom'], true)
+        && ($typeMethod['name'] !== 'yandex' || $typeMethod['type'] === 'door');
+    if ($showOrderComment): ?>
     <tr>
         <td><?php
             echo GetMessage("COMMENT") ?></td>
         <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
     </tr>
+    <?php endif; ?>
 
     <?php
     $tabControl->BeginNextTab(); ?>

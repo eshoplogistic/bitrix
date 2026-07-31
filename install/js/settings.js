@@ -342,7 +342,7 @@ function initSettingsTable(table) {
 
     wireAccordion(sections);
     wireToolbar(table, sections);
-    wireVisibilityRules(carrier);
+    wireVisibilityRules(table, carrier);
 }
 
 // Настройки модуля рендерятся через __AdmSettingsDrawList (bitrix/modules/main/admin/settings.php),
@@ -395,21 +395,25 @@ function eslControllerValue(el) {
 // разворачивание секции) — иначе tabs/accordion затирают скрытое правилами состояние
 // плоским "display = ''" для всех строк своей группы.
 //
-// activeGroup — текущая активная вкладка ТК (см. buildCarrierTabs). Поле-контроллер
-// (например sender-type-baikal) ищется по имени глобально по всей таблице, поэтому
-// без привязки к активной вкладке правило "показать" пробивало скрытие чужих вкладок
-// насквозь — например, поля организации Байкал Сервис оставались видимыми и на
-// вкладке СДЭК, и на вкладке Почтальон, при каждом переключении. Скрытие (match=false)
-// применяем всегда — оно безопасно независимо от активной вкладки.
-function eslApplyVisibilityRules(activeGroup) {
+// activeGroup — текущая активная вкладка ТК (см. buildCarrierTabs). Страница настроек
+// рендерит НЕСКОЛЬКО <table class="edit-table"> (по одной на под-вкладку админки —
+// "Настройки модуля"/"Настройки выгрузки заказов"), и только часть из них содержит
+// вкладки служб доставки. document.getElementsByName ищет по ВСЕМУ документу, поэтому
+// поле-контроллер (например sender-type-baikal) из чужой таблицы могло попасться под
+// руку даже при вызове для таблицы без вкладок — с activeGroup=null проверка "match &&
+// activeGroup && ..." всегда ложна, и правило "показать" пробивало скрытие чужой
+// вкладки насквозь (поля организации Байкал Сервис оставались видимыми на вкладке
+// СДЭК до первого переключения). Поэтому лукап всегда скопирован конкретной таблицей.
+// Скрытие (match=false) применяем всегда — оно безопасно независимо от активной вкладки.
+function eslApplyVisibilityRules(table, activeGroup) {
     ESL_VISIBILITY_RULES.forEach(function (rule) {
-        var controller = document.getElementsByName(rule.controller)[0];
+        var controller = table.querySelector('[name="' + rule.controller + '"]');
         if (!controller) {
             return;
         }
         var match = rule.values.indexOf(eslControllerValue(controller)) !== -1;
         rule.targets.forEach(function (targetName) {
-            var target = document.getElementsByName(targetName)[0];
+            var target = table.querySelector('[name="' + targetName + '"]');
             var row = target && target.closest('tr');
             if (!row) {
                 return;
@@ -422,21 +426,21 @@ function eslApplyVisibilityRules(activeGroup) {
     });
 }
 
-function wireVisibilityRules(carrier) {
+function wireVisibilityRules(table, carrier) {
     var bound = {};
     ESL_VISIBILITY_RULES.forEach(function (rule) {
         if (bound[rule.controller]) {
             return;
         }
         bound[rule.controller] = true;
-        var controller = document.getElementsByName(rule.controller)[0];
+        var controller = table.querySelector('[name="' + rule.controller + '"]');
         if (controller) {
             controller.addEventListener('change', function () {
-                eslApplyVisibilityRules(carrier ? carrier.getActive() : null);
+                eslApplyVisibilityRules(table, carrier ? carrier.getActive() : null);
             });
         }
     });
-    eslApplyVisibilityRules(carrier ? carrier.getActive() : null);
+    eslApplyVisibilityRules(table, carrier ? carrier.getActive() : null);
 }
 
 // Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
@@ -521,7 +525,7 @@ function buildCarrierTabs(table) {
             targetBtn.classList.add('esl-carrier-tab--active');
         }
         active = targetGroup;
-        eslApplyVisibilityRules(targetGroup);
+        eslApplyVisibilityRules(table, targetGroup);
     }
 
     groups.forEach(function (g, i) {
@@ -603,7 +607,7 @@ function expandSection(section) {
         section.carrier.activate(section.carrier.getActive());
     } else {
         section.rows.forEach(function (r) { r.style.display = ''; });
-        eslApplyVisibilityRules(null);
+        eslApplyVisibilityRules(section.headingRow.closest('table'), null);
     }
     section.headingRow.classList.remove('esl-collapsed');
     section.collapsed = false;
