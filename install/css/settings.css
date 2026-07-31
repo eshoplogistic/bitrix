@@ -94,10 +94,13 @@
     cursor: pointer;
 }
 
+/* Лёгкая подсветка при наведении — специально не похожа на "открытое" состояние
+   секции (см. .esl-collapsed ниже), иначе после клика, когда соседний заголовок
+   от сдвига содержимого оказывается под неподвижным курсором, кажется, что
+   раскрылись сразу две секции. */
 #edit .edit-table tr.heading.esl-collapsible:hover td,
 #unloading .edit-table tr.heading.esl-collapsible:hover td {
-    background: var(--esl-accent-soft) !important;
-    color: var(--esl-accent-dark) !important;
+    background: var(--esl-border-soft) !important;
 }
 
 .esl-section-heading {

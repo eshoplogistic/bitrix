@@ -340,8 +340,8 @@ function initSettingsTable(table) {
     var carrier = buildCarrierTabs(table);
     var sections = buildSections(table, carrier);
 
-    wireAccordion(sections);
-    wireToolbar(table, sections);
+    wireAccordion(sections, carrier);
+    wireToolbar(table, sections, carrier);
     wireVisibilityRules(table, carrier);
 }
 
@@ -391,21 +391,40 @@ function eslControllerValue(el) {
     return el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
 }
 
+// Строка может принадлежать вкладке ТК (см. buildCarrierTabs), а может быть общим
+// полем вне вкладок (например "Данные отправителя") — ищем её группу перебором, чтобы
+// eslApplyVisibilityRules могла отличить одно от другого.
+function eslRowCarrierGroup(groups, row) {
+    if (!groups) {
+        return null;
+    }
+    for (var i = 0; i < groups.length; i++) {
+        if (groups[i].rows.indexOf(row) !== -1) {
+            return groups[i];
+        }
+    }
+    return null;
+}
+
 // Вызывается повторно при каждом показе строк (переключение вкладки ТК,
 // разворачивание секции) — иначе tabs/accordion затирают скрытое правилами состояние
 // плоским "display = ''" для всех строк своей группы.
 //
-// activeGroup — текущая активная вкладка ТК (см. buildCarrierTabs). Страница настроек
-// рендерит НЕСКОЛЬКО <table class="edit-table"> (по одной на под-вкладку админки —
-// "Настройки модуля"/"Настройки выгрузки заказов"), и только часть из них содержит
-// вкладки служб доставки. document.getElementsByName ищет по ВСЕМУ документу, поэтому
-// поле-контроллер (например sender-type-baikal) из чужой таблицы могло попасться под
-// руку даже при вызове для таблицы без вкладок — с activeGroup=null проверка "match &&
-// activeGroup && ..." всегда ложна, и правило "показать" пробивало скрытие чужой
-// вкладки насквозь (поля организации Байкал Сервис оставались видимыми на вкладке
-// СДЭК до первого переключения). Поэтому лукап всегда скопирован конкретной таблицей.
+// groups/activeGroup — вкладки ТК и текущая активная (см. buildCarrierTabs), либо null,
+// если вызов не привязан к какой-то конкретной вкладке (например, разворачивание
+// секции "Данные отправителя", не содержащей вкладок). Раньше вызов с activeGroup=null
+// снимал всякую защиту: проверка "match && activeGroup && ..." при null всегда ложна,
+// и правило "показать" пробивало скрытие чужой, но структурно совпадающей по имени
+// вкладки насквозь — например, поля организации Байкал Сервис оставались видимыми при
+// разворачивании секции "Данные отправителя", хотя сама вкладка "Настройки служб
+// доставки" оставалась свёрнутой. Теперь принадлежность строки какой-либо вкладке ТК
+// проверяется всегда (через groups), а activeGroup лишь определяет, какая из них
+// считается активной — понятия "не в контексте вкладок" достаточно, чтобы держать
+// строки остальных вкладок скрытыми. Страница настроек рендерит несколько
+// <table class="edit-table"> (по одной на под-вкладку админки), поэтому лукап
+// контроллера/целевых полей всегда скопирован конкретной таблицей.
 // Скрытие (match=false) применяем всегда — оно безопасно независимо от активной вкладки.
-function eslApplyVisibilityRules(table, activeGroup) {
+function eslApplyVisibilityRules(table, groups, activeGroup) {
     ESL_VISIBILITY_RULES.forEach(function (rule) {
         var controller = table.querySelector('[name="' + rule.controller + '"]');
         if (!controller) {
@@ -418,7 +437,8 @@ function eslApplyVisibilityRules(table, activeGroup) {
             if (!row) {
                 return;
             }
-            if (match && activeGroup && activeGroup.rows.indexOf(row) === -1) {
+            var owningGroup = eslRowCarrierGroup(groups, row);
+            if (match && owningGroup && owningGroup !== activeGroup) {
                 return;
             }
             row.style.display = match ? '' : 'none';
@@ -436,11 +456,11 @@ function wireVisibilityRules(table, carrier) {
         var controller = table.querySelector('[name="' + rule.controller + '"]');
         if (controller) {
             controller.addEventListener('change', function () {
-                eslApplyVisibilityRules(table, carrier ? carrier.getActive() : null);
+                eslApplyVisibilityRules(table, carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
             });
         }
     });
-    eslApplyVisibilityRules(table, carrier ? carrier.getActive() : null);
+    eslApplyVisibilityRules(table, carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
 }
 
 // Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
@@ -525,7 +545,7 @@ function buildCarrierTabs(table) {
             targetBtn.classList.add('esl-carrier-tab--active');
         }
         active = targetGroup;
-        eslApplyVisibilityRules(table, targetGroup);
+        eslApplyVisibilityRules(table, groups, targetGroup);
     }
 
     groups.forEach(function (g, i) {
@@ -598,7 +618,12 @@ function collapseSection(section) {
     section.collapsed = true;
 }
 
-function expandSection(section) {
+// carrier — вкладки ТК той же таблицы (см. buildCarrierTabs), нужны даже при
+// разворачивании секции БЕЗ вкладок ("Данные отправителя" и т.п.): поля вроде
+// организации Байкал Сервис относятся к другой, всё ещё свёрнутой вкладке "Настройки
+// служб доставки", и без этого carrier eslApplyVisibilityRules не может отличить их от
+// обычных общих полей — см. комментарий у eslApplyVisibilityRules.
+function expandSection(section, carrier) {
     if (section.carrier) {
         section.carrier.tabsRow.style.display = '';
         // activate() уже переприменяет правила видимости для активной вкладки —
@@ -607,18 +632,18 @@ function expandSection(section) {
         section.carrier.activate(section.carrier.getActive());
     } else {
         section.rows.forEach(function (r) { r.style.display = ''; });
-        eslApplyVisibilityRules(section.headingRow.closest('table'), null);
+        eslApplyVisibilityRules(section.headingRow.closest('table'), carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
     }
     section.headingRow.classList.remove('esl-collapsed');
     section.collapsed = false;
 }
 
-function wireAccordion(sections) {
+function wireAccordion(sections, carrier) {
     sections.forEach(function (section) {
         section.headingRow.classList.add('esl-collapsible');
         section.headingRow.addEventListener('click', function () {
             if (section.collapsed) {
-                expandSection(section);
+                expandSection(section, carrier);
             } else {
                 collapseSection(section);
             }
@@ -626,7 +651,7 @@ function wireAccordion(sections) {
     });
 }
 
-function wireToolbar(table, sections) {
+function wireToolbar(table, sections, carrier) {
     var toolbar = table.querySelector('[data-esl-toolbar]');
     if (!toolbar) {
         return;
@@ -637,7 +662,7 @@ function wireToolbar(table, sections) {
 
     if (expandBtn) {
         expandBtn.addEventListener('click', function () {
-            sections.forEach(expandSection);
+            sections.forEach(function (section) { expandSection(section, carrier); });
         });
     }
     if (collapseBtn) {
