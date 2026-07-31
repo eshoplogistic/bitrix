@@ -14,16 +14,13 @@ Loader::includeModule("eshoplogistic.delivery");
 IncludeModuleLangFile(__FILE__);
 
 $request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
-if (!$request->isPost() || !check_bitrix_sessid()) {
-    die('Access denied');
-}
 
 $SALE_RIGHT = $APPLICATION->GetGroupRight('sale');
 if ($SALE_RIGHT !== 'W') {
     $APPLICATION->AuthForm(GetMessage('ACCESS_DENIED'));
 }
 
-$ID = (int)$request->getPost('elementId');
+$ID = (int)$request->getQuery('elementId');
 if ($ID <= 0) {
     die('Bad request');
 }
