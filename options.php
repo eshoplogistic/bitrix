@@ -611,7 +611,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         // Кнопка добавления доп.полей — всегда последней строкой блока службы
         // (после всех общих и нишевых полей), а не сразу под заголовком.
         $transportOptions[] = array(
-            'note' => '<input type="button" class="button" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
+            'note' => '<input type="button" class="button esl-addservice-btn" value="' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_ADDFIELD_BUTTON")) . '" onclick="(new BX.CAdminDialog({'
                 . "'content_url': '/bitrix/admin/eshoplogistic_delivery_additionalservices.php?service=" . $svcCode . "',"
                 . "'draggable': true, 'resizable': true, 'width': 700, 'height': 500"
                 . '})).Show();">'
