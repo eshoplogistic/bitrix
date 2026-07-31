@@ -2,7 +2,7 @@
    EShopLogistic — Страница настроек: единый стиль
    ============================================= */
 
-#edit, #faq, #unloading {
+#edit, #faq, #unloading, .esl-terminal-search, .esl-addfield-services {
     --esl-accent: #4a7dff;
     --esl-accent-dark: #3563e0;
     --esl-accent-soft: rgba(74, 125, 255, 0.12);
@@ -838,3 +838,150 @@ input[name="status-form"] {
     visibility: visible;
     opacity: 1;
 }
+
+/* =============================================
+   Модальные окна настроек (BX.CAdminDialog):
+   "Поиск терминала" (terminalsearch.php) и
+   "Настройка дополнительных услуг" (additionalservices.php)
+   ============================================= */
+
+.esl-terminal-search,
+.esl-addfield-services {
+    margin: 18px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--esl-text);
+}
+
+/* ---------- Поиск терминала ---------- */
+
+.esl-terminal-search__row { margin-bottom: 14px; }
+.esl-terminal-search__row label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--esl-text-muted); }
+.esl-terminal-search__row input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: var(--esl-radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--esl-text);
+    background: #fafbfd;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.esl-terminal-search__row input[type="text"]:focus {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+    background: #fff;
+}
+.esl-terminal-search__submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border: 1px solid var(--esl-accent);
+    border-radius: 999px;
+    background: var(--esl-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.esl-terminal-search__submit:hover { background: var(--esl-accent-dark); border-color: var(--esl-accent-dark); }
+.esl-terminal-search__results {
+    margin-top: 18px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+}
+.esl-terminal-search__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--esl-bg-subtle);
+    font-size: 13px;
+    color: var(--esl-text);
+    transition: background 0.12s;
+}
+.esl-terminal-search__item:last-child { border-bottom: none; }
+.esl-terminal-search__item:hover { background: var(--esl-accent-soft); }
+.esl-terminal-search__item-icon { flex: none; color: var(--esl-text-faint); }
+.esl-terminal-search__item:hover .esl-terminal-search__item-icon { color: var(--esl-accent); }
+.esl-terminal-search__item-name { font-weight: 600; }
+.esl-terminal-search__item-desc { color: var(--esl-text-muted); font-weight: normal; }
+.esl-terminal-search__empty { padding: 24px 4px; text-align: center; font-size: 13px; color: var(--esl-text-faint); }
+
+/* ---------- Настройка дополнительных услуг ---------- */
+
+.esl-addfield-group {
+    margin-bottom: 16px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    background: #fff;
+    overflow: hidden;
+}
+.esl-addfield-group__title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg-subtle);
+    border-bottom: 1px solid var(--esl-border);
+    padding: 9px 14px;
+}
+.esl-addfield-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; padding: 10px 14px; }
+.esl-addfield-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--esl-text); }
+.esl-addfield-field input[type="number"] {
+    width: 70px;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: var(--esl-radius-sm);
+    padding: 5px 8px;
+    font-size: 13px;
+    color: var(--esl-text);
+    background: #fafbfd;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.esl-addfield-field input[type="number"]:focus {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+    background: #fff;
+}
+.esl-addfield-field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--esl-accent); cursor: pointer; }
+.esl-addfield-result { padding: 10px 14px; margin-bottom: 14px; border-radius: var(--esl-radius-sm); font-size: 13px; }
+.esl-addfield-result--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.esl-addfield-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border: 1px solid var(--esl-accent);
+    border-radius: 999px;
+    background: var(--esl-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.esl-addfield-submit:hover { background: var(--esl-accent-dark); border-color: var(--esl-accent-dark); }
+.esl-addfield-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--esl-text-muted);
+    font-size: 13px;
+    border: 1px dashed var(--esl-border);
+    border-radius: var(--esl-radius);
+    background: var(--esl-bg-subtle);
+}
+.esl-addfield-empty svg { color: var(--esl-text-muted); opacity: 0.7; }
