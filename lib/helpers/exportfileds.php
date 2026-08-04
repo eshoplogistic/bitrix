@@ -216,11 +216,10 @@ class ExportFileds {
                     ),
                 ),
                 'receiver' => array(
-                    'legal' => '',
                     'identity' => array(
                         'type' => '',
-                        'series' => '',
-                        'number' => '',
+                        'passport_series' => '',
+                        'passport_number' => '',
                     ),
                     'requisites' => array(
                         'inn' => '',
@@ -306,7 +305,7 @@ class ExportFileds {
             $result = array(
                 'order' => array(
                     'barcode||text' => '',
-                    'type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"), Option::get(Config::MODULE_ID, 'type_order-boxberry')),
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_BOXBERRY") => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_1"), Option::get(Config::MODULE_ID, 'type_order-boxberry')),
                     'packing_type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_2"), Option::get(Config::MODULE_ID, 'packing_type-boxberry')),
                     'issue||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_BOXBERRY_3"), Option::get(Config::MODULE_ID, 'order_issue-boxberry')),
                 ),
@@ -329,7 +328,7 @@ class ExportFileds {
             }
             $result = array(
                 'order' => array(
-                    'type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"), Option::get(Config::MODULE_ID, 'type-order-sdek')),
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_SDEK") => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_SDEK_1"), Option::get(Config::MODULE_ID, 'type-order-sdek')),
                 ),
                 'order[combine_places]' => array(
                     'apply||checkbox' => self::isChecked('combine-places-apply-sdek') ? 'checked' : '',
@@ -365,8 +364,8 @@ class ExportFileds {
                         '0x83180c1320f58a344588220de53696e7' => 'ТОО',
                         'xaba390e912918cea417d5be67b8d492a' => 'АО',
                     ], Option::get(Config::MODULE_ID, 'sender-counteragent-from-delline')),
-                    'name||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-name-delline') ?? '',
-                    'inn||text' => Option::get(Config::MODULE_ID, 'sender-counteragent-inn-delline') ?? '',
+                    'name||text||' . Loc::GetMessage("ADDFIELDS_NAME_DELLINE") => Option::get(Config::MODULE_ID, 'sender-counteragent-name-delline') ?? '',
+                    'inn||text||' . Loc::GetMessage("ADDFIELDS_INN_DELLINE") => Option::get(Config::MODULE_ID, 'sender-counteragent-inn-delline') ?? '',
                 ),
                 'order'    => array(
                     'accept||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_1"), Option::get(Config::MODULE_ID, 'order-accept-delline')),
@@ -378,8 +377,8 @@ class ExportFileds {
                     'produce_date||date' => $produce_date,
                 ),
                 'delivery[location_from][pick_up_data]' => array(
-                    'time_from||time' => Option::get(Config::MODULE_ID, 'sender-time-from-delline') ?? '',
-                    'time_to||time' => Option::get(Config::MODULE_ID, 'sender-time-to-delline') ?? '',
+                    'time_from||time||' . Loc::GetMessage("ADDFIELDS_TIME_FROM_DELLINE") => Option::get(Config::MODULE_ID, 'sender-time-from-delline') ?? '',
+                    'time_to||time||' . Loc::GetMessage("ADDFIELDS_TIME_TO_DELLINE") => Option::get(Config::MODULE_ID, 'sender-time-to-delline') ?? '',
                 ),
             );
         }
@@ -391,15 +390,15 @@ class ExportFileds {
 
             $result = array(
                 'sender'   => array(
-                    'requester||text'    => (Option::get(Config::MODULE_ID, 'sender-uid-kit'))??'',
+                    'requester||text||' . Loc::GetMessage("ADDFIELDS_REQUESTER_KIT")    => (Option::get(Config::MODULE_ID, 'sender-uid-kit'))??'',
                 ),
                 'receiver' => array(
                     'legal||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_KIT_1"),
                     'company||text' => '',
                 ),
                 'receiver[requisites]' => array(
-                    'inn||text' => '',
-                    'kpp||text' => '',
+                    'inn||text||' . Loc::GetMessage("ADDFIELDS_INN_KIT") => '',
+                    'kpp||text||' . Loc::GetMessage("ADDFIELDS_KPP_KIT") => '',
                     'unp||text' => '',
                     'bin||text' => '',
                 ),
@@ -460,12 +459,12 @@ class ExportFileds {
                     // поля документа (юрлицо/ИП) или реквизиты организации (физлицо); см.
                     // ESL_UNLOADING_VISIBILITY_RULES в admin.js.
                     'org_type||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM") ?? [], Option::get(Config::MODULE_ID, 'sender-org-type-pecom')),
-                    'type||select'    => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1") ?? [], Option::get(Config::MODULE_ID, 'sender-identity-type-pecom')),
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_PECOM_SENDER")    => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1") ?? [], Option::get(Config::MODULE_ID, 'sender-identity-type-pecom')),
                     'series||text' => Option::get(Config::MODULE_ID, 'sender-identity-series-pecom') ?? '',
                     'number||text' => Option::get(Config::MODULE_ID, 'sender-identity-number-pecom') ?? '',
-                    'date||date' => Option::get(Config::MODULE_ID, 'sender-identity-date-pecom') ?? '',
+                    'date||date||' . Loc::GetMessage("ADDFIELDS_DATE_PECOM") => Option::get(Config::MODULE_ID, 'sender-identity-date-pecom') ?? '',
                     'first_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-first-name-pecom') ?? '',
-                    'last_name||text' => Option::get(Config::MODULE_ID, 'sender-identity-last-name-pecom') ?? '',
+                    'last_name||text||' . Loc::GetMessage("ADDFIELDS_LAST_NAME_PECOM_SENDER") => Option::get(Config::MODULE_ID, 'sender-identity-last-name-pecom') ?? '',
                     'patronymic||text' => Option::get(Config::MODULE_ID, 'sender-identity-patronymic-pecom') ?? '',
                 ),
                 'sender[requisites]' => array(
@@ -478,14 +477,14 @@ class ExportFileds {
                 'receiver[identity]' => array(
                     // Тип получателя (юрлицо/ИП/физлицо) — как и у отправителя, определяет
                     // у МС видимость документа vs реквизитов организации.
-                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM") ?? [],
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_PECOM_RECEIVER") => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM") ?? [],
                     'document_type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_DOCUMENT_TYPE_PECOM") ?? [],
-                    'passport_series||text' => '',
-                    'passport_number||text' => '',
+                    'passport_series||text||' . Loc::GetMessage("ADDFIELDS_PASSPORT_SERIES_PECOM") => '',
+                    'passport_number||text||' . Loc::GetMessage("ADDFIELDS_PASSPORT_NUMBER_PECOM") => '',
                     'passport_date_of_issue||date' => '',
                 ),
                 'receiver[requisites]' => array(
-                    'inn||text' => '',
+                    'inn||text||' . Loc::GetMessage("ADDFIELDS_INN_PECOM_RECEIVER") => '',
                 ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-pecom') ?? '',
@@ -516,12 +515,16 @@ class ExportFileds {
                     'sender||hr' => ''
                 ),
                 'sender'   => array(
-                    'legal||text'    => Option::get(Config::MODULE_ID, 'sender-type-baikal'),
+                    // У МС это select (юрлицо/физлицо), а не текстовое поле — иначе на форме
+                    // выгрузки виден сырой код настройки ("1"/"2") вместо выпадающего списка.
+                    'legal||select||' . Loc::GetMessage("ADDFIELDS_LEGAL_BAIKAL")    => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_LEGAL_TYPE_BAIKAL"), Option::get(Config::MODULE_ID, 'sender-type-baikal')),
                     'email||text'    => Option::get(Config::MODULE_ID, 'sender-email-baikal'),
-                    'company||text'  => Option::get(Config::MODULE_ID, 'sender-company-baikal'),
+                    'company||text||' . Loc::GetMessage("ADDFIELDS_COMPANY_BAIKAL")  => Option::get(Config::MODULE_ID, 'sender-company-baikal'),
                 ),
                 'sender[identity]' => array(
-                    'type||text' => Option::get(Config::MODULE_ID, 'sender-org-form-baikal'),
+                    // Тот же список ОПФ, что и у получателя (ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1) —
+                    // по той же причине переведено из text в select.
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_BAIKAL_SENDER") => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"), Option::get(Config::MODULE_ID, 'sender-org-form-baikal')),
                     'series||text' => Option::get(Config::MODULE_ID, 'sender-identity-series-baikal'),
                     'number||text' => Option::get(Config::MODULE_ID, 'sender-identity-number-baikal'),
                 ),
@@ -532,13 +535,10 @@ class ExportFileds {
                 'hr2' => array(
                     'receiver||hr' => ''
                 ),
-                'receiver'   => array(
-                    'legal||select'    => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_LEGAL_BAIKAL_1"),
-                ),
                 'receiver[identity]' => array(
-                    'type||select' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"),
-                    'series||text' => '',
-                    'number||text' => '',
+                    'type||select||' . Loc::GetMessage("ADDFIELDS_TYPE_BAIKAL") => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"),
+                    'passport_series||text||' . Loc::GetMessage("ADDFIELDS_PASSPORT_SERIES_BAIKAL") => '',
+                    'passport_number||text||' . Loc::GetMessage("ADDFIELDS_PASSPORT_NUMBER_BAIKAL") => '',
                 ),
                 'receiver[requisites]' => array(
                     'inn||text' => '',
@@ -549,7 +549,7 @@ class ExportFileds {
                 ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-baikal') ?? '',
-                    'payer||select' => self::moveToFront(self::payerValues(), Option::get(Config::MODULE_ID, 'sender-payer-baikal')),
+                    'payer||select||' . Loc::GetMessage("ADDFIELDS_PAYER_BAIKAL") => self::moveToFront(self::payerValues(), Option::get(Config::MODULE_ID, 'sender-payer-baikal')),
                 ),
                 'delivery[location_from][pick_up_data]' => array(
                     'date||date' => $produce_date,
@@ -593,11 +593,11 @@ class ExportFileds {
             }
             $result = array(
                 'receiver' => array(
-                    'email||text' => ''
+                    'email||text||' . Loc::GetMessage("ADDFIELDS_EMAIL_RECEIVER") => ''
                 ),
                 'sender' => array(
                     'email||text' => Option::get(Config::MODULE_ID, 'sender-email-dpd') ?? '',
-                    'company||text' => Option::get(Config::MODULE_ID, 'sender-company-dpd') ?? '',
+                    'company||text||' . Loc::GetMessage("ADDFIELDS_COMPANY_DPD") => Option::get(Config::MODULE_ID, 'sender-company-dpd') ?? '',
                 ),
                 'order' => array(
                     'content||text' => Option::get(Config::MODULE_ID, 'order-content-dpd') ?? '',
@@ -605,7 +605,9 @@ class ExportFileds {
                 ),
                 'delivery' => array(
                     'produce_date||date' => $produce_date,
-                    'produce_time||text' => Option::get(Config::MODULE_ID, 'produce-time-interval-dpd') ?? '',
+                    // У МС это select с фиксированными интервалами, а не свободный текст —
+                    // иначе на форме выгрузки можно ввести значение, которое отклонит API.
+                    'produce_time||select' => self::moveToFront(Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_PRODUCE_TIME_DPD"), Option::get(Config::MODULE_ID, 'produce-time-interval-dpd')),
                     'tariff||select' => $tariffs,
                 ),
             );

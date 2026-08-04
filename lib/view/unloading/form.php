@@ -19,6 +19,16 @@ Loader::includeModule("sale");
 Loader::includeModule("eshoplogistic.delivery");
 IncludeModuleLangFile(__FILE__);
 
+// Ключ динамического поля кодируется как "name||type" либо "name||type||Подпись" (см.
+// exportfileds.php). Общая подпись ADDFIELDS_<name> одна на все ТК, а у МС одно и то же
+// имя поля подписывается по-разному в разных службах (например "type" — то "Тип
+// получателя", то "Тип заказа", то "Тип отправителя") — необязательный 3-й сегмент
+// переопределяет подпись для конкретной ТК, когда общей недостаточно.
+function eslFieldLabel(array $explodeKey, string $name): string
+{
+    return $explodeKey[2] ?? GetMessage("ADDFIELDS_" . $name);
+}
+
 global $USER;
 $moduleRight = $APPLICATION->GetGroupRight(Config::MODULE_ID);
 $saleRight   = $APPLICATION->GetGroupRight("sale");
@@ -373,7 +383,7 @@ echo $ID ?>"
             if ($type === 'text'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -382,7 +392,7 @@ echo $ID ?>"
             if ($type === 'date'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -391,7 +401,7 @@ echo $ID ?>"
             if ($type === 'time'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -401,7 +411,7 @@ echo $ID ?>"
                 ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td>
                         <label class="esl-toggle">
                             <input type="checkbox" name="<?php
@@ -417,7 +427,7 @@ echo $ID ?>"
             if ($type === 'select'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?>:
+                        echo eslFieldLabel($explodeKey, $name) ?>:
                     </td>
                     <td>
                         <select name="<?php
@@ -598,7 +608,7 @@ echo $ID ?>"
             if ($type === 'text'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -607,7 +617,7 @@ echo $ID ?>"
             if ($type === 'date'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -616,7 +626,7 @@ echo $ID ?>"
             if ($type === 'time'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -626,7 +636,7 @@ echo $ID ?>"
                 ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td>
                         <label class="esl-toggle">
                             <input type="checkbox" name="<?php
@@ -642,7 +652,7 @@ echo $ID ?>"
             if ($type === 'select'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?>:
+                        echo eslFieldLabel($explodeKey, $name) ?>:
                     </td>
                     <td>
                         <select name="<?php
@@ -694,7 +704,7 @@ echo $ID ?>"
                         ?>
                         <div class="esl-combine-places__field<?= $type === 'checkbox' ? ' esl-combine-places__field--checkbox' : '' ?>">
                             <label class="esl-combine-places__label" for="<?= $fieldId ?>"><?php
-                                echo GetMessage("ADDFIELDS_" . $name) ?></label>
+                                echo eslFieldLabel($explodeKey, $name) ?></label>
                             <?php if ($type === 'checkbox'): ?>
                                 <label class="esl-toggle">
                                     <input id="<?= $fieldId ?>" type="checkbox" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" <?php echo $value ?>>

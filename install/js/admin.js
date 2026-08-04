@@ -21,10 +21,41 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     { controller: 'sender[identity][org_type]', values: ['1', '2'], targets: ['sender[identity][type]', 'sender[identity][series]', 'sender[identity][number]', 'sender[identity][date]', 'sender[identity][first_name]', 'sender[identity][last_name]', 'sender[identity][patronymic]'] },
     { controller: 'sender[identity][org_type]', values: ['3'], targets: ['sender[requisites][name]', 'sender[requisites][inn]'] },
     // ПЭК: то же самое для получателя — юрлицо/ИП удостоверяется документом
-    // представителя, физлицо — только ИНН.
-    { controller: 'receiver[identity][type]', values: ['1', '2'], targets: ['receiver[identity][document_type]', 'receiver[identity][passport_series]', 'receiver[identity][passport_number]', 'receiver[identity][passport_date_of_issue]', 'receiver[last_name]'] },
-    { controller: 'receiver[identity][type]', values: ['3'], targets: ['receiver[requisites][inn]'] }
+    // представителя, физлицо — только ИНН. Поле "receiver[identity][type]" под тем же
+    // именем есть и у Байкал Сервиса (см. exportfileds.php), но с другим словарём
+    // значений (1/5/9/12 — форма организации, а не юрлицо/ИП/физлицо) — без привязки к
+    // carrier это правило гасило Байкалу ИНН получателя при значении '1' ("Физическое
+    // лицо" в словаре Байкала, но не входит в список ['1','2'] с точки зрения ПЭК).
+    { controller: 'receiver[identity][type]', values: ['1', '2'], targets: ['receiver[identity][document_type]', 'receiver[identity][passport_series]', 'receiver[identity][passport_number]', 'receiver[identity][passport_date_of_issue]', 'receiver[last_name]'], carrier: 'pecom' },
+    { controller: 'receiver[identity][type]', values: ['3'], targets: ['receiver[requisites][inn]'], carrier: 'pecom' },
+    // Байкал Сервис: тот же контроллер "receiver[identity][type]", но значения — код
+    // организационно-правовой формы получателя (1=физ.лицо, 5=ООО, 9=ИП, 12=АО, см.
+    // ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1). Портировано из ExportFileds.php МойСклад
+    // (displayForm/displayFormInitVisible): паспорт нужен только физлицу, ИНН — только
+    // организациям/ИП, а КПП — только настоящим юрлицам (у ИП, как и у физлица, КПП по
+    // закону не бывает).
+    { controller: 'receiver[identity][type]', values: ['1'], targets: ['receiver[identity][passport_series]', 'receiver[identity][passport_number]'], carrier: 'baikal' },
+    { controller: 'receiver[identity][type]', values: ['5', '9', '12'], targets: ['receiver[requisites][inn]'], carrier: 'baikal' },
+    { controller: 'receiver[identity][type]', values: ['5', '12'], targets: ['receiver[requisites][kpp]'], carrier: 'baikal' },
+    // Байкал Сервис: то же самое для отправителя — "sender[legal]" (1=юрлицо,
+    // 2=физлицо, см. ESHOP_LOGISTIC_HELPERS_LEGAL_TYPE_BAIKAL) определяет, нужна ли
+    // организационно-правовая форма + реквизиты организации (юрлицо), или серия/номер
+    // документа (физлицо). Портировано из ExportFileds.php МойСклад так же, как и
+    // получательский блок выше — оба поля были переведены из text в select в этом же
+    // разделе, но правила видимости для них тогда не завели.
+    { controller: 'sender[legal]', values: ['1'], targets: ['sender[identity][type]', 'sender[requisites][inn]', 'sender[requisites][kpp]'], carrier: 'baikal' },
+    { controller: 'sender[legal]', values: ['2'], targets: ['sender[identity][series]', 'sender[identity][number]'], carrier: 'baikal' }
 ];
+
+// Значение скрытого поля "delivery_id" (см. lib/view/unloading/form.php) — код текущей
+// ТК формы. Правило с rule.carrier применяется только на форме этой ТК: несколько служб
+// используют одинаковые имена полей ("receiver[identity][type]" и у ПЭК, и у Байкал
+// Сервиса) с разными словарями значений — без этой проверки правило одной ТК может
+// перезаписать видимость одноимённого, но не связанного с ним поля другой.
+function eslUnloadingCurrentCarrier() {
+    var el = document.getElementsByName('delivery_id')[0];
+    return el ? el.value : null;
+}
 
 function eslUnloadingControllerValue(el) {
     if (!el) {
@@ -34,7 +65,11 @@ function eslUnloadingControllerValue(el) {
 }
 
 function eslUnloadingApplyVisibilityRules() {
+    var currentCarrier = eslUnloadingCurrentCarrier();
     ESL_UNLOADING_VISIBILITY_RULES.forEach(function (rule) {
+        if (rule.carrier && rule.carrier !== currentCarrier) {
+            return;
+        }
         var controller = document.getElementsByName(rule.controller)[0];
         if (!controller) {
             return;
