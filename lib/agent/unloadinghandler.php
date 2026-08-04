@@ -24,7 +24,10 @@ class UnloadingHandler
     {
         global $CModule;
         if(!\CModule::IncludeModule("sale"))
-            return false;
+            // Возврат false/'' здесь заставил бы ядро Bitrix удалить агента из b_agent
+            // насовсем (см. classes/general/agent.php: $eval_result == '' -> DELETE).
+            // Возвращаем строку переустановки, чтобы агент повторил попытку на следующем запуске.
+            return "Eshoplogistic\Delivery\Agent\UnloadingHandler::update();";
 
         $statusEnd = Option::get(Config::MODULE_ID, 'cron-status-unloading');
         $filter = [

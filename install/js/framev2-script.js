@@ -6,6 +6,11 @@ let button_click = false
 let add_frame_esl
 let servicesLoad = false
 let eslAddressChanged = false
+// eslRun() может вызываться повторно на каждый onAjaxSuccess, пока global_check не
+// станет true (виджет ещё не отрисовал свои поля) — без этого флага каждый такой вызов
+// навешивал бы ещё одну копию обработчика onAjaxSuccess внутри eslRun(), и калькулятор
+// доставки пересчитывался бы N раз на одно и то же AJAX-обновление чекаута.
+let eslRunAjaxSuccessBound = false
 
 function init_popup(){
     button_click = true
@@ -247,6 +252,11 @@ function isNumeric(value) {
     }
 
     function eslRun() {
+        if (eslRunAjaxSuccessBound) {
+            return
+        }
+        eslRunAjaxSuccessBound = true
+
         const delivery = document.querySelector('input[name=DELIVERY_ID]')
         esl.run()
 
