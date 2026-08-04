@@ -169,6 +169,13 @@ class Unloading
         $export = new Export();
         $result = $export->sendExport($defaultParamsCreate);
 
+        if (empty($result)) {
+            // Client::request() возвращает null при сетевом сбое или невалидном/пустом
+            // ответе API (например, из-за неверного ключа) — без этого такой результат
+            // молча принимался за успех выгрузки заказа перевозчику.
+            $result = ['errors' => ['request' => 'Empty or invalid API response']];
+        }
+
         if (!isset($result['errors'])) {
             if(!isset($data['order_id']))
                 return false;

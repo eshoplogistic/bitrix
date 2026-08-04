@@ -45,8 +45,9 @@ class Site
             $params = array();
             $response = $httpClient->request($httpMethod, $params);
 
+            $isSuccess = !empty($response['success']) || (isset($response['http_status']) && $response['http_status'] == 200);
             $result = array(
-                'success'   => $response['http_status_message'],
+                'success'   => $isSuccess,
                 'blocked'   => $response['data']['blocked'] ?? 0,
                 'free_days' => $response['data']['free_days'] ?? 0,
                 'balance'   => $response['data']['balance'] ?? 0,

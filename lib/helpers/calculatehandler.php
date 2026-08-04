@@ -114,7 +114,7 @@ class CalculateHandler
 
         unset($deliveryProfileData['data']['terminals']);
 
-        if (isset($deliveryProfileData['success']) || (isset($deliveryProfileData['http_status']) && $deliveryProfileData['http_status'] == 200)) {
+        if (!empty($deliveryProfileData['success']) || (isset($deliveryProfileData['http_status']) && $deliveryProfileData['http_status'] == 200)) {
             if (empty($deliveryProfileData['data'][$type])) {
                 $result->addError(new \Bitrix\Main\Error($configClass->dataError));
             }

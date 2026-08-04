@@ -878,6 +878,10 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 	if($request->isPost() && check_bitrix_sessid() && $LOG_ELEMUPD_RIGHT>="W"){
 
 		Cache::clearCache(true, $cacheDir);
+		// Кроме файлового кэша (статус авторизации, город отправления) чистим ещё и
+		// managed-кэш результатов расчёта доставки (см. Api\Delivery::getLocationDeliveryData) —
+		// иначе после исправления ключа покупатели ещё до часа получали бы старую ошибку расчёта.
+		\Bitrix\Main\Application::getInstance()->getManagedCache()->cleanDir($cacheDir);
 
 		foreach($aTabs as $aTab){
 
