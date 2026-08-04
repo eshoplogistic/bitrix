@@ -181,7 +181,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'yandex' => array(
             array(
                 "platform_id-yandex",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_YANDEX_HINT")),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_YANDEX") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_YANDEX_HINT")),
                 "",
                 array("text")
             ),
@@ -189,7 +189,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         'fivepost' => array(
             array(
                 "platform_id-fivepost",
-                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_FIVEPOST_HINT")),
+                Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_FIVEPOST") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_PLATFORM_ID_FIVEPOST_HINT")),
                 "",
                 array("text")
             ),
