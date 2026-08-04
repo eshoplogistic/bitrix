@@ -49,10 +49,13 @@ class Client
             $apiParams = $APPLICATION->ConvertCharsetArray($apiParams, SITE_CHARSET, 'utf-8');
         }
 
-        $this->httpClient->query($httpMethod, $this->url, $apiParams);
+        $querySuccess = $this->httpClient->query($httpMethod, $this->url, $apiParams);
         $httpResult = $this->httpClient->getResult();
 
-        if (!$httpResult) {
+        if (!$querySuccess) {
+            // Повторяем запрос только при настоящем сетевом сбое (query() вернул false).
+            // Раньше проверялось !$httpResult, из-за чего валидный, но пустой/"0" ответ
+            // сервера трактовался как ошибка и запрос (в т.ч. создание отправления у ТК) дублировался.
             $httpResult = $this->alternativeCurlPost($this->url, $apiParams);
         }
 
