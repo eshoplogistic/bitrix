@@ -671,6 +671,12 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 					array("checkbox")
 				),
                 array(
+                    'note' => '<div style="text-align:center;"><a class="esl-toolbar-btn esl-toolbar-btn--accent" style="display:inline-block;text-decoration:none;" href="/bitrix/admin/event_log.php?find_module_id=' . urlencode(Config::MODULE_ID) . '&lang=' . LANGUAGE_ID . '" target="_blank" rel="noopener">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OPEN_EVENT_LOG")) . '</a></div>'
+                ),
+                array(
+                    'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_LOG_DESC")
+                ),
+                array(
                     "api_payment_check",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CHECK"),
                     "",

@@ -3,7 +3,6 @@ namespace Eshoplogistic\Delivery;
 
 use \Bitrix\Main\Localization\Loc,
 	\Bitrix\Main\Config\Option;
-use Logger;
 
 Loc::loadMessages(__FILE__);
 

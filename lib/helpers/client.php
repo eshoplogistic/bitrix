@@ -4,7 +4,8 @@ namespace Eshoplogistic\Delivery\Helpers;
 
 use \Bitrix\Main\Config\Option,
     \Bitrix\Main\Web\HttpClient,
-    \Eshoplogistic\Delivery\Config;
+    \Eshoplogistic\Delivery\Config,
+    \Eshoplogistic\Delivery\Logger\Logger;
 
 /** eShopLogistic
  * Class Client
@@ -60,7 +61,7 @@ class Client
         }
 
         if($this->log == 'Y')
-            $this->eslWriteLog($httpResult, $this->url, $apiParams);
+            $this->eslWriteLog($httpResult, $this->url, $apiParams, $querySuccess);
 
         $result = json_decode($httpResult);
         if ($result)
@@ -83,43 +84,30 @@ class Client
         return $result;
     }
 
-    public function eslWriteLog($log, $url, $params)
+    public function eslWriteLog($log, $url, $params, $querySuccess = true)
     {
         if(isset($params['target']))
             return false;
 
-        $d = date("j-M-Y H:i:s e");
-        $header = ' ####################### ';
-
-        $path = \Bitrix\Main\Application::getDocumentRoot() . '/bitrix/tmp/eshoplogistic/esl.log';
-        \CheckDirPath($path);
-
-        $htaccess = dirname($path) . '/.htaccess';
-        if (!file_exists($htaccess)) {
-            file_put_contents($htaccess, "Deny from All");
-        }
-
-        if (file_exists($path)) {
-            $size = filesize($path);
-            $sizeMb = round($size / 1024 / 1024, 2);
-            if ($sizeMb > 10) {
-                file_put_contents($path, '');
-            }
-        }
-
         $sanitizedParams = $params;
         unset($sanitizedParams['key'], $sanitizedParams['partner_key']);
 
-        if (is_array($log) || is_object($log) || $log = json_decode($log, true)) {
-            $logRecord = [
-                'request'  => $sanitizedParams,
-                'response' => $log,
-            ];
-            error_log($header . $d . $header . print_r($logRecord, true), 3, $path);
+        if (is_array($log) || is_object($log)) {
+            $response = $log;
         } else {
-            error_log($header . $d . $header . $log, 3, $path);
+            $decoded = json_decode($log, true);
+            $response = $decoded !== null ? $decoded : $log;
         }
 
+        $description = $url . '<br>'
+            . 'Запрос:<br>' . Logger::pretty($sanitizedParams) . '<br>'
+            . 'Ответ:<br>' . Logger::pretty($response);
+
+        if ($querySuccess) {
+            Logger::log('API_REQUEST', $description);
+        } else {
+            Logger::error('API_ERROR', $description);
+        }
     }
 
 }

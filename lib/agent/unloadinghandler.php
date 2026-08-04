@@ -91,10 +91,11 @@ class UnloadingHandler
                 $result['unloading'] = $status;
             }
 
-            if (class_exists('\Eshoplogistic\Delivery\Logger\Logger')) {
-                $logger = new Logger('unloading-cron');
-                $logger->log($result);
-            }
+            $severity = (isset($status['http_status']) && $status['http_status'] === 422)
+                ? \CEventLog::SEVERITY_ERROR
+                : \CEventLog::SEVERITY_INFO;
+            $description = 'Заказ #' . $orderId . '<br>' . Logger::pretty($result);
+            Logger::log('UNLOADING_CRON', $description, $severity, $orderId);
 
         }
 

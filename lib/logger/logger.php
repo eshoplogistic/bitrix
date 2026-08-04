@@ -1,89 +1,78 @@
 <?php
 namespace Eshoplogistic\Delivery\Logger;
 
-/** Class for custom log
- *  * Example
-$logger = new Logger('test', '*test');
-$logger->log($message);
- */
+use Bitrix\Main\Config\Option;
+use Eshoplogistic\Delivery\Config;
 
+/** Логирование модуля поверх стандартного журнала событий Bitrix (b_event_log).
+ * Пишет через CEventLog::Add, поэтому записи видны в админке без доступа
+ * к файловой системе: Настройки -> Инструменты -> Журнал событий,
+ * фильтр "Модуль" = eshoplogistic.delivery.
+ *
+ * Class Logger
+ * @package Eshoplogistic\Delivery\Logger
+ */
 class Logger
 {
-    public static $PATH = __DIR__;
-    protected static $loggers=array();
-
-    protected $name;
-    protected $file;
-    protected $fp;
-    protected $fullPath;
-
-    public function __construct($name=null, $file=null){
-        $this->name=$name;
-        $this->file=$file;
-
-        $this->open();
+    public static function isEnabled(): bool
+    {
+        return Option::get(Config::MODULE_ID, 'api_log') === 'Y';
     }
 
-    public function open(){
-        if(self::$PATH==null){
-            return ;
+    /**
+     * @param string $auditType короткий код источника записи, например 'API_REQUEST'
+     * @param mixed $description строка либо массив/объект (будет сохранён как JSON)
+     * @param string $severity одна из \CEventLog::SEVERITY_*
+     * @param int|string|false $itemId например ID заказа, к которому относится запись
+     */
+    public static function log(string $auditType, $description, string $severity = \CEventLog::SEVERITY_INFO, $itemId = false): void
+    {
+        if (!self::isEnabled()) {
+            return;
         }
 
-        $this->fullPath = $this->file==null ? self::$PATH.'/'.$this->name.'.log' : self::$PATH.'/'.$this->file;
-        $this->fp=fopen($this->fullPath,'a+');
+        \CEventLog::Add([
+            'SEVERITY' => $severity,
+            'AUDIT_TYPE_ID' => $auditType,
+            'MODULE_ID' => Config::MODULE_ID,
+            'ITEM_ID' => $itemId,
+            'DESCRIPTION' => $description,
+        ]);
     }
 
-    public static function getLogger($name='root',$file=null){
-        if(!isset(self::$loggers[$name])){
-            self::$loggers[$name]=new Logger($name, $file);
-        }
-
-        return self::$loggers[$name];
+    /**
+     * @param string $auditType
+     * @param mixed $description
+     * @param int|string|false $itemId
+     */
+    public static function error(string $auditType, $description, $itemId = false): void
+    {
+        self::log($auditType, $description, \CEventLog::SEVERITY_ERROR, $itemId);
     }
 
-    public function log($message){
-        if(!is_string($message)){
-            $this->logPrint($message);
+    /** Форматирует данные для читаемого отображения в списке "Журнал событий".
+     * Массивы/объекты выводятся как JSON с отступами.
+     *
+     * Список сам прогоняет DESCRIPTION через htmlspecialchars и затем вручную
+     * "распаковывает" обратно ТОЛЬКО тег <br> (см. bitrix/modules/main/admin/
+     * event_log.php — там явный regex именно и только под него). Поэтому здесь
+     * нельзя ни экранировать текст самим (будет задвоение), ни использовать
+     * любую разметку кроме <br>: переносы строк заменяем на него, а отступы —
+     * на настоящий символ неразрывного пробела (U+00A0), а не HTML-сущность
+     * &nbsp;, которая точно так же "не переживёт" вывод, как любой другой тег.
+     *
+     * @param mixed $data
+     */
+    public static function pretty($data): string
+    {
+        $text = is_string($data)
+            ? $data
+            : json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-            return ;
-        }
+        $text = preg_replace_callback('/^ +/m', static function ($m) {
+            return str_repeat("\xC2\xA0", strlen($m[0]));
+        }, $text);
 
-        $log='';
-
-        $log.='['.date('D M d H:i:s Y',time()).'] ';
-        if(func_num_args()>1){
-            $params=func_get_args();
-
-            $message=call_user_func_array('sprintf',$params);
-        }
-
-        $log.=$message;
-        $log.="\n";
-
-        $this->_write($log);
-    }
-
-    public function logPrint($obj){
-        ob_start();
-
-        print_r($obj);
-
-        $ob=ob_get_clean();
-        $this->log($ob);
-    }
-
-    protected function _write($string){
-        if (file_exists($this->fullPath)) {
-            $size = filesize($this->fullPath);
-            $sizeMb = round($size / 1024 / 1024, 2);
-            if($sizeMb > 10){
-                file_put_contents($this->fullPath, '');
-            }
-        }
-        fwrite($this->fp, $string);
-    }
-
-    public function __destruct(){
-        fclose($this->fp);
+        return str_replace("\n", '<br>', $text);
     }
 }
