@@ -146,7 +146,8 @@ class AjaxHandler extends Controller
      * @return mixed
      */
     private static function getProfileClassByCode($profileCode) {
-        $profileCode = array_pop(explode(':', $profileCode));
+        $profileCodeParts = explode(':', $profileCode);
+        $profileCode = end($profileCodeParts);
         $config = new Config();
         $classList = $config->profileClasses;
         return $classList[$profileCode];

@@ -222,6 +222,22 @@ Class eshoplogistic_delivery extends CModule
 			'saleOrderBeforeSaved'
 		);
 
+		$eventManager->unRegisterEventHandler(
+			'sale',
+			'OnOrderNewSendEmail',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
+			'saleOrderPropertyMail'
+		);
+
+		$eventManager->unRegisterEventHandler(
+			'main',
+			'OnAdminContextMenuShow',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\Unloading',
+			'OrderDetailAdminContextMenuShow'
+		);
+
 		return true;
 	}
 

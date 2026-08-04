@@ -186,64 +186,46 @@ class ComponentOrder
 
 			if ($delivery = $rsDelivery->fetch()) {
 				$isDeliveryHasPvz = self::isDeliveryHasPvz($delivery['CODE']);
-				if ($isDeliveryHasPvz) {
+				$choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
+				$shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
 
+				$neededCodes = array();
+				if ($isDeliveryHasPvz) $neededCodes[] = "ESHOPLOGISTIC_PVZ";
+				if ($choseFrame) $neededCodes[] = "ESHOPLOGISTIC_CHOSE_FRAME";
+				if ($shipMethod) $neededCodes[] = "ESHOPLOGISTIC_SHIPPING_METHODS";
+
+				if ($neededCodes) {
+					// Один запрос вместо трёх последовательных CSaleOrderProps::GetList
 					$db_props = \CSaleOrderProps::GetList(
 						array(),
 						array(
 							"PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-							"CODE" => "ESHOPLOGISTIC_PVZ",
+							"CODE" => $neededCodes,
 						),
 						false,
 						false,
-						array('ID')
+						array('ID', 'CODE')
 					);
 
-					if ($props = $db_props->Fetch()) {
-						$pvz = $request->getPost('ESHOPLOGISTIC_PVZ');
-						if ($pvz)
-							$arUserResult['ORDER_PROP'][$props['ID']] = $pvz;
+					$propIdByCode = array();
+					while ($props = $db_props->Fetch()) {
+						$propIdByCode[$props['CODE']] = $props['ID'];
 					}
 
+					if ($isDeliveryHasPvz && isset($propIdByCode['ESHOPLOGISTIC_PVZ'])) {
+						$pvz = $request->getPost('ESHOPLOGISTIC_PVZ');
+						if ($pvz)
+							$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_PVZ']] = $pvz;
+					}
+
+					if ($choseFrame && isset($propIdByCode['ESHOPLOGISTIC_CHOSE_FRAME'])) {
+						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_CHOSE_FRAME']] = $choseFrame;
+					}
+
+					if ($shipMethod && isset($propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS'])) {
+						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS']] = $shipMethod;
+					}
 				}
-
-                if($request->getPost('ESHOPLOGISTIC_CHOSE_FRAME')){
-                    $choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
-                    $db_props = \CSaleOrderProps::GetList(
-                        array(),
-                        array(
-                            "PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-                            "CODE" => "ESHOPLOGISTIC_CHOSE_FRAME",
-                        ),
-                        false,
-                        false,
-                        array('ID')
-                    );
-
-                    if ($props = $db_props->Fetch()) {
-                        if ($choseFrame)
-                            $arUserResult['ORDER_PROP'][$props['ID']] = $choseFrame;
-                    }
-                }
-
-                if($request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS')){
-                    $shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
-                    $db_props = \CSaleOrderProps::GetList(
-                        array(),
-                        array(
-                            "PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-                            "CODE" => "ESHOPLOGISTIC_SHIPPING_METHODS",
-                        ),
-                        false,
-                        false,
-                        array('ID')
-                    );
-
-                    if ($props = $db_props->Fetch()) {
-                        if ($shipMethod)
-                            $arUserResult['ORDER_PROP'][$props['ID']] = $shipMethod;
-                    }
-                }
 
 			}
 		}
