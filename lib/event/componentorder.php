@@ -33,6 +33,36 @@ class ComponentOrder
 	 */
 	public static function orderDeliveryBuildList(&$arResult, &$arUserResult, $arParams)
 	{
+		if (!isset($arResult['DELIVERY']) || !is_array($arResult['DELIVERY'])) {
+			return;
+		}
+
+		// Неотмеченные методы доставки Bitrix по умолчанию не пересчитывает (это происходит
+		// только для CHECKED-элемента или по AJAX после выбора), поэтому проверки на
+		// CALCULATE_ERRORS/cityNotFound ниже их не касаются — карточки конкретных ТК
+		// (СДЕК, Байкал Сервис и т.п.) остаются в списке даже при полностью нерабочем ключе.
+		// Поэтому дополнительно один раз проверяем статус авторизации (кэшируется на час,
+		// см. Api\Site::getAuthStatus) и, если ключ не авторизован, убираем из чекаута все
+		// профили eShopLogistic целиком, независимо от режима отображения и того, отмечен
+		// ли метод.
+		$authStatus = (new \Eshoplogistic\Delivery\Api\Site())->getAuthStatus();
+		if (empty($authStatus['success'])) {
+			$rsDelivery = Delivery\Services\Table::getList(array(
+				'filter' => array('ACTIVE' => 'Y', '=CODE' => Config::DELIVERY_CODE),
+				'select' => array('ID')
+			));
+			while ($delivery = $rsDelivery->fetch()) {
+				$rsProfile = Delivery\Services\Table::getList(array(
+					'filter' => array('PARENT_ID' => $delivery['ID']),
+					'select' => array('ID')
+				));
+				while ($profile = $rsProfile->fetch()) {
+					unset($arResult['DELIVERY'][$profile['ID']]);
+				}
+			}
+			return;
+		}
+
 		if (Option::get(Config::MODULE_ID, 'frame_lib')) {
             \CUtil::InitJSCore(array('framev2_lib'));
 			$arResult['DELIVERY'] = self::orderDeliveryBuildListFrame($arResult, $arUserResult);
@@ -107,6 +137,14 @@ class ComponentOrder
 						isset($arResult['DELIVERY'][$profile['ID']]) &&
 						$arResult['DELIVERY'][$profile['ID']]['CHECKED'] == 'Y') {
 
+						if (isset($arResult['DELIVERY'][$profile['ID']]['CALCULATE_ERRORS'])) {
+							// Расчёт стоимости не удался (в т.ч. из-за ошибки/невалидного API-ключа):
+							// PRICE у Bitrix не задан, а null == 0.0 — из-за этого ниже включался
+							// "price_empty" и покупатель видел фиктивное "бесплатно" вместо ошибки.
+							// Вместо этого просто убираем метод доставки из списка на чекауте.
+							unset($arResult['DELIVERY'][$profile['ID']]);
+							continue;
+						}
 
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($profile['CODE']);
 
@@ -530,6 +568,15 @@ class ComponentOrder
 			: '';
 
         $cityNotFound = empty($cityFirst);
+
+        if ($cityNotFound) {
+            // Город не удалось определить — это происходит и когда сломан/неверен API-ключ
+            // (LocationHandler ходит в eShopLogistic API). Раньше в этом случае метод доставки
+            // всё равно оставался в списке выбранным, с виджетом-заглушкой и ценой по умолчанию
+            // 0 → "бесплатно", что вводит покупателя в заблуждение. Вместо этого просто не
+            // показываем метод доставки в чекауте, пока город не определится.
+            return $arResult['DELIVERY'];
+        }
 
 		$deliveryResult['DESCRIPTION'] =
 			'<div class="eslog-deliverey-desc">' . $descriptionTerminal . '</div>' .
