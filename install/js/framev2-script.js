@@ -92,11 +92,6 @@ function isNumeric(value) {
             esldata_payments_id: 'widgetPaymentEsl',
             esl_button_id: 'container_widget_esl_button',
         },
-        type_delivery_default: {
-            terminal: 'pickup',
-            postrf: 'post',
-            door: 'todoor',
-        },
         current: {payment_id: null, delivery_id: null},
         widget_offers: '',
         widget_city: {name: null, type: null, fias: null, services: {}},
@@ -112,18 +107,13 @@ function isNumeric(value) {
 
             const esldata = document.getElementById(this.items.esldata_field_id)
             const current_payment = document.querySelector('input[name=PAY_SYSTEM_ID]:checked')
-            if(window.esldata_value && esldata == null){
+            if (esldata) {
+                this.esldata_value = esldata.value
+                window.esldata_value = esldata.value
+            } else if (window.esldata_value) {
                 this.esldata_value = window.esldata_value
-            }
-            else if (window.esldata_value && esldata){
-                this.esldata_value = esldata.value
-                window.esldata_value = esldata.value
-            }
-            else if (esldata == null) {
+            } else {
                 check = false
-            }else{
-                this.esldata_value = esldata.value
-                window.esldata_value = esldata.value
             }
             if (!current_payment) {
                 check = false
@@ -212,7 +202,7 @@ function isNumeric(value) {
         confirm: async function (response) {
             //document.getElementById('widgetDeliveriesEsl').value = ''
             let deliveryMethods = {};
-            esldata = {
+            let esldata = {
                 price: 0,
                 time: '',
                 name: response.service.name,
@@ -266,21 +256,19 @@ function isNumeric(value) {
                 info.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_PVZ')+': ' + response.address
             }
 
-            let addressRequar =  document.getElementById('eslogic-address-requar');
-            if (typeof(addressRequar) != 'undefined' && addressRequar != null)
-            {
-                if(addressRequar.value && addressRequar.value !== '0'){
-                    let locationFields = document.getElementById('eslogic-location-fields');
-                    let locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(s => s.trim()) : [];
-                    const addressRequarArr = addressRequar.value.split(',')
-                    addressRequarArr.forEach((val) => {
-                        val = val.trim();
-                        if (locationIds.indexOf(val) !== -1) return;
-                        if (typeof(document.querySelector('[name=ORDER_PROP_'+val+']')) != 'undefined' && document.querySelector('[name=ORDER_PROP_'+val+']') != null){
-                            document.querySelector('[name=ORDER_PROP_'+val+']').value = response.address;
-                        }
-                    })
-                }
+            let addressRequar = document.getElementById('eslogic-address-requar');
+            if (addressRequar && addressRequar.value && addressRequar.value !== '0') {
+                let locationFields = document.getElementById('eslogic-location-fields');
+                let locationIds = (locationFields && locationFields.value) ? locationFields.value.split(',').map(s => s.trim()) : [];
+                const addressRequarArr = addressRequar.value.split(',')
+                addressRequarArr.forEach((val) => {
+                    val = val.trim();
+                    if (locationIds.indexOf(val) !== -1) return;
+                    let field = document.querySelector('[name=ORDER_PROP_'+val+']');
+                    if (field) {
+                        field.value = response.address;
+                    }
+                })
             }
         },
         error: function (response) {
@@ -383,7 +371,11 @@ function isNumeric(value) {
                 ]
             });
         }
-        $('.container_widget_esl_button').click(function () {
+        // Делегируем на document с namespace вместо прямого $(...).click(): блок доставки
+        // пересобирается на каждый AJAX-рефреш чекаута (см. комментарий у eslStartWidgetWatchdog),
+        // а initWidgetPopup() вызывается на каждый onAjaxSuccess — прямой bind на сам узел кнопки
+        // накапливал бы по новому обработчику на каждый такой вызов.
+        $(document).off('click.eslWidgetButton').on('click.eslWidgetButton', '.container_widget_esl_button', function () {
             first_load = true
             add_frame_esl.show();
         });
@@ -706,7 +698,7 @@ BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
                 url: BX.Sale.OrderAjaxComponent.ajaxUrl,
                 data: data,
                 onsuccess: BX.delegate(function (result) {
-                    result.order.TOTAL.DELIVERY_PRICE_FORMATED = resultEsl.price + ' &#8381';
+                    result.order.TOTAL.DELIVERY_PRICE_FORMATED = resultEsl.price + ' &#8381;';
                     result.order.TOTAL.DELIVERY_PRICE = resultEsl.price;
                     result.order.TOTAL.ORDER_TOTAL_PRICE_FORMATED = formatPriceWithSpace(result.order.TOTAL.ORDER_PRICE + resultEsl.price) +" &#8381;"
                     // Форматирование цены с пробелом между тысячами
