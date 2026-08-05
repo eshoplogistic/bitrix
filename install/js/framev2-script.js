@@ -54,14 +54,14 @@ function eslStartWidgetWatchdog() {
         }
     }
 
-    widgetWatchdogTimer = setTimeout(function () { fire(10) }, 15000)
+    widgetWatchdogTimer = setTimeout(function () { fire(10) }, 30000)
 }
 
 // Не полагаемся на 'DOMContentLoaded' ниже по файлу: если этот скрипт подгружается уже
 // после того, как это событие произошло (например, блок доставки перерисован по AJAX),
 // слушатель 'DOMContentLoaded' никогда не сработает — событие задним числом не вызывается.
 // Поэтому вотчдог стартует сам по себе, независимо от остального кода файла и порядка
-// загрузки: как только контейнер виджета появляется в DOM — запускаем 15-секундный отсчёт.
+// загрузки: как только контейнер виджета появляется в DOM — запускаем 30-секундный отсчёт.
 ;(function eslWaitForWidgetContainer() {
     if (document.getElementById('eShopLogisticWidgetCart')) {
         eslStartWidgetWatchdog()
@@ -401,7 +401,7 @@ function isNumeric(value) {
         // странице (смена оплаты, купон и т.п.), а не только на действия виджета. Если
         // виджет уже успешно отработал (servicesLoad === true), нельзя сбрасывать этот
         // флаг и перезапускать вотчдог заново — иначе первое же постороннее AJAX-действие
-        // после успешной загрузки виджета ошибочно покажет ошибку через 15 секунд.
+        // после успешной загрузки виджета ошибочно покажет ошибку через 30 секунд.
         if (!servicesLoad && document.getElementById('eShopLogisticWidgetCart')) {
             eslClearWidgetError()
             eslStartWidgetWatchdog()
