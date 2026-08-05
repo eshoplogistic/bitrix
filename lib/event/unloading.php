@@ -327,6 +327,7 @@ class Unloading
                 'action' => 'get',
                 'order_id' => $orderId,
                 'service' => $service,
+                'fake' => Config::API_FAKE_MODE,
             ));
 
             $hasError = isset($resultGet['errors']) || !empty($resultGet['data']['state']['errors']);
@@ -373,6 +374,9 @@ class Unloading
             'action' => 'create', //Значение: create
             'cms' => 'bitrix',
             'service' => $deliveryId,
+            // Тестовый режим — см. Config::API_FAKE_MODE (портировано из МойСклад,
+            // AppConfig->appFake): API сам подменяет ответ, не обращаясь к реальной ТК.
+            'fake' => Config::API_FAKE_MODE,
             'order' => array(
                 'id' => $data['order_id'], //Идентификатор заказа на сайте.
                 'comment' => $data['comment'],
@@ -567,7 +571,8 @@ class Unloading
         $data = array(
             'action' => 'get',
             'order_id' => $id,
-            'service' => $nameCurrectDelivery
+            'service' => $nameCurrectDelivery,
+            'fake' => Config::API_FAKE_MODE,
         );
         $export = new Export();
         $result = $export->sendExport($data);

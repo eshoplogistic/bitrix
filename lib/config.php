@@ -20,6 +20,12 @@ class Config
 	const CACHE_DIR = 'eshoplogistic';
 	const API_UNLOADIG = 'https://api.esplc.ru/';
 	const PARTNER_KEY = '264a7a5d5882787.70413622';
+	// Тестовый режим выгрузки заказов (портировано из МойСклад, AppConfig->appFake) —
+	// API eShopLogistic подменяет ответ вместо реального обращения к ТК. Меняется вручную
+	// в коде (не в админке — только для разработчика), не забыть вернуть 0 после теста.
+	// 0 - выключено (реальная отправка), 1 - фейковый успех (200),
+	// 2 - фейковая ошибка валидации (422), 3 - фейковая ошибка выгрузки
+	const API_FAKE_MODE = 0;
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;
