@@ -180,21 +180,43 @@ function ajaxFormEsl(obForm, link) {
                 alert(`Ошибка ${xhr.status}: ${xhr.statusText}`);
             } else {
                 const json = JSON.parse(xhr.responseText);
-                const isSuccess = json.status === 'success' || json.success === true;
+                // Bitrix оборачивает ЛЮБОЙ return экшна в {status:"success", data:<результат>},
+                // если сам контроллер не вызвал addError() — а unloadingFormAction() для бизнес-
+                // ошибок (отказ API в выгрузке) просто возвращает ['success'=>false,'errors'=>...],
+                // не вызывая addError(). Поэтому json.status тут ВСЕГДА "success", даже когда
+                // выгрузка реально не удалась — проверять нужно вложенный json.data.success.
+                // json.status !== 'success' остаётся для framework-уровня (нет доступа, неверный
+                // csrf-токен и т.п. — там ошибки лежат в json.errors, а не в json.data).
+                const payload = json.data || {};
+                const isSuccess = json.status === 'success' && payload.success === true;
 
                 if (!isSuccess) {
-                    let errorStr = '';
-                    let errorList = getPropVal(json.errors);
+                    let errorList = getPropVal(json.status === 'success' ? payload.errors : json.errors);
 
-                    for (let val in errorList){
-                        errorStr += '<p>'+errorList[val]+'</p>';
+                    // Общее текстовое описание сбоя запроса от API (например "Данные не
+                    // получены") — отдельно от errors (поле-специфичных ошибок), показываем
+                    // заголовком блока, если оно есть и не дублирует уже показанный текст.
+                    let title = (json.status === 'success' && payload.http_status_message && errorList.indexOf(payload.http_status_message) === -1)
+                        ? payload.http_status_message
+                        : '';
+
+                    // Один блок вместо стопки отдельных карточек на каждую ошибку — при
+                    // нескольких поле-специфичных ошибках (например по всем незаполненным
+                    // адресным полям) список читается компактнее, чем N одинаковых плашек.
+                    let html = '<div class="esl-error-box">';
+                    if (title) {
+                        html += '<div class="esl-error-box__title">' + title + '</div>';
                     }
-
-                    if (!errorStr) {
-                        errorStr = '<p>Ошибка при выгрузке заказа</p>';
+                    if (errorList.length) {
+                        html += '<ul class="esl-error-box__list">' + errorList.map(function (message) {
+                            return '<li>' + message + '</li>';
+                        }).join('') + '</ul>';
+                    } else if (!title) {
+                        html += '<div class="esl-error-box__title">Ошибка при выгрузке заказа</div>';
                     }
+                    html += '</div>';
 
-                    obForm.getElementsByClassName('error-msg')[0].innerHTML = errorStr;
+                    obForm.getElementsByClassName('error-msg')[0].innerHTML = html;
                 } else {
                     window.location = window.location.href+'&UNLOADING_SAVED=true';
                 }

@@ -176,6 +176,15 @@ class Unloading
             $result = ['errors' => ['request' => 'Empty or invalid API response']];
         }
 
+        // API отдаёт ошибки create-запроса в двух разных формах в зависимости от типа
+        // сбоя: настоящая ошибка валидации полей — 'errors' в корне ответа (проверено
+        // вживую), а общая ошибка выгрузки (в т.ч. фейковая, см. Config::API_FAKE_MODE=3)
+        // — 'errors' внутри 'data'. Раньше проверялся только корень, поэтому такой ответ
+        // (http_status 422) молча принимался за успешную выгрузку.
+        if (!empty($result['data']['errors']) && !isset($result['errors'])) {
+            $result['errors'] = $result['data']['errors'];
+        }
+
         if (!isset($result['errors'])) {
             if(!isset($data['order_id']))
                 return false;

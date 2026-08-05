@@ -402,7 +402,13 @@ class AjaxHandler extends Controller
         $unloading = new Unloading();
         $result = $unloading->params_delivery_init($request);
         if (isset($result['errors'])) {
-            return ['success' => false, 'errors' => $result['errors']];
+            return [
+                'success' => false,
+                'errors' => $result['errors'],
+                // Текстовый статус ответа API (например "Данные не получены") — отдельно от
+                // errors, т.к. это не поле-специфичная ошибка, а общее описание сбоя запроса.
+                'http_status_message' => $result['http_status_message'] ?? null,
+            ];
         }
 
         return ['success' => true, 'message' => $result['http_status_message'] ?? 'OK'];

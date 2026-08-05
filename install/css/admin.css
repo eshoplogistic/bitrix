@@ -19,15 +19,36 @@ form[name^=unloading_form] span.required {
 }
 
 /* ---------- Error message ---------- */
-.error-msg p {
+.error-msg .esl-error-box {
     border: 1px solid rgba(239, 68, 68, 0.3);
-    padding: 8px 12px;
+    padding: 10px 14px;
     color: #7f1d1d;
     background-color: #fee2e2;
     border-radius: 6px;
     font-size: 13px;
-    font-weight: 500;
     margin: 0 0 12px 0;
+}
+
+.error-msg .esl-error-box__title {
+    font-weight: 600;
+}
+
+.error-msg .esl-error-box__list {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.error-msg .esl-error-box__title + .esl-error-box__list {
+    margin-top: 4px;
+}
+
+.error-msg .esl-error-box__list li {
+    margin: 2px 0;
+}
+
+.error-msg .esl-error-box__list:only-child {
+    list-style: none;
+    padding-left: 0;
 }
 
 /* =============================================
