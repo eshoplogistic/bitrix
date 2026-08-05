@@ -68,7 +68,11 @@ Class eshoplogistic_delivery extends CModule
 			array(
 				'CODE'  => "ESHOPLOGISTIC_SHIPPING_METHODS",
 				'NAME'  => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_NAME'),
-				'DESCR' => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC')
+				'DESCR' => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC'),
+				// Хранит JSON-ответ ТК (create/get). Без явного MAXLENGTH Bitrix
+				// принудительно ограничивает свойства типа STRING 500 символами
+				// (Bitrix\Sale\EntityProperty::checkValue), а ответ ТК столько не влезает.
+				'SETTINGS' => array('MAXLENGTH' => 20000),
 			),
 			array(
 				'CODE'  => "ESHOPLOGISTIC_CHOSE_FRAME",
@@ -125,8 +129,15 @@ Class eshoplogistic_delivery extends CModule
 				"IS_ZIP" => "N",
 				"UTIL" => "Y"
 			);
+			if (isset($arProp['SETTINGS'])) {
+				$arFields['SETTINGS'] = $arProp['SETTINGS'];
+			}
 			if(!array_key_exists($person,$existedProps)) {
 				if(!CSaleOrderProps::Add($arFields)) $return = false;
+			} elseif (isset($arProp['SETTINGS'])) {
+				// Свойство уже создано на этом сайте раньше (без явного MAXLENGTH) —
+				// донастраиваем лимит длины и на уже установленных копиях модуля.
+				if(!CSaleOrderProps::Update($existedProps[$person], array('SETTINGS' => $arProp['SETTINGS']))) $return = false;
 			}
 		}
 		return $return;
