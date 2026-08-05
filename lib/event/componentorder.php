@@ -401,6 +401,7 @@ class ComponentOrder
 	{
 
 		$selectedElement = '';
+		$invalidEslService = false;
 		$clearField = false;
 		$widgetKey = Option::get(Config::MODULE_ID, 'widget_key');
 		if (!$widgetKey)
@@ -475,6 +476,25 @@ class ComponentOrder
 					$requestDataEsl['selectPvz'] = '';
 				}
 				$selectedElement = self::findDeliveryByName($eslDelivery, $requestDataEsl['key'], $requestDataEsl['mode']);
+
+				if (!$selectedElement) {
+					// Покупатель выбрал в виджете службу (например ПЭК), для которой в админке
+					// не создан/не активен профиль в "Калькулятор доставки eShopLogistic".
+					// Раньше в этом случае мы молча подставляли первый попавшийся сконфигурированный
+					// профиль (например СДЭК) через current($eslDelivery), но цену, срок и ПВЗ ниже
+					// брали из данных виджета для выбранной покупателем службы — на чекауте
+					// показывались логотип/название одной ТК с ценой и пунктом выдачи другой.
+					// Возврат здесь недопустим: $requestDataEsl хранится в сессии и подставляется
+					// на КАЖДЫЙ рендер чекаута, поэтому return полностью ломал склейку профилей
+					// в один пункт "Калькулятор доставки eShopLogistic" — вместо него на любой
+					// стадии показывался сырой список отдельных профилей (СДЭК: курьер, СДЭК: ПВЗ,
+					// Байкал Сервис по отдельности). Вместо прерывания просто забываем невалидный
+					// выбор и идём дальше как при первой загрузке (без данных виджета) — ниже
+					// сработает обычный плейсхолдер "ещё не рассчитано", плюс покажем покупателю
+					// явное сообщение, что выбранная служба недоступна.
+					$requestDataEsl = null;
+					$invalidEslService = true;
+				}
 			}
 
 			if (!$selectedElement) {
@@ -581,6 +601,9 @@ class ComponentOrder
 		$deliveryResult['DESCRIPTION'] =
 			'<div class="eslog-deliverey-desc">' . $descriptionTerminal . '</div>' .
 			'<div class="eslog-deliverey-desc-lk">' . $calcDesc . '</div>' .
+			($invalidEslService
+				? '<div class="eslog-service-not-configured" style="color:red;margin:8px 0;">' . Loc::getMessage("ESHOP_LOGISTIC_SERVICE_NOT_CONFIGURED") . '</div>'
+				: '') .
 			($cityNotFound
 				? '<div class="eslog-city-not-found" style="color:red;margin:8px 0;">' . Loc::getMessage("ESHOP_LOGISTIC_CITY_NOT_FOUND") . '</div>'
 				: '<a id="container_widget_esl_button" class="container_widget_esl_button eslog-btn-default loading-esl"><span class="button__text">' . Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FRAME_BUT") . '</span>
