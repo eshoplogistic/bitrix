@@ -402,12 +402,17 @@ class AjaxHandler extends Controller
         $unloading = new Unloading();
         $result = $unloading->params_delivery_init($request);
         if (isset($result['errors'])) {
+            // http_status_message описывает HTTP-статус САМОГО запроса к API, а не бизнес-
+            // результат: часть ошибок (например неподтверждённый трек-номер СДЭК, см.
+            // params_delivery_init) — это наше решение считать выгрузку неуспешной при
+            // формально успешном (200/"OK") ответе API. Показывать в этом случае "OK" как
+            // заголовок ошибки было бы противоречиво, поэтому передаём его фронту только
+            // когда сам HTTP-статус запроса действительно означает сбой.
+            $httpStatus = $result['http_status'] ?? null;
             return [
                 'success' => false,
                 'errors' => $result['errors'],
-                // Текстовый статус ответа API (например "Данные не получены") — отдельно от
-                // errors, т.к. это не поле-специфичная ошибка, а общее описание сбоя запроса.
-                'http_status_message' => $result['http_status_message'] ?? null,
+                'http_status_message' => ($httpStatus !== null && $httpStatus >= 400) ? ($result['http_status_message'] ?? null) : null,
             ];
         }
 

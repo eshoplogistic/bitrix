@@ -211,7 +211,11 @@ class Unloading
                     if (!empty($resultGet['data']['state']['errors'])) {
                         $resultGet['errors'] = $resultGet['data']['state']['errors'];
                     } elseif (!isset($resultGet['errors'])) {
-                        $resultGet['errors'] = [];
+                        // Пустой массив здесь означал бы "isset(errors) == true, но без текста" —
+                        // вызывающий код (и UI) отличает наличие ошибки только по isset(), поэтому
+                        // без реального сообщения ошибка есть, а показать нечего (и http_status_message
+                        // от get-запроса в этом случае — "OK", т.к. HTTP-статус запроса не про это).
+                        $resultGet['errors'] = ['request' => 'Трек-номер не подтверждён ТК в отведённое время'];
                     }
                     return $resultGet;
                 }
