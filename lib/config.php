@@ -25,7 +25,7 @@ class Config
 	// в коде (не в админке — только для разработчика), не забыть вернуть 0 после теста.
 	// 0 - выключено (реальная отправка), 1 - фейковый успех (200),
 	// 2 - фейковая ошибка валидации (422), 3 - фейковая ошибка выгрузки
-	const API_FAKE_MODE = 0;
+	const API_FAKE_MODE = 1;
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;

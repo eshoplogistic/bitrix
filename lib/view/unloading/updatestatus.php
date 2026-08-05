@@ -30,7 +30,10 @@ $status = $unloading->infoOrder($ID);
 
 if (isset($status['success']) && $status['success'] === false) {
     $type = 'error';
-    $message = $status['data']['messages'] ?? Loc::GetMessage("ESHOP_LOGISTIC_VIEW_UPDATESTATUS_ERROR");
+    $apiMessages = $status['data']['messages'] ?? null;
+    $message = $apiMessages
+        ? Loc::GetMessage("ESHOP_LOGISTIC_VIEW_UPDATESTATUS_ERROR") . ': ' . (is_array($apiMessages) ? implode('; ', $apiMessages) : $apiMessages)
+        : Loc::GetMessage("ESHOP_LOGISTIC_VIEW_UPDATESTATUS_ERROR");
 } else {
     $result = $unloading->updateStatusById($status['data'], $ID);
     if (!$result) {

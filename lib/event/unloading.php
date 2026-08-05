@@ -602,11 +602,30 @@ class Unloading
                 return ['type' => 'info', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_NOCHANGE")];
 
             $order->setField('STATUS_ID', $resultNameStatus);
-            $order->save();
+            $saveResult = $order->save();
+
+            if (!$saveResult->isSuccess()) {
+                return [
+                    'type' => 'error',
+                    'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR") . ': ' . implode('; ', $saveResult->getErrorMessages())
+                ];
+            }
+
             return ['type' => 'success', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_OK")];
         }
 
-        return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR")];
+        $apiStatusCode = $id['state']['status']['code'] ?? '';
+        $apiStatusDescription = $id['state']['status']['description'] ?? '';
+
+        $message = Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR");
+        if ($apiStatusCode) {
+            $message .= ': ' . Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_STATUS_ERR_NO_MAPPING", [
+                '#CODE#' => $apiStatusCode,
+                '#DESCRIPTION#' => $apiStatusDescription ?: $apiStatusCode,
+            ]);
+        }
+
+        return ['type' => 'error', 'message' => $message];
     }
 
     /** Сбрасывает результат выгрузки заказа: очищает свойство ESHOPLOGISTIC_SHIPPING_METHODS

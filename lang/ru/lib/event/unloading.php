@@ -1,6 +1,7 @@
 <?
 $MESS["ESHOP_LOGISTIC_UNLOADING_STATUS_OK"] = "Статус обновлен";
 $MESS["ESHOP_LOGISTIC_UNLOADING_STATUS_ERR"] = "Ошибка при обновлении";
+$MESS["ESHOP_LOGISTIC_UNLOADING_STATUS_ERR_NO_MAPPING"] = " для статуса API «#DESCRIPTION#» (код: #CODE#) не настроено сопоставление со статусом заказа Bitrix. Настройте соответствие статусов в настройках модуля.";
 $MESS["ESHOP_LOGISTIC_UNLOADING_STATUS_NOCHANGE"] = "Статус не изменился";
 $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER"] = "Выгрузить заказ";
 $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"] = "Обновить статус";
