@@ -29,7 +29,7 @@ class Config
 	// 2 - фейковый ответ 200, но с данными трекинга (status/track) вместо заказа —
 	//     НЕ ошибка валидации, вопреки комментарию в МойСклад для этого же параметра;
 	// 3 - фейковая ошибка выгрузки (422, errors внутри data)
-	const API_FAKE_MODE = 0;
+	const API_FAKE_MODE = 1;
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;
@@ -235,6 +235,64 @@ class Config
 	public static function isCarrierFeatureEnabled($feature, $carrierCode)
 	{
 		return in_array($carrierCode, self::CARRIER_FEATURE_SCOPE[$feature] ?? array(), true);
+	}
+
+	// Набор печатных форм по каждой ТК — портировано из МойСклад (views/widgets/unloadingprint.html.php).
+	// 'mode'/'type' — значения, передаваемые в API (action=print); 'danger' — форма, которую
+	// МС визуально выделяет как отдельную от "обычных" (Акт приёма-передачи), у нас — тем же
+	// принципом, что и опасное действие "Удалить у ТК" в clearstatus.php.
+	const PRINT_FORM_BUTTONS = array(
+		'delline' => array(
+			array('mode' => 'bill', 'label' => 'Печать счёта'),
+			array('mode' => 'order', 'label' => 'Печать ТТН'),
+			array('mode' => 'invoice', 'label' => 'Печать счёт-фактуры'),
+			array('mode' => 'label', 'label' => 'Печать этикеток'),
+		),
+		'sdek' => array(
+			array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
+			array('mode' => 'order', 'label' => 'Печать накладных'),
+		),
+		'dpd' => array(
+			array('mode' => 'label', 'label' => 'Печать наклеек'),
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+		),
+		'pecom' => array(
+			array('mode' => 'label', 'label' => 'Печать наклеек'),
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+		),
+		'integral' => array(
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
+			array('mode' => 'label', 'label' => 'Наклейки Zebra'),
+			array('mode' => 'label_A4', 'label' => 'Наклейки А4'),
+		),
+		'yandex' => array(
+			array('mode' => 'barcodes', 'type' => 'one', 'label' => 'Печать наклеек: одна на страницу'),
+			array('mode' => 'barcodes', 'type' => 'many', 'label' => 'Печать наклеек: максимум на страницу'),
+			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
+		),
+	);
+
+	// Служба доставки, для которой нет отдельного набора выше, получает один универсальный
+	// пункт (как у МойСклад: ветка else в unloadingprint.html.php).
+	const PRINT_FORM_BUTTONS_DEFAULT = array(
+		array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
+	);
+
+	// Выбор формата бумаги — не все ТК его используют (см. typePaperPrint в UnloadingPrint.php МС).
+	const PRINT_FORM_PAPER_TYPES = array(
+		'sdek' => array('A4', 'A5', 'A6'),
+		'dpd' => array('A5', 'A6'),
+		'halva' => array('58x60', '76x51', '70x28_a4'),
+	);
+
+	/** Набор кнопок печатных форм для службы доставки (см. PRINT_FORM_BUTTONS)
+	 * @param string $carrierCode
+	 * @return array
+	 */
+	public static function getPrintFormButtons($carrierCode)
+	{
+		return self::PRINT_FORM_BUTTONS[$carrierCode] ?? self::PRINT_FORM_BUTTONS_DEFAULT;
 	}
 
 }

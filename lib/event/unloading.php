@@ -105,6 +105,16 @@ class Unloading
 			})).Show();",
         );
         $arReports[] = array(
+            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT"),
+            "ACTION" => "(new BX.CAdminDialog({
+				'content_url': '/bitrix/admin/eshoplogistic_delivery_print.php?elementId=" . $elementId . "',
+				'draggable': true,
+				'resizable': true,
+				'width' : 700,
+				'height' : 500
+			})).Show();",
+        );
+        $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR"),
             "ACTION" => "(new BX.CAdminDialog({
 				'content_url': '/bitrix/admin/eshoplogistic_delivery_clearstatus.php?elementId=" . $elementId . "',
@@ -682,6 +692,25 @@ class Unloading
      */
     public function isDeleteSupportedAtCarrier($orderId)
     {
+        return $this->carrierOrderCapability($orderId, 'delete');
+    }
+
+    /** Поддерживает ли служба доставки этого заказа получение печатных форм через API —
+     * портировано из МойСклад (MainMenu.php: clientState->services[code]->order->print).
+     * @param int $orderId
+     * @return bool
+     */
+    public function isPrintSupportedAtCarrier($orderId)
+    {
+        return $this->carrierOrderCapability($orderId, 'print');
+    }
+
+    /** @param int $orderId
+     * @param string $capability 'delete'|'print'|'get'|'create'|'track' (см. client/state)
+     * @return bool
+     */
+    private function carrierOrderCapability($orderId, $capability)
+    {
         $deliveryId = $this->resolveDeliveryId($orderId);
         if (!$deliveryId) {
             return false;
@@ -690,7 +719,7 @@ class Unloading
         $site = new Site();
         $authStatus = $site->getAuthStatus();
 
-        return (bool)($authStatus['settings'][$deliveryId]['order']['delete'] ?? false);
+        return (bool)($authStatus['settings'][$deliveryId]['order'][$capability] ?? false);
     }
 
     /** Удаляет заказ на стороне ТК через API (action=delete, портировано из МойСклад:
@@ -709,17 +738,8 @@ class Unloading
         }
 
         $deliveryId = $this->resolveDeliveryId($orderId);
-        $carrierOrderId = null;
-        $propertyCollection = $order->getPropertyCollection();
-        foreach ($propertyCollection as $propertyItem) {
-            if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS') {
-                $value = $propertyItem->getValue();
-                if ($value) {
-                    $shippingMethods = json_decode($value, true);
-                    $carrierOrderId = $shippingMethods['answer']['order']['id'] ?? null;
-                }
-            }
-        }
+        $answer = $this->loadShippingMethodsAnswer($orderId);
+        $carrierOrderId = $answer['order']['id'] ?? null;
 
         if (!$deliveryId || !$carrierOrderId) {
             return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_NOT_UNLOADED")];
@@ -767,6 +787,79 @@ class Unloading
         return $clearResult;
     }
 
+    /** Получает у ТК ссылку на печатную форму (action=print, портировано из МойСклад:
+     * UnloadingPrint::initType()). Набор доступных $mode/$type — Config::PRINT_FORM_BUTTONS.
+     * @param int $orderId
+     * @param string $mode код формы (barcodes/order/label/act и т.п. — зависит от ТК)
+     * @param string $paper формат бумаги (см. Config::PRINT_FORM_PAPER_TYPES), необязательно
+     * @param string $type подвид формы (напр. у Яндекса 'one'/'many' — этикеток на страницу)
+     * @return array{type:string,message?:string,url?:string}
+     */
+    public function getPrintForm($orderId, $mode, $paper = '', $type = '')
+    {
+        $deliveryId = $this->resolveDeliveryId($orderId);
+        $answer = $this->loadShippingMethodsAnswer($orderId);
+        $carrierOrderId = $answer['order']['id'] ?? null;
+
+        if (!$deliveryId || !$carrierOrderId) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_NOT_UNLOADED")];
+        }
+
+        $data = [
+            'key' => Option::get(Config::MODULE_ID, 'api_key'),
+            'action' => 'print',
+            'order_id' => $carrierOrderId,
+            'service' => $deliveryId,
+            'mode' => $mode,
+            'fake' => Config::API_FAKE_MODE,
+        ];
+
+        if ($paper !== '') {
+            $data['format'] = $paper;
+        }
+        if ($type !== '') {
+            $data['type'] = $type;
+        }
+
+        $export = new Export();
+        $result = $export->sendExport($data);
+
+        if (empty($result)) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_ERR")];
+        }
+
+        if (!empty($result['data']['errors']) && !isset($result['errors'])) {
+            $result['errors'] = $result['data']['errors'];
+        }
+
+        if (isset($result['errors'])) {
+            $errorText = self::flattenErrors($result['errors']);
+            $message = Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_ERR");
+            if ($errorText !== '') {
+                $message .= ': ' . $errorText;
+            }
+
+            return ['type' => 'error', 'message' => $message];
+        }
+
+        $url = $result['data']['url'] ?? '';
+        if (!$url) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_EMPTY")];
+        }
+
+        return ['type' => 'success', 'url' => $url];
+    }
+
+    /** Публичная обёртка над resolveDeliveryId() — нужна view-слою (print.php), чтобы
+     * заранее подобрать набор кнопок печатных форм для службы доставки этого заказа.
+     * @param int $orderId
+     * @return string|null
+     */
+    public function getDeliveryId($orderId)
+    {
+        return $this->resolveDeliveryId($orderId);
+    }
+
     /** @param int $orderId
      * @return string|null код службы доставки (см. ShippingHelper::getSlugMethod), либо null
      */
@@ -780,6 +873,32 @@ class Unloading
         $shippingHelper = new ShippingHelper();
 
         return $shippingHelper->getSlugMethod($orderData['DELIVERY_ID']);
+    }
+
+    /** Читает сохранённый ответ ТК (см. saveShippingMethodsAnswer) — order_id/трек-код/статус
+     * у ТК из свойства заказа ESHOPLOGISTIC_SHIPPING_METHODS.
+     * @param int $orderId
+     * @return array|null
+     */
+    private function loadShippingMethodsAnswer($orderId)
+    {
+        $order = Sale\Order::load($orderId);
+        if (!$order) {
+            return null;
+        }
+
+        foreach ($order->getPropertyCollection() as $propertyItem) {
+            if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS') {
+                $value = $propertyItem->getValue();
+                if ($value) {
+                    $decoded = json_decode($value, true);
+
+                    return $decoded['answer'] ?? null;
+                }
+            }
+        }
+
+        return null;
     }
 
     /** Разворачивает произвольно вложенный массив ошибок API в одну читаемую строку.

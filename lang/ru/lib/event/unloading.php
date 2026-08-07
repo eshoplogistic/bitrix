@@ -15,4 +15,8 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_DELETE_OK"] = "Заказ удалён в ТК, 
 $MESS["ESHOP_LOGISTIC_UNLOADING_DELETE_NOT_UNLOADED"] = "Заказ ещё не выгружен в ТК — удалять нечего.";
 $MESS["ESHOP_LOGISTIC_UNLOADING_DELETE_UNSUPPORTED"] = "Эта служба доставки не поддерживает удаление заказа через API. Отмените его в личном кабинете ТК вручную.";
 $MESS["ESHOP_LOGISTIC_UNLOADING_DELETE_ERR"] = "Не удалось удалить заказ в ТК";
+$MESS["ESHOP_LOGISTIC_UNLOADING_PRINT"] = "Печатные формы";
+$MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_NOT_UNLOADED"] = "Заказ ещё не выгружен в ТК — печатные формы недоступны.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_ERR"] = "Не удалось получить печатную форму";
+$MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_EMPTY"] = "ТК не вернула ссылку на печатную форму.";
 ?>
