@@ -12,10 +12,11 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     { controller: 'delivery_type', values: ['door'], targets: ['receiver-street', 'receiver-house', 'receiver-room', 'delivery[location_to][comment]'] },
     // Габариты/вес итогового места имеют смысл только если места объединяются в одно.
     { controller: 'order[combine_places][apply]', values: ['1'], targets: ['order[combine_places][dimensions]', 'order[combine_places][weight]'] },
-    // "Груз заберёт ТК" (1) — нужен код терминала отгрузки;
-    // "Сами привезём на терминал" (0) — нужен адрес отправителя.
-    { controller: 'pick_up', values: ['1'], targets: ['sender-terminal'] },
-    { controller: 'pick_up', values: ['0'], targets: ['sender-region', 'sender-city', 'sender-street', 'sender-house', 'sender-room'] },
+    // "Сами привезём на терминал" (0) — нужен код терминала отгрузки (см. unloading.php:
+    // pick_up==0 -> delivery.location_from.terminal, обязательно по контракту API);
+    // "Груз заберёт ТК" (1) — нужен адрес отправителя (pick_up==1 -> ...location_from.address).
+    { controller: 'pick_up', values: ['0'], targets: ['sender-terminal'] },
+    { controller: 'pick_up', values: ['1'], targets: ['sender-region', 'sender-city', 'sender-street', 'sender-house', 'sender-room'] },
     // ПЭК: юрлицо/ИП отправителя — нужен документ представителя, физлицо — реквизиты
     // организации не нужны, зато нужны собственные ФИО (см. Iframe.php / ExportFileds.php МойСклад).
     { controller: 'sender[identity][org_type]', values: ['1', '2'], targets: ['sender[identity][type]', 'sender[identity][series]', 'sender[identity][number]', 'sender[identity][date]', 'sender[identity][first_name]', 'sender[identity][last_name]', 'sender[identity][patronymic]'] },
