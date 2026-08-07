@@ -72,11 +72,7 @@ $additionalFields = Additional::sendExport(['service' => $service, 'detail' => t
 $additionalFieldsRu = GetMessage("ADDITIONAL_FIELDS");
 
 ?>
-<?php
-$settingsCssPath = '/bitrix/css/eshoplogistic.delivery/settings.css';
-$settingsCssVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $settingsCssPath) ?: '1';
-?>
-<link rel="stylesheet" href="<?= $settingsCssPath ?>?<?= $settingsCssVer ?>">
+<?= \CUtil::InitJSCore(['settings_css_lib', 'dialog_lib'], true) ?>
 <div class="esl-addfield-services" id="esl-addfield-root">
     <?php if ($type === 'success'): ?>
         <div class="esl-addfield-result esl-addfield-result--success"><?= htmlspecialchars($message) ?></div>
@@ -112,16 +108,14 @@ $settingsCssVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $settingsCssPath) ?: '1
             <?php
             // BX.CAdminDialog перехватывает submit формы только если диалог создан с
             // параметром buttons — у нас его нет, поэтому обычный submit/type=submit
-            // пробивает диалог и уводит на голую страницу без оформления админки.
-            // <script>-теги, вставленные через outerHTML/innerHTML, браузер не выполняет,
-            // поэтому логика сохранения — целиком в атрибуте onclick, а не в отдельном script.
-            $onclickJs = "var f=this.closest('form'),x=new XMLHttpRequest();"
-                . "x.open('POST',f.action,true);"
-                . "x.onload=function(){if(x.status===200){document.getElementById('esl-addfield-root').outerHTML=x.responseText;}else{alert('Ошибка '+x.status+' при сохранении');}};"
-                . "x.onerror=function(){alert('Запрос не удался');};"
-                . "x.send(new FormData(f));";
+            // пробивает диалог и уводит на голую страницу без оформления админки. Сохраняем
+            // вручную через XHR - eslAddFieldSubmit() определена в unloading-dialog.js,
+            // подключённом выше через dialog_lib (CUtil::InitJSCore) - он выполняется один
+            // раз при начальной загрузке диалога; <script>, вставленные через outerHTML при
+            // повторном сохранении, браузер не выполняет — поэтому саму функцию сюда
+            // вставлять нельзя.
             ?>
-            <button type="button" class="esl-addfield-submit" onclick="<?= htmlspecialchars($onclickJs) ?>"><?= GetMessage("ESHOP_LOGISTIC_SETTINGS_ADDFIELD_SAVE_BUTTON") ?></button>
+            <button type="button" class="esl-addfield-submit" onclick="eslAddFieldSubmit(this)"><?= GetMessage("ESHOP_LOGISTIC_SETTINGS_ADDFIELD_SAVE_BUTTON") ?></button>
         </form>
     <?php else: ?>
         <div class="esl-addfield-empty">

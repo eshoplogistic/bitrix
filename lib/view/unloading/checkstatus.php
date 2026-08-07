@@ -82,85 +82,13 @@ if (!$isError) {
     }
 }
 ?>
-<style>
-    .esl-status-result {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px;
-        margin: 16px;
-        border-radius: 8px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    .esl-status-result--error {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-    }
-    .esl-status-result--info {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-    }
-    .esl-status-result__icon {
-        flex-shrink: 0;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1;
-    }
-    .esl-status-result--error .esl-status-result__icon {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-    .esl-status-result--info .esl-status-result__icon {
-        background: #dbeafe;
-        color: #2563eb;
-    }
-    .esl-status-result__body {
-        flex: 1;
-        padding-top: 4px;
-    }
-    .esl-status-result__error-text {
-        font-size: 14px;
-        font-weight: 500;
-        color: #7f1d1d;
-        line-height: 1.5;
-    }
-    .esl-status-result__table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .esl-status-result__table tr + tr td {
-        border-top: 1px solid #dbeafe;
-    }
-    .esl-status-result__table td {
-        padding: 7px 4px;
-        font-size: 13px;
-        line-height: 1.4;
-        vertical-align: top;
-    }
-    .esl-status-result__table td:first-child {
-        color: #3b5a8a;
-        font-weight: 500;
-        width: 160px;
-        white-space: nowrap;
-        padding-right: 12px;
-    }
-    .esl-status-result__table td:last-child {
-        color: #1e3a8a;
-        font-weight: 600;
-    }
-</style>
-
+<?= \CUtil::InitJSCore(['dialog_lib'], true) ?>
+<div class="esl-dialog">
 <?php if ($isError): ?>
 <div class="esl-status-result esl-status-result--error">
     <div class="esl-status-result__icon">✕</div>
     <div class="esl-status-result__body">
-        <div class="esl-status-result__error-text"><?= htmlspecialchars($errorMessage) ?></div>
+        <div class="esl-status-result__text"><?= htmlspecialchars($errorMessage) ?></div>
     </div>
 </div>
 <?php else: ?>
@@ -178,3 +106,4 @@ if (!$isError) {
     </div>
 </div>
 <?php endif; ?>
+</div>

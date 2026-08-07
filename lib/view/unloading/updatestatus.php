@@ -45,50 +45,15 @@ if (isset($status['success']) && $status['success'] === false) {
     }
 }
 
-$styles = [
-    'success' => ['bg' => '#f0fdf4', 'border' => '#bbf7d0', 'icon_bg' => '#dcfce7', 'icon_color' => '#16a34a', 'text' => '#166534', 'icon' => '✓'],
-    'error'   => ['bg' => '#fef2f2', 'border' => '#fecaca', 'icon_bg' => '#fee2e2', 'icon_color' => '#dc2626', 'text' => '#7f1d1d', 'icon' => '✕'],
-    'warning' => ['bg' => '#fffbeb', 'border' => '#fde68a', 'icon_bg' => '#fef3c7', 'icon_color' => '#d97706', 'text' => '#78350f', 'icon' => '!'],
-    'info'    => ['bg' => '#eff6ff', 'border' => '#bfdbfe', 'icon_bg' => '#dbeafe', 'icon_color' => '#2563eb', 'text' => '#1e3a8a', 'icon' => 'i'],
-];
+$icons = ['success' => '✓', 'error' => '✕', 'warning' => '!', 'info' => 'i'];
+$icon = $icons[$type] ?? $icons['info'];
+$modifier = isset($icons[$type]) ? $type : 'info';
 
-$s = $styles[$type] ?? $styles['info'];
 ?>
-<style>
-    .esl-status-result {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px;
-        margin: 16px;
-        background: <?= $s['bg'] ?>;
-        border: 1px solid <?= $s['border'] ?>;
-        border-radius: 8px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    .esl-status-result__icon {
-        flex-shrink: 0;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: <?= $s['icon_bg'] ?>;
-        color: <?= $s['icon_color'] ?>;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1;
-    }
-    .esl-status-result__text {
-        padding-top: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        color: <?= $s['text'] ?>;
-        line-height: 1.5;
-    }
-</style>
-<div class="esl-status-result">
-    <div class="esl-status-result__icon"><?= $s['icon'] ?></div>
-    <div class="esl-status-result__text"><?= htmlspecialchars($message) ?></div>
+<?= \CUtil::InitJSCore(['dialog_lib'], true) ?>
+<div class="esl-dialog">
+    <div class="esl-status-result esl-status-result--<?= $modifier ?>">
+        <div class="esl-status-result__icon"><?= $icon ?></div>
+        <div class="esl-status-result__text"><?= htmlspecialchars($message) ?></div>
+    </div>
 </div>

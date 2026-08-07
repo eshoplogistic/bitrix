@@ -127,7 +127,9 @@ class Unloading
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_edit.php' && $_REQUEST['ID'] > 0
             || $_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php' && $_REQUEST['ID'] > 0) {
-            $GLOBALS['APPLICATION']->AddHeadString('<script>BX.ready(function(){document.querySelectorAll("td").forEach(function(td){if(td.childElementCount===0&&td.textContent.trim().indexOf("EShopLogistic данные для выгрузки")===0){var r=td.closest("tr");if(r)r.style.display="none";}});});</script>');
+            // Скрывает строку свойства ESHOPLOGISTIC_SHIPPING_METHODS в таблице свойств заказа -
+            // сама логика в install/js/admin.js (unloading_lib), тут только подключение файла.
+            \CUtil::InitJSCore(['unloading_lib']);
             $order = Sale\Order::load($elementId);
             $deliveryIds = $order->getDeliverySystemId();
             $shippingHelper = new ShippingHelper();

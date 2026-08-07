@@ -806,7 +806,8 @@ echo $ID ?>"
             "back_url" => "/bitrix/admin/sale_order_view.php?ID=" . $orderData['ID'] . "&lang=" . LANG,
             // "Применить" убран — на этой форме нет отдельного смысла "сохранить и остаться
             // редактировать": "Сохранить" и так остаётся на странице и показывает результат,
-            // а вернуться к заказу можно явной кнопкой ниже (см. relabel в <script> ниже).
+            // а вернуться к заказу можно явной кнопкой ниже (переименована в admin.js, см.
+            // eslUnloadingFormInit, вызов внизу файла).
             "btnApply" => false,
         ],
     );
@@ -841,16 +842,7 @@ echo $ID ?>"
     echo EndNote(); ?>
 </form>
 <script>
-    ajaxFormEsl(document.getElementById('eslUnloadngForm'), '/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.unloadingForm')
-
-    // Стандартная подпись Bitrix ("Отмена") не отражает, что кнопка всегда уводит к
-    // заказу (back_url) без сохранения — переименовываем сам input, не трогая поведение.
-    BX.ready(function () {
-        var cancelBtn = document.getElementById('eslUnloadngForm').querySelector('input[name="cancel"]');
-        if (cancelBtn) {
-            cancelBtn.value = 'Вернуться к заказу';
-        }
-    });
+    eslUnloadingFormInit('eslUnloadngForm', '/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.unloadingForm');
 </script>
 <?php
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/epilog_admin.php"); ?>

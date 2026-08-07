@@ -233,6 +233,38 @@ function ajaxFormEsl(obForm, link) {
     }, obForm, link));
 }
 
+// Инициализация формы выгрузки (lib/view/unloading/form.php): подключает ajax-сохранение
+// и переименовывает стандартную кнопку Bitrix ("Отмена") - её подпись не отражает, что
+// кнопка всегда уводит к заказу (back_url) без сохранения, поэтому подпись переопределяем,
+// не трогая поведение самой кнопки.
+// Скрывает служебное свойство заказа "EShopLogistic данные для выгрузки" (сырой JSON
+// ESHOPLOGISTIC_SHIPPING_METHODS) из таблицы свойств на странице заказа Bitrix -
+// вызывается на sale_order_view.php/sale_order_edit.php (см. AddHeadString в
+// OrderDetailAdminContextMenuShow, unloading.php). На других страницах, где подключён
+// этот файл (например, форма выгрузки), совпадающих <td> нет - вызов безопасен.
+BX.ready(function () {
+    document.querySelectorAll('td').forEach(function (td) {
+        if (td.childElementCount === 0 && td.textContent.trim().indexOf('EShopLogistic данные для выгрузки') === 0) {
+            var row = td.closest('tr');
+            if (row) {
+                row.style.display = 'none';
+            }
+        }
+    });
+});
+
+function eslUnloadingFormInit(formId, actionUrl) {
+    var form = document.getElementById(formId);
+    ajaxFormEsl(form, actionUrl);
+
+    BX.ready(function () {
+        var cancelBtn = form.querySelector('input[name="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.value = 'Вернуться к заказу';
+        }
+    });
+}
+
 function getPropVal(o, result = []) {
     for (let k in o) {
         if (o.hasOwnProperty(k)) {
