@@ -666,12 +666,23 @@ class ComponentOrder
 		if ($check)
 			$deliveryResult['CHECKED'] = 'Y';
 		if (!$requestDataEsl) {
-            $price = (isset($requestDataEsl['price']))?$requestDataEsl['price']:null;
-			$deliveryResult['PRICE'] = $price;
-			$deliveryResult['PRICE_FORMATED'] = CurrencyFormat($price, $deliveryResult['CURRENCY']);
+			$deliveryResult['PRICE'] = null;
+			$deliveryResult['PRICE_FORMATED'] = CurrencyFormat(null, $deliveryResult['CURRENCY']);
             $deliveryLogoPath = CFile::GetFileArray($delivery['LOGOTIP']);
             $deliveryResult['LOGOTIP'] = $deliveryLogoPath;
             $deliveryResult['DESCRIPTION'] .= "<input id='widgetEslNotCalc' value='1' type='hidden'>";
+		} elseif (array_key_exists('price', $requestDataEsl)) {
+            // Раньше цену виджета сюда не подставляли (мёртвая ветка: $requestDataEsl['price']
+            // проверялся внутри "if (!$requestDataEsl)", где сам $requestDataEsl всегда пуст).
+            // Из-за этого PRICE оставался равен $item['PRICE'] — тому, что вернул классический
+            // calculate() для CHECKED-профиля, который тут не показывается и может относиться к
+            // другой службе, чем выбрана в виджете. С оптимизацией skipRealCalculation() в
+            // CalculateHandler (обычный рендер чекаута в режиме виджета не делает реальный расчёт,
+            // раз он всё равно отбрасывается) это стало явной 0 ₽ вместо настоящей цены виджета —
+            // сама причина, по которой этот блок здесь появился. Данные виджета — единственный
+            // источник, которому можно доверять для отображаемой цены в этом режиме.
+            $deliveryResult['PRICE'] = $requestDataEsl['price'];
+            $deliveryResult['PRICE_FORMATED'] = CurrencyFormat($requestDataEsl['price'], $deliveryResult['CURRENCY']);
 		}
 
 		$deliveryResult['CALCULATE_DESCRIPTION'] = '';
