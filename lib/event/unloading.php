@@ -7,6 +7,7 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Delivery\Services\Manager;
 use CSaleOrder;
 use Eshoplogistic\Delivery\Api\Export;
+use Eshoplogistic\Delivery\Api\Site;
 use Eshoplogistic\Delivery\Config;
 use Bitrix\Sale;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
@@ -672,5 +673,131 @@ class Unloading
         return ['type' => 'success', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_OK")];
     }
 
+    /** Поддерживает ли служба доставки этого заказа удаление заказа через API у ТК —
+     * портировано из МойСклад (MainMenu.php: clientState->services[code]->order->delete,
+     * получено из того же client/state, что и Site::getAuthStatus()). Не все ТК это умеют
+     * (например kit, halva, pochtalion на момент проверки — delete: false).
+     * @param int $orderId
+     * @return bool
+     */
+    public function isDeleteSupportedAtCarrier($orderId)
+    {
+        $deliveryId = $this->resolveDeliveryId($orderId);
+        if (!$deliveryId) {
+            return false;
+        }
+
+        $site = new Site();
+        $authStatus = $site->getAuthStatus();
+
+        return (bool)($authStatus['settings'][$deliveryId]['order']['delete'] ?? false);
+    }
+
+    /** Удаляет заказ на стороне ТК через API (action=delete, портировано из МойСклад:
+     * UnloadingOrder::infoOrder('delete') + Ajax::eslUnloadingStatusesInfo), и только при
+     * успехе сбрасывает локальные данные выгрузки (см. clearUnloading). Раньше "удаление"
+     * в этом модуле было только локальной очисткой полей — заказ у ТК оставался активным,
+     * и его приходилось отменять там вручную.
+     * @param int $orderId
+     * @return array{type:string,message:string}
+     */
+    public function deleteUnloadingAtCarrier($orderId)
+    {
+        $order = Sale\Order::load($orderId);
+        if (!$order) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_NOTFOUND")];
+        }
+
+        $deliveryId = $this->resolveDeliveryId($orderId);
+        $carrierOrderId = null;
+        $propertyCollection = $order->getPropertyCollection();
+        foreach ($propertyCollection as $propertyItem) {
+            if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS') {
+                $value = $propertyItem->getValue();
+                if ($value) {
+                    $shippingMethods = json_decode($value, true);
+                    $carrierOrderId = $shippingMethods['answer']['order']['id'] ?? null;
+                }
+            }
+        }
+
+        if (!$deliveryId || !$carrierOrderId) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_NOT_UNLOADED")];
+        }
+
+        if (!$this->isDeleteSupportedAtCarrier($orderId)) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_UNSUPPORTED")];
+        }
+
+        $apiKey = Option::get(Config::MODULE_ID, 'api_key');
+        $export = new Export();
+        $result = $export->sendExport([
+            'key' => $apiKey,
+            'action' => 'delete',
+            'order_id' => $carrierOrderId,
+            'service' => $deliveryId,
+            'fake' => Config::API_FAKE_MODE,
+        ]);
+
+        if (empty($result)) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_ERR")];
+        }
+
+        // Та же нормализация формы ошибки, что и в params_delivery_init(): API отдаёт часть
+        // ошибок как 'errors' в корне ответа, часть — вложенными в 'data.errors'.
+        if (!empty($result['data']['errors']) && !isset($result['errors'])) {
+            $result['errors'] = $result['data']['errors'];
+        }
+
+        if (isset($result['errors'])) {
+            $errorText = self::flattenErrors($result['errors']);
+            $message = Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_ERR");
+            if ($errorText !== '') {
+                $message .= ': ' . $errorText;
+            }
+
+            return ['type' => 'error', 'message' => $message];
+        }
+
+        $clearResult = $this->clearUnloading($orderId);
+        if ($clearResult['type'] === 'success') {
+            $clearResult['message'] = Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_OK");
+        }
+
+        return $clearResult;
+    }
+
+    /** @param int $orderId
+     * @return string|null код службы доставки (см. ShippingHelper::getSlugMethod), либо null
+     */
+    private function resolveDeliveryId($orderId)
+    {
+        $orderData = CSaleOrder::GetByID($orderId);
+        if (!$orderData) {
+            return null;
+        }
+
+        $shippingHelper = new ShippingHelper();
+
+        return $shippingHelper->getSlugMethod($orderData['DELIVERY_ID']);
+    }
+
+    /** Разворачивает произвольно вложенный массив ошибок API в одну читаемую строку.
+     * @param mixed $errors
+     * @return string
+     */
+    private static function flattenErrors($errors)
+    {
+        if (!is_array($errors)) {
+            return (string)$errors;
+        }
+
+        $flat = [];
+        array_walk_recursive($errors, function ($value) use (&$flat) {
+            $flat[] = $value;
+        });
+
+        return implode('; ', $flat);
+    }
 
 }
