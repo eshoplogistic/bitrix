@@ -312,7 +312,7 @@ class ComponentOrder
 					if ($parentDelivery = $rsParentDelivery->fetch()) {
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($delivery['CODE']);
 
-						if ($parentDelivery['CODE'] == 'eslogistic' && $isDeliveryHasPvz) {
+						if ($parentDelivery['CODE'] == 'eslogistic') {
 
 							$propertyCollection = $order->getPropertyCollection();
                             $propertyPvz = '';
@@ -330,7 +330,7 @@ class ComponentOrder
                                 }
 								if ($propertyCode == 'ESHOPLOGISTIC_PVZ') {
                                     $propertyPvz = $propertyItem;
-									if (!$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term' && !$requaryPvz) {
+									if ($isDeliveryHasPvz && !$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term' && !$requaryPvz) {
                                         $typeError['ESHOPLOGISTIC_PVZ'] = 1;
 									}
 								}
