@@ -171,8 +171,24 @@ $sessid = bitrix_sessid();
         color: #7f1d1d;
     }
     .esl-print-loading {
-        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 4px;
+        font-size: 13px;
         color: var(--esl-text-muted);
+    }
+    .esl-print-spinner {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--esl-accent-soft);
+        border-top-color: var(--esl-accent);
+        border-radius: 50%;
+        animation: esl-print-spin .7s linear infinite;
+    }
+    @keyframes esl-print-spin {
+        to { transform: rotate(360deg); }
     }
 </style>
 <div id="esl-print-root">
@@ -215,7 +231,7 @@ $sessid = bitrix_sessid();
 
                 var paperSelect = document.getElementById('esl-print-paper');
                 var resultEl = document.getElementById('esl-print-result');
-                resultEl.innerHTML = '<div class="esl-print-loading"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_LOADING") ?></div>';
+                resultEl.innerHTML = '<div class="esl-print-loading"><span class="esl-print-spinner"></span><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_LOADING") ?></div>';
 
                 var fd = new FormData();
                 fd.append('sessid', <?= \Bitrix\Main\Web\Json::encode($sessid) ?>);
