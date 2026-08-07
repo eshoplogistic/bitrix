@@ -29,7 +29,7 @@ class Config
 	// 2 - фейковый ответ 200, но с данными трекинга (status/track) вместо заказа —
 	//     НЕ ошибка валидации, вопреки комментарию в МойСклад для этого же параметра;
 	// 3 - фейковая ошибка выгрузки (422, errors внутри data)
-	const API_FAKE_MODE = 1;
+	const API_FAKE_MODE = 0;
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;

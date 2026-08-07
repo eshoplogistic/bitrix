@@ -12,6 +12,7 @@ use Eshoplogistic\Delivery\Api\Site;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Api\Additional;
 use Eshoplogistic\Delivery\Helpers\AddressParser;
+use Eshoplogistic\Delivery\Helpers\LocationHandler;
 
 require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
 
@@ -158,6 +159,16 @@ $typeMethod = [
     'type' => $typeMethodTitle,
 ];
 
+// region_to сохраняется в ESHOPLOGISTIC_SHIPPING_METHODS только если заказ прошёл расчёт
+// доставки на чекауте (calculatehandler.php). Для заказов без такого расчёта (например,
+// оформленных вручную в админке) региона там нет - резолвим его по городу заказа через тот
+// же API (locality/search), что и при расчёте.
+$regionTo = (string)($shippingMethods['region_to'] ?? '');
+if ($regionTo === '' && (string)($propertyCodeValue['CITY'] ?? '') !== '') {
+    $resolvedCity = LocationHandler::resolveCityFromText((string)$propertyCodeValue['CITY']);
+    $regionTo = (string)($resolvedCity['parsedCity']['region'] ?? '');
+}
+
 // В заказе адрес хранится одной строкой (покупатель пишет улицу/дом/квартиру как придётся
 // на чекауте) - для ПВЗ дом/квартира не нужны, поэтому разбираем строку только для доставки
 // курьером. Полю "Улица" в форме оставляем разобранную улицу, а не всю строку целиком.
@@ -167,7 +178,7 @@ if ($typeMethod['type'] === 'door' && $propertyAddress !== '') {
         (string)$propertyAddress,
         '',
         (string)($propertyCodeValue['CITY'] ?? ''),
-        (string)($shippingMethods['region_to'] ?? '')
+        $regionTo
     );
 }
 
@@ -187,8 +198,11 @@ if ($typeMethod['type'] === 'door') {
 }
 
 if ($typeMethod['type'] === 'terminal') {
-    $addressShipping['terminal_address'] = $propertyAddressPVZ;
-    $addressShipping['terminal_code'] = explode(',', $propertyAddressPVZ)[0];
+    // ESHOPLOGISTIC_PVZ хранится как "код, адрес" (см. script.js: e.dataset.code+', '+pvzTitle) -
+    // код нужен отдельно для terminal_code, в адрес его дублировать не нужно.
+    $pvzParts = explode(',', $propertyAddressPVZ, 2);
+    $addressShipping['terminal_code'] = trim($pvzParts[0] ?? '');
+    $addressShipping['terminal_address'] = trim($pvzParts[1] ?? '');
 }
 $additional = [
     'service' => mb_strtolower($typeMethod['name']),
@@ -301,7 +315,7 @@ echo $ID ?>"
         <td><span class="required">*</span><?php
             echo GetMessage("RECEIVER_REGION") ?></td>
         <td><input type="text" name="receiver-region"
-                   value="<?= htmlspecialcharsbx((string)($shippingMethods['region_to'] ?? '')) ?>">
+                   value="<?= htmlspecialcharsbx($regionTo) ?>">
         </td>
     </tr>
     <tr>
