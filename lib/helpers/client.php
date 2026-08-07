@@ -25,7 +25,14 @@ class Client
     {
 
         $this->httpClient = new HttpClient();
+        // setTimeout() задаёт только TCP-коннект (Bitrix\Main\Web\HttpClient::$socketTimeout).
+        // Чтение самого ответа (streamTimeout) без явной настройки живёт по умолчанию 60 секунд
+        // (HttpClient::DEFAULT_STREAM_TIMEOUT) — если api.esplc.ru принял соединение, но медленно
+        // отдаёт/подвешивает ответ, calculate() у профиля доставки может блокировать рендер
+        // чекаута (или само оформление заказа) почти на минуту, прежде чем сработает fallback
+        // на raw curl ниже. Ограничиваем и чтение ответа тем же бюджетом, что и коннект.
         $this->httpClient->setTimeout(5);
+        $this->httpClient->setStreamTimeout(5);
         $this->url = 'https://api.esplc.ru/' . $apiObject;
         $this->apiKey = Option::get(Config::MODULE_ID, 'api_key');
 
@@ -73,7 +80,10 @@ class Client
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+        // Это уже fallback после сбоя основного клиента — держим его в том же бюджете (5с
+        // на весь запрос, CURLOPT_TIMEOUT ограничивает коннект+чтение вместе), а не даём ему
+        // отдельные 10 секунд поверх уже потраченных на первую попытку.
+        curl_setopt($curl, CURLOPT_TIMEOUT, 5);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($curl, CURLOPT_POST, 1);
