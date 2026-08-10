@@ -86,7 +86,7 @@ if (!$isError) {
 <div class="esl-dialog">
 <?php if ($isError): ?>
 <div class="esl-status-result esl-status-result--error">
-    <div class="esl-status-result__icon">✕</div>
+    <div class="esl-status-result__icon">&#10005;</div>
     <div class="esl-status-result__body">
         <div class="esl-status-result__text"><?= htmlspecialchars($errorMessage) ?></div>
     </div>

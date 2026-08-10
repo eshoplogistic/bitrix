@@ -44,7 +44,7 @@ if ($request->isPost()) {
 
 $deleteSupported = $unloading->isDeleteSupportedAtCarrier($ID);
 
-$icons = ['success' => '✓', 'error' => '✕', 'warning' => '!', 'info' => 'i'];
+$icons = ['success' => '&#10003;', 'error' => '&#10005;', 'warning' => '!', 'info' => 'i'];
 ?>
 <?= \CUtil::InitJSCore(['dialog_lib'], true) ?>
 <div id="esl-clear-root" class="esl-dialog">

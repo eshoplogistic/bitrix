@@ -45,7 +45,7 @@ if ($request->isPost()) {
     if ($result['type'] === 'success') {
         ?>
         <div class="esl-print-result esl-print-result--success">
-            <a href="<?= htmlspecialcharsbx($result['url']) ?>" target="_blank" rel="noopener"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_OPEN") ?> →</a>
+            <a href="<?= htmlspecialcharsbx($result['url']) ?>" target="_blank" rel="noopener"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_OPEN") ?> &rarr;</a>
         </div>
         <?php
     } else {

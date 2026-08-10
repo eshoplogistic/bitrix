@@ -45,7 +45,7 @@ if (isset($status['success']) && $status['success'] === false) {
     }
 }
 
-$icons = ['success' => '✓', 'error' => '✕', 'warning' => '!', 'info' => 'i'];
+$icons = ['success' => '&#10003;', 'error' => '&#10005;', 'warning' => '!', 'info' => 'i'];
 $icon = $icons[$type] ?? $icons['info'];
 $modifier = isset($icons[$type]) ? $type : 'info';
 
