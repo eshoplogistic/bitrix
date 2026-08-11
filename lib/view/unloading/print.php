@@ -14,7 +14,7 @@ IncludeModuleLangFile(__FILE__);
 $request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
 
 $SALE_RIGHT = $APPLICATION->GetGroupRight('sale');
-if ($SALE_RIGHT < 'R') {
+if ($SALE_RIGHT !== 'W') {
     $APPLICATION->AuthForm(GetMessage('ACCESS_DENIED'));
 }
 
