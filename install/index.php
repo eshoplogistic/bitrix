@@ -301,6 +301,7 @@ Class eshoplogistic_delivery extends CModule
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_checkstatus.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_updatestatus.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_clearstatus.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_print.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_additionalservices.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_terminalsearch.php");
 
