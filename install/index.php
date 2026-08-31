@@ -290,6 +290,11 @@ Class eshoplogistic_delivery extends CModule
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/components/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/components', true, true);
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/view/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/', true, true);
 
+		// remove stale unnamespaced copy of the component left over from older module versions
+		// (had no CSRF/auth checks) — must run AFTER CopyDirFiles above, which re-copies the
+		// whole install/components/ tree and would otherwise restore it right back
+		DeleteDirFilesEx("/bitrix/components/button");
+
 		return true;
 	}
 
@@ -297,6 +302,7 @@ Class eshoplogistic_delivery extends CModule
 		DeleteDirFilesEx("/bitrix/js/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/css/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/components/".$this->MODULE_SHORT_ID."/button");
+		DeleteDirFilesEx("/bitrix/components/button");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_form.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_checkstatus.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_updatestatus.php");

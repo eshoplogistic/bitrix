@@ -477,7 +477,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 
     $transportServices = array(
         'sdek'          => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_SDEK"),
-        'boxberry'      => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_BOXBERRY"),
+        // 'boxberry' намеренно убран из этого списка вкладок (см. profileList в lib/config.php —
+        // тот же принцип): служба больше не поддерживается, скрываем из UI выбора/настройки,
+        // но $transportServiceNiche['boxberry'] и языковые строки не трогаем — вреда от них нет.
         'yandex'        => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_YANDEX"),
         'fivepost'      => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_FIVEPOST"),
         'delline'       => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TK_DELLINE"),

@@ -84,8 +84,12 @@ class Config
 		$this->profileList = array(
 			'baikal_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_DOOR"),
 			'baikal_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_TERMINAL"),
-			'boxberry_door' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BOXBERRY_DOOR"),
-			'boxberry_term' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BOXBERRY_TERMINAL"),
+			// boxberry_door/boxberry_term намеренно убраны отсюда (но не из profileClasses/
+			// getEventDeliveryList выше) — Boxberry как служба больше не поддерживается и не
+			// должна предлагаться при создании НОВОГО профиля, но у магазинов, где она уже
+			// настроена, класс должен продолжать резолвиться (InitDeliveryService::
+			// getChildrenClassNames() без PROFILE_ID отдаёт весь profileClasses на каждом
+			// оформлении заказа — удаление класса/файла ломает оформление заказа вообще всем).
 			'custom_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_DOOR"),
 			'custom_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_TERMINAL"),
 			'delline_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DELLINE_DOOR"),
