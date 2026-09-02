@@ -2,11 +2,28 @@
    EShopLogistic — Страница настроек: единый стиль
    ============================================= */
 
+#edit, #faq, #unloading, .esl-terminal-search, .esl-addfield-services {
+    --esl-accent: #4a7dff;
+    --esl-accent-dark: #3563e0;
+    --esl-accent-soft: rgba(74, 125, 255, 0.12);
+    --esl-text: #1a2540;
+    --esl-text-muted: #5a6782;
+    --esl-text-faint: #93a0bd;
+    --esl-border: #dde3ed;
+    --esl-border-soft: #eef1f7;
+    --esl-bg-page: #f2f4f8;
+    --esl-bg-card: #ffffff;
+    --esl-bg-subtle: #f8f9fc;
+    --esl-radius: 10px;
+    --esl-radius-sm: 6px;
+    --esl-shadow-card: 0 1px 2px rgba(20, 30, 60, .05), 0 2px 10px rgba(20, 30, 60, .045);
+}
+
 /* ---------- Фон вкладок ---------- */
 #edit .adm-detail-content,
 #faq .adm-detail-content,
 #unloading .adm-detail-content {
-    background: #f2f4f8 !important;
+    background: var(--esl-bg-page) !important;
 }
 
 #edit .adm-detail-content-item-block,
@@ -23,11 +40,11 @@
     width: 100%;
     border-collapse: separate !important;
     border-spacing: 0 !important;
-    background: #ffffff;
-    border: 1px solid #dde3ed;
-    border-radius: 8px;
+    background: var(--esl-bg-card);
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--esl-shadow-card);
 }
 
 /* ---------- Строки ---------- */
@@ -40,7 +57,7 @@
 #edit .edit-table tr:hover td,
 #faq .edit-table tr:hover td,
 #unloading .edit-table tr:hover td {
-    background: #f7f9fd;
+    background: var(--esl-bg-subtle);
 }
 
 /* ---------- Заголовки секций (heading) ---------- */
@@ -51,43 +68,222 @@
     font-weight: 700 !important;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #6b7a99 !important;
-    background: #f8f9fc !important;
-    border-bottom: 1px solid #dde3ed !important;
-    border-top: 1px solid #dde3ed !important;
-    padding: 9px 16px !important;
+    color: var(--esl-text-muted) !important;
+    background: var(--esl-bg-subtle) !important;
+    border-bottom: 1px solid var(--esl-border) !important;
+    border-top: 1px solid var(--esl-border) !important;
+    padding: 10px 16px !important;
     text-align: left !important;
+}
+
+#edit .edit-table tr:first-child.heading td,
+#unloading .edit-table tr:first-child.heading td {
+    border-top: none !important;
 }
 
 #edit .edit-table tr.heading:hover td,
 #faq .edit-table tr.heading:hover td,
 #unloading .edit-table tr.heading:hover td {
-    background: #f8f9fc !important;
+    background: var(--esl-bg-subtle) !important;
     cursor: default;
 }
 
+/* Сворачиваемые секции (см. .esl-section-heading, JS-аккордеон в settings.js) */
+#edit .edit-table tr.heading.esl-collapsible td,
+#unloading .edit-table tr.heading.esl-collapsible td {
+    cursor: pointer;
+}
+
+/* Лёгкая подсветка при наведении — специально не похожа на "открытое" состояние
+   секции (см. .esl-collapsed ниже), иначе после клика, когда соседний заголовок
+   от сдвига содержимого оказывается под неподвижным курсором, кажется, что
+   раскрылись сразу две секции. */
+#edit .edit-table tr.heading.esl-collapsible:hover td,
+#unloading .edit-table tr.heading.esl-collapsible:hover td {
+    background: var(--esl-border-soft) !important;
+}
+
+.esl-section-heading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.esl-section-heading::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 9px;
+    border-right: 1.6px solid currentColor;
+    border-bottom: 1.6px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+    flex: none;
+}
+
+tr.heading.esl-collapsed .esl-section-heading::before {
+    transform: rotate(-45deg);
+}
+
 /* ---------- Note (описание) ---------- */
-#edit .edit-table .adm-settings-note,
-#unloading .edit-table .adm-settings-note {
+#edit .edit-table .adm-info-message-wrap,
+#unloading .edit-table .adm-info-message-wrap {
+    display: block;
+    text-align: left !important;
+}
+
+#edit .edit-table .adm-info-message,
+#unloading .edit-table .adm-info-message {
+    display: block;
     font-size: 12px;
-    color: #6b7a99;
-    background: #f8f9fc;
-    border: 1px solid #dde3ed;
-    border-radius: 5px;
-    padding: 7px 12px;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg-subtle);
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    padding: 9px 14px;
     margin: 2px 0;
+    line-height: 1.55;
+    text-align: left;
+}
+
+#edit .edit-table tr:has(.esl-toolbar):hover td,
+#unloading .edit-table tr:has(.esl-toolbar):hover td,
+#edit .edit-table tr:has(.esl-status-note):hover td,
+#unloading .edit-table tr:has(.esl-status-note):hover td {
+    background: transparent !important;
+}
+
+/* Кнопки-заметки (напр. "Настройка дополнительных услуг") остаются по центру строки,
+   в отличие от текстовых note — им общий text-align:left выше не подходит */
+#edit .edit-table .adm-info-message-wrap:has(.esl-addservice-btn),
+#unloading .edit-table .adm-info-message-wrap:has(.esl-addservice-btn) {
+    text-align: center !important;
+}
+
+#edit .edit-table .adm-info-message:has(.esl-addservice-btn),
+#unloading .edit-table .adm-info-message:has(.esl-addservice-btn) {
+    text-align: center;
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+}
+
+/* Тулбар и статус-карточка рисуют собственную рамку — снимаем обёртку note, чтобы не было "рамки в рамке" */
+#edit .adm-info-message:has(.esl-toolbar),
+#unloading .adm-info-message:has(.esl-toolbar),
+#edit .adm-info-message:has(.esl-status-note),
+#unloading .adm-info-message:has(.esl-status-note) {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+/* ---------- Тулбар: информационная строка + действия ---------- */
+.esl-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 4px 0;
+}
+
+.esl-toolbar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--esl-text-muted);
+    font-size: 12.5px;
     line-height: 1.5;
 }
+
+.esl-toolbar-info-icon {
+    flex: none;
+    color: var(--esl-accent);
+}
+
+.esl-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    margin-left: auto;
+}
+
+.esl-toolbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--esl-border);
+    margin: 0 2px;
+}
+
+.esl-toolbar-btn {
+    padding: 6px 14px !important;
+    background: var(--esl-bg-subtle) !important;
+    color: var(--esl-text-muted) !important;
+    border: 1px solid var(--esl-border) !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+    white-space: nowrap;
+}
+
+.esl-toolbar-btn:hover {
+    background: var(--esl-accent-soft) !important;
+    border-color: var(--esl-accent) !important;
+    color: var(--esl-accent-dark) !important;
+}
+
+.esl-toolbar-btn--accent {
+    background: var(--esl-accent) !important;
+    border-color: var(--esl-accent) !important;
+    color: #fff !important;
+}
+
+.esl-toolbar-btn--accent:hover {
+    background: var(--esl-accent-dark) !important;
+    border-color: var(--esl-accent-dark) !important;
+    color: #fff !important;
+}
+
+/* ---------- Статус-карточка авторизации ---------- */
+.esl-status-note {
+    position: relative;
+    padding: 10px 14px 10px 18px;
+    border-radius: var(--esl-radius-sm);
+    border: 1px solid var(--esl-border);
+    background: var(--esl-bg-subtle);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--esl-text-muted);
+}
+
+.esl-status-note::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: var(--esl-radius-sm) 0 0 var(--esl-radius-sm);
+    background: var(--esl-text-faint);
+}
+
+.esl-status-note--ok::before { background: #2fb670; }
+.esl-status-note--warn::before { background: #e0a233; }
+.esl-status-note--error::before { background: #e0533f; }
 
 /* ---------- Ячейка-лейбл ---------- */
 #edit .adm-detail-content-cell-l,
 #unloading .adm-detail-content-cell-l {
     font-size: 13px !important;
-    color: #5a6782 !important;
+    color: var(--esl-text-muted) !important;
     font-weight: 500 !important;
     padding: 9px 12px 9px 16px !important;
     vertical-align: middle !important;
-    border-bottom: 1px solid #f0f2f7 !important;
+    border-bottom: 1px solid var(--esl-border-soft) !important;
     width: 300px !important;
     background: transparent !important;
 }
@@ -97,20 +293,56 @@
 #unloading .adm-detail-content-cell-r {
     padding: 6px 16px 6px 10px !important;
     vertical-align: middle !important;
-    border-bottom: 1px solid #f0f2f7 !important;
+    border-bottom: 1px solid var(--esl-border-soft) !important;
     background: transparent !important;
+}
+
+/* Инпут + кнопка-иконка (напр. "Поиск терминала") в одной ячейке — см. relocateInlineButtons() в settings.js */
+#edit .adm-detail-content-cell-r:has(.esl-inline-btn),
+#unloading .adm-detail-content-cell-r:has(.esl-inline-btn) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.esl-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    padding: 0 !important;
+    border: 1px solid #c8d0e0 !important;
+    border-radius: var(--esl-radius-sm) !important;
+    background: var(--esl-bg-subtle) !important;
+    color: var(--esl-text-muted) !important;
+    cursor: pointer !important;
+    transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+
+.esl-inline-btn:hover {
+    background: var(--esl-accent-soft) !important;
+    border-color: var(--esl-accent) !important;
+    color: var(--esl-accent-dark) !important;
 }
 
 /* ---------- Текстовые инпуты ---------- */
 #edit .adm-input,
 #unloading .adm-input,
 #edit input[type="text"],
-#unloading input[type="text"] {
+#unloading input[type="text"],
+#edit input[type="time"],
+#unloading input[type="time"],
+#edit input[type="date"],
+#unloading input[type="date"],
+#edit textarea,
+#unloading textarea {
     border: 1px solid #c8d0e0 !important;
-    border-radius: 5px !important;
+    border-radius: var(--esl-radius-sm) !important;
     padding: 5px 10px !important;
     font-size: 13px !important;
-    color: #1a2540 !important;
+    color: var(--esl-text) !important;
     background: #fafbfd !important;
     outline: none !important;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -122,9 +354,15 @@
 #edit .adm-input:focus,
 #unloading .adm-input:focus,
 #edit input[type="text"]:focus,
-#unloading input[type="text"]:focus {
-    border-color: #4a7dff !important;
-    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+#unloading input[type="text"]:focus,
+#edit input[type="time"]:focus,
+#unloading input[type="time"]:focus,
+#edit input[type="date"]:focus,
+#unloading input[type="date"]:focus,
+#edit textarea:focus,
+#unloading textarea:focus {
+    border-color: var(--esl-accent) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
     background: #fff !important;
 }
 
@@ -132,10 +370,10 @@
 #edit select:not([multiple]),
 #unloading select:not([multiple]) {
     border: 1px solid #c8d0e0 !important;
-    border-radius: 5px !important;
+    border-radius: var(--esl-radius-sm) !important;
     padding: 5px 32px 5px 10px !important;
     font-size: 13px !important;
-    color: #1a2540 !important;
+    color: var(--esl-text) !important;
     background-color: #fafbfd !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7a99' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
@@ -150,8 +388,8 @@
 
 #edit select:not([multiple]):focus,
 #unloading select:not([multiple]):focus {
-    border-color: #4a7dff !important;
-    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    border-color: var(--esl-accent) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
     background-color: #fff !important;
 }
 
@@ -159,10 +397,10 @@
 #edit select[multiple],
 #unloading select[multiple] {
     border: 1px solid #c8d0e0 !important;
-    border-radius: 5px !important;
+    border-radius: var(--esl-radius-sm) !important;
     padding: 4px 6px !important;
     font-size: 13px !important;
-    color: #1a2540 !important;
+    color: var(--esl-text) !important;
     background: #fafbfd !important;
     outline: none !important;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -172,9 +410,15 @@
 
 #edit select[multiple]:focus,
 #unloading select[multiple]:focus {
-    border-color: #4a7dff !important;
-    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.14) !important;
+    border-color: var(--esl-accent) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
     background: #fff !important;
+}
+
+#edit select[multiple] option:checked,
+#unloading select[multiple] option:checked {
+    background-color: var(--esl-accent-soft) !important;
+    color: var(--esl-accent-dark) !important;
 }
 
 /* ---------- Toggle — переопределяем adm-designed-checkbox-label ---------- */
@@ -240,7 +484,7 @@
 /* Checked: синий трек */
 #edit .adm-designed-checkbox:checked + .adm-designed-checkbox-label,
 #unloading .adm-designed-checkbox:checked + .adm-designed-checkbox-label {
-    background: #4a7dff !important;
+    background: var(--esl-accent) !important;
 }
 
 /* Checked: шарик вправо */
@@ -252,17 +496,17 @@
 /* Focus ring */
 #edit .adm-designed-checkbox:focus + .adm-designed-checkbox-label,
 #unloading .adm-designed-checkbox:focus + .adm-designed-checkbox-label {
-    box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.2) !important;
+    box-shadow: 0 0 0 3px var(--esl-accent-soft) !important;
 }
 
-/* ---------- Кнопка "Очистить кэш" ---------- */
+/* ---------- Кнопки ---------- */
 #edit input[type="button"],
 #unloading input[type="button"] {
     padding: 6px 16px !important;
-    background: #f8f9fc !important;
-    color: #2d3a52 !important;
-    border: 1px solid #dde3ed !important;
-    border-radius: 6px !important;
+    background: var(--esl-bg-subtle) !important;
+    color: var(--esl-text) !important;
+    border: 1px solid var(--esl-border) !important;
+    border-radius: var(--esl-radius-sm) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     cursor: pointer !important;
@@ -271,13 +515,81 @@
 
 #edit input[type="button"]:hover,
 #unloading input[type="button"]:hover {
-    background: #eef1f8 !important;
-    border-color: #c8d0e0 !important;
+    background: var(--esl-accent-soft) !important;
+    border-color: var(--esl-accent) !important;
+}
+
+/* =============================================
+   Вкладки служб доставки (options.php, вкладка "Настройки выгрузки заказов")
+   ============================================= */
+
+.esl-carrier-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 0 14px;
+}
+
+.esl-carrier-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px 6px 6px;
+    border: 1px solid var(--esl-border);
+    border-radius: 999px;
+    background: var(--esl-bg-subtle);
+    color: var(--esl-text-muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.14s, border-color 0.14s, color 0.14s, box-shadow 0.14s;
+}
+
+.esl-carrier-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--esl-border);
+    color: var(--esl-text-faint);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex: none;
+    transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+
+.esl-carrier-tab:hover {
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
+    color: var(--esl-accent-dark);
+    text-decoration: none;
+}
+
+.esl-carrier-tab--active {
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(74, 125, 255, 0.28);
+}
+
+.esl-carrier-tab--active .esl-carrier-tab-badge {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: transparent;
+    color: #fff;
 }
 
 /* =============================================
    Drag-and-drop статусы (вкладка "Выгрузка")
    ============================================= */
+
+.esl-section_drag {
+    padding-top: 4px;
+}
 
 .esl-section_drag .esl-inner_item ul {
     min-height: 40px;
@@ -293,30 +605,31 @@
 
 .esl-section_drag .esl-status__wp {
     position: relative;
-    border: 1px solid #dde3ed;
+    border: 1px solid var(--esl-border);
     display: inline-block;
     padding: 8px 12px 6px 16px;
-    border-radius: 5px;
-    background: #f8f9fc;
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-bg-subtle);
     margin-right: 5px;
     margin-left: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
     font-size: 12px;
-    color: #2d3a52;
+    color: var(--esl-text);
     cursor: grab;
-    transition: background 0.12s, box-shadow 0.12s;
+    transition: background 0.12s, box-shadow 0.12s, border-color 0.12s;
     list-style: none;
 }
 
 .esl-section_drag .esl-status__wp:hover {
-    background: #eef1f8;
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .esl-section_drag .js-inner-connected {
-    border: 1px solid #dde3ed;
-    border-radius: 0px 6px 6px 6px;
+    border: 1px solid var(--esl-border);
+    border-radius: 0px var(--esl-radius) var(--esl-radius) var(--esl-radius);
     padding: 12px 14px 10px;
     min-height: 57px;
     background: #fff;
@@ -351,13 +664,13 @@ body.esl-status-dragging .esl-section_drag .js-inner-connected {
 }
 
 body.esl-status-dragging .esl-section_drag .esl-status_api {
-    color: #4d6fb8;
+    color: var(--esl-accent-dark);
     border-color: #8fb3ff;
-    background: #eef4ff;
+    background: var(--esl-accent-soft);
 }
 
 body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-active {
-    border-color: #4a7dff;
+    border-color: var(--esl-accent);
     background: #edf4ff;
     box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.18);
 }
@@ -365,7 +678,7 @@ body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-a
 .esl-section_drag .js-inner-connected.esl-drop-zone-hover,
 body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-active,
 body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-zone-hover {
-    border: 2px solid #4a7dff;
+    border: 2px solid var(--esl-accent);
     background: linear-gradient(180deg, #eef5ff 0%, #e2eeff 100%);
     box-shadow: 0 0 0 4px rgba(74, 125, 255, 0.22);
 }
@@ -390,15 +703,15 @@ body.esl-status-dragging .esl-section_drag .js-inner-connected.esl-drop-target-a
 .esl-section_drag .esl-status_api {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 5px 5px 0 0;
+    border-radius: var(--esl-radius-sm) var(--esl-radius-sm) 0 0;
     margin-top: 5px;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #6b7a99;
-    background: #f8f9fc;
-    border: 1px solid #dde3ed;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg-subtle);
+    border: 1px solid var(--esl-border);
     border-bottom: none;
 }
 
@@ -464,7 +777,7 @@ input[name="status-form"] {
     color: #3d4f6e !important;
     line-height: 1.7 !important;
     background: transparent !important;
-    border-bottom: 1px solid #f0f2f7 !important;
+    border-bottom: 1px solid var(--esl-border-soft) !important;
     vertical-align: top !important;
 }
 
@@ -482,3 +795,208 @@ input[name="status-form"] {
 #faq .edit-table td.esl-faq-text p:last-child {
     margin-bottom: 0;
 }
+
+/* =============================================
+   Значок-подсказка "?" рядом с подписью поля (options.php, eslHint())
+   Чистый CSS, без JS и без зависимости от ui.hint — см. комментарий в options.php.
+   ============================================= */
+
+.esl-hint {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background: #c7cedb;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.esl-hint:hover,
+.esl-hint:focus {
+    background: #8a97a3;
+    outline: none;
+}
+
+.esl-hint__tip {
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 320px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #23283b;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.esl-hint:hover .esl-hint__tip,
+.esl-hint:focus .esl-hint__tip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* =============================================
+   Модальные окна настроек (BX.CAdminDialog):
+   "Поиск терминала" (terminalsearch.php) и
+   "Настройка дополнительных услуг" (additionalservices.php)
+   ============================================= */
+
+.esl-terminal-search,
+.esl-addfield-services {
+    margin: 18px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--esl-text);
+}
+
+/* ---------- Поиск терминала ---------- */
+
+.esl-terminal-search__row { margin-bottom: 14px; }
+.esl-terminal-search__row label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--esl-text-muted); }
+.esl-terminal-search__row input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: var(--esl-radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--esl-text);
+    background: #fafbfd;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.esl-terminal-search__row input[type="text"]:focus {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+    background: #fff;
+}
+.esl-terminal-search__submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border: 1px solid var(--esl-accent);
+    border-radius: 999px;
+    background: var(--esl-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.esl-terminal-search__submit:hover { background: var(--esl-accent-dark); border-color: var(--esl-accent-dark); }
+.esl-terminal-search__results {
+    margin-top: 18px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+}
+.esl-terminal-search__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--esl-bg-subtle);
+    font-size: 13px;
+    color: var(--esl-text);
+    transition: background 0.12s;
+}
+.esl-terminal-search__item:last-child { border-bottom: none; }
+.esl-terminal-search__item:hover { background: var(--esl-accent-soft); }
+.esl-terminal-search__item-icon { flex: none; color: var(--esl-text-faint); }
+.esl-terminal-search__item:hover .esl-terminal-search__item-icon { color: var(--esl-accent); }
+.esl-terminal-search__item-name { font-weight: 600; }
+.esl-terminal-search__item-desc { color: var(--esl-text-muted); font-weight: normal; }
+.esl-terminal-search__empty { padding: 24px 4px; text-align: center; font-size: 13px; color: var(--esl-text-faint); }
+
+/* ---------- Настройка дополнительных услуг ---------- */
+
+.esl-addfield-group {
+    margin-bottom: 16px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    background: #fff;
+    overflow: hidden;
+}
+.esl-addfield-group__title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--esl-text-muted);
+    background: var(--esl-bg-subtle);
+    border-bottom: 1px solid var(--esl-border);
+    padding: 9px 14px;
+}
+.esl-addfield-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; padding: 10px 14px; }
+.esl-addfield-field { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--esl-text); }
+.esl-addfield-field input[type="number"] {
+    width: 70px;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: var(--esl-radius-sm);
+    padding: 5px 8px;
+    font-size: 13px;
+    color: var(--esl-text);
+    background: #fafbfd;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.esl-addfield-field input[type="number"]:focus {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+    background: #fff;
+}
+.esl-addfield-field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--esl-accent); cursor: pointer; }
+.esl-addfield-result { padding: 10px 14px; margin-bottom: 14px; border-radius: var(--esl-radius-sm); font-size: 13px; }
+.esl-addfield-result--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.esl-addfield-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border: 1px solid var(--esl-accent);
+    border-radius: 999px;
+    background: var(--esl-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.esl-addfield-submit:hover { background: var(--esl-accent-dark); border-color: var(--esl-accent-dark); }
+.esl-addfield-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--esl-text-muted);
+    font-size: 13px;
+    border: 1px dashed var(--esl-border);
+    border-radius: var(--esl-radius);
+    background: var(--esl-bg-subtle);
+}
+.esl-addfield-empty svg { color: var(--esl-text-muted); opacity: 0.7; }

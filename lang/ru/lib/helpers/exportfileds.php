@@ -66,7 +66,19 @@ $MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PECOM_1"] = [
     12 => 'ВОЕННЫЙ БИЛЕТ',
 ];
 
-$MESS["ESHOP_LOGISTIC_HELPERS_LEGAL_BAIKAL_1"] = array(
+$MESS["ESHOP_LOGISTIC_HELPERS_ORG_TYPE_PECOM"] = array(
+    1 => 'Юридическое лицо',
+    2 => 'Индивидуальный предприниматель',
+    3 => 'Физическое лицо',
+);
+
+$MESS["ESHOP_LOGISTIC_HELPERS_DOCUMENT_TYPE_PECOM"] = array(
+    'passport' => 'Паспорт',
+    'drivingLicence' => 'Водительские права',
+    'foreignPassport' => 'Заграничный паспорт',
+);
+
+$MESS["ESHOP_LOGISTIC_HELPERS_LEGAL_TYPE_BAIKAL"] = array(
     1   => 'Юридическое лицо',
     2   => 'Физическое лицо',
 );
@@ -77,3 +89,42 @@ $MESS["ESHOP_LOGISTIC_HELPERS_TYPE_BAIKAL_1"] = array(
     9   => 'ИП',
     12   => 'АО',
 );
+
+$MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_SENDER"] = 'Отправитель';
+$MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_RECEIVER"] = 'Получатель';
+
+// Подписи полей выгрузки заказа для конкретных ТК (см. lib/view/unloading/form.php,
+// eslFieldLabel()) — у МС одно и то же имя поля ("type", "inn", "company"...) подписано
+// по-разному в разных службах, общей ADDFIELDS_<name> для всех случаев недостаточно.
+$MESS["ADDFIELDS_TYPE_BOXBERRY"] = 'Тип отправления';
+$MESS["ADDFIELDS_TYPE_SDEK"] = 'Тип заказа';
+$MESS["ADDFIELDS_NAME_DELLINE"] = 'Название организации';
+$MESS["ADDFIELDS_INN_DELLINE"] = 'ИНН организации';
+$MESS["ADDFIELDS_TIME_FROM_DELLINE"] = 'Интервал для забора груза c';
+$MESS["ADDFIELDS_TIME_TO_DELLINE"] = 'Интервал для забора груза до';
+$MESS["ADDFIELDS_REQUESTER_KIT"] = 'Название профиля отправителя';
+$MESS["ADDFIELDS_INN_KIT"] = 'ИНН для юридического лица';
+$MESS["ADDFIELDS_KPP_KIT"] = 'КПП для юридического лица';
+$MESS["ADDFIELDS_TYPE_PECOM_SENDER"] = 'Тип документа отправителя';
+$MESS["ADDFIELDS_DATE_PECOM"] = 'Дата выдачи';
+$MESS["ADDFIELDS_LAST_NAME_PECOM_SENDER"] = 'Фамилия';
+$MESS["ADDFIELDS_TYPE_PECOM_RECEIVER"] = 'Тип получателя';
+$MESS["ADDFIELDS_PASSPORT_SERIES_PECOM"] = 'Серия документа';
+$MESS["ADDFIELDS_PASSPORT_NUMBER_PECOM"] = 'Номер документа';
+$MESS["ADDFIELDS_INN_PECOM_RECEIVER"] = 'ИНН получателя';
+$MESS["ADDFIELDS_LEGAL_BAIKAL"] = 'Тип отправителя';
+$MESS["ADDFIELDS_COMPANY_BAIKAL"] = 'Наименование организации';
+$MESS["ADDFIELDS_TYPE_BAIKAL"] = 'Тип получателя';
+$MESS["ADDFIELDS_TYPE_BAIKAL_SENDER"] = 'Правовая форма (ОПФ)';
+$MESS["ADDFIELDS_PASSPORT_SERIES_BAIKAL"] = 'Серия паспорта';
+$MESS["ADDFIELDS_PASSPORT_NUMBER_BAIKAL"] = 'Номер паспорта';
+$MESS["ADDFIELDS_PAYER_BAIKAL"] = 'Плательщик за доставку';
+$MESS["ADDFIELDS_COMPANY_DPD"] = 'Наименование компании';
+$MESS["ADDFIELDS_EMAIL_RECEIVER"] = 'Email получателя';
+
+$MESS["ESHOP_LOGISTIC_HELPERS_PRODUCE_TIME_DPD"] = array(
+    '9-18' => '9-18',
+    '9-13' => '9-13',
+    '13-18' => '13-18',
+);
+$MESS["ESHOP_LOGISTIC_HELPERS_EXPORT_PAYER_THIRD"] = 'Заказчик перевозки';

@@ -11,12 +11,24 @@ use Bitrix\Main\Config\Option;
 use Eshoplogistic\Delivery\Api\Site;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Api\Additional;
+use Eshoplogistic\Delivery\Helpers\AddressParser;
+use Eshoplogistic\Delivery\Helpers\LocationHandler;
 
 require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
 
 Loader::includeModule("sale");
 Loader::includeModule("eshoplogistic.delivery");
 IncludeModuleLangFile(__FILE__);
+
+// Ключ динамического поля кодируется как "name||type" либо "name||type||Подпись" (см.
+// exportfileds.php). Общая подпись ADDFIELDS_<name> одна на все ТК, а у МС одно и то же
+// имя поля подписывается по-разному в разных службах (например "type" — то "Тип
+// получателя", то "Тип заказа", то "Тип отправителя") — необязательный 3-й сегмент
+// переопределяет подпись для конкретной ТК, когда общей недостаточно.
+function eslFieldLabel(array $explodeKey, string $name): string
+{
+    return $explodeKey[2] ?? GetMessage("ADDFIELDS_" . $name);
+}
 
 global $USER;
 $moduleRight = $APPLICATION->GetGroupRight(Config::MODULE_ID);
@@ -91,7 +103,6 @@ foreach ($basket as $item) {
         "product_id" => $item->getProductId(),
         "name" => $item->getField('NAME'),
         "quantity" => $item->getQuantity(),
-        "total" => $item->getFinalPrice(),
         "price" => $item->getPrice(),
         "weight" => isset($weight) && $weight != '0.00' ? $weight / 1000 : 1,
         "width" => isset($width) && $width != '0.00' ? $width : 0,
@@ -148,6 +159,35 @@ $typeMethod = [
     'type' => $typeMethodTitle,
 ];
 
+// region_to сохраняется в ESHOPLOGISTIC_SHIPPING_METHODS только если заказ прошёл расчёт
+// доставки на чекауте (calculatehandler.php). Для заказов без такого расчёта (например,
+// оформленных вручную в админке) региона там нет - резолвим его по городу заказа через тот
+// же API (locality/search), что и при расчёте.
+$regionTo = (string)($shippingMethods['region_to'] ?? '');
+if ($regionTo === '' && (string)($propertyCodeValue['CITY'] ?? '') !== '') {
+    $resolvedCity = LocationHandler::resolveCityFromText((string)$propertyCodeValue['CITY']);
+    $regionTo = (string)($resolvedCity['parsedCity']['region'] ?? '');
+}
+
+// В заказе адрес хранится одной строкой (покупатель пишет улицу/дом/квартиру как придётся
+// на чекауте) - для ПВЗ дом/квартира не нужны, поэтому разбираем строку только для доставки
+// курьером. Полю "Улица" в форме оставляем разобранную улицу, а не всю строку целиком.
+$parsedAddress = ['street' => '', 'building' => '', 'room' => ''];
+if ($typeMethod['type'] === 'door' && $propertyAddress !== '') {
+    $parsedAddress = AddressParser::parse(
+        (string)$propertyAddress,
+        '',
+        (string)($propertyCodeValue['CITY'] ?? ''),
+        $regionTo
+    );
+}
+
+// Значения по умолчанию из настроек ТК (options.php, раздел "Настройки транспортных компаний").
+$paymentTypeDefault = Option::get(Config::MODULE_ID, 'payment_type-' . $typeMethod['name']);
+$pickupDefault = Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
+    ? Option::get(Config::MODULE_ID, 'type_delivery_from_tk-' . $typeMethod['name'])
+    : null;
+
 $cutAddressShipping = [
     'terminal' => '',
     'terminal_address' => '',
@@ -158,8 +198,11 @@ if ($typeMethod['type'] === 'door') {
 }
 
 if ($typeMethod['type'] === 'terminal') {
-    $addressShipping['terminal_address'] = $propertyAddressPVZ;
-    $addressShipping['terminal_code'] = explode(',', $propertyAddressPVZ)[0];
+    // ESHOPLOGISTIC_PVZ хранится как "код, адрес" (см. script.js: e.dataset.code+', '+pvzTitle) -
+    // код нужен отдельно для terminal_code, в адрес его дублировать не нужно.
+    $pvzParts = explode(',', $propertyAddressPVZ, 2);
+    $addressShipping['terminal_code'] = trim($pvzParts[0] ?? '');
+    $addressShipping['terminal_address'] = trim($pvzParts[1] ?? '');
 }
 $additional = [
     'service' => mb_strtolower($typeMethod['name']),
@@ -269,14 +312,51 @@ echo $ID ?>"
         <td><input type="text" name="terminal-address" value="<?= htmlspecialcharsbx((string)($addressShipping['terminal_address'] ?? '')) ?>"></td>
     </tr>
     <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_REGION") ?></td>
+        <td><input type="text" name="receiver-region"
+                   value="<?= htmlspecialcharsbx($regionTo) ?>">
+        </td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_CITY") ?></td>
+        <td><input type="text" name="receiver-city" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['CITY'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_STREET") ?></td>
+        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($parsedAddress['street'] !== '' ? $parsedAddress['street'] : ($propertyCodeValue['ADDRESS'] ?? ''))) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_HOUSE") ?></td>
+        <td><input type="text" name="receiver-house" value="<?= htmlspecialcharsbx((string)$parsedAddress['building']) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_ROOM") ?></td>
+        <td><input type="text" name="receiver-room" value="<?= htmlspecialcharsbx((string)$parsedAddress['room']) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_NAME") ?></td>
+        <td><input type="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("RECEIVER_PHONE") ?></td>
+        <td><input type="text" name="receiver-phone" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['PHONE'] ?? '')) ?>"></td>
+    </tr>
+    <tr>
         <td><?php
             echo GetMessage("PAYMENT_TYPE") ?>:
         </td>
         <td>
             <select name="payment_type">
-                <option value="already_paid"><?php
+                <option value="already_paid" <?= ($paymentTypeDefault === 'already_paid') ? 'selected' : '' ?>><?php
                     echo GetMessage("ALREADY_PAID") ?></option>
-                <option value="cash_on_receipt"><?php
+                <option value="cash_on_receipt" <?= ($paymentTypeDefault === 'cash_on_receipt') ? 'selected' : '' ?>><?php
                     echo GetMessage("CASH_RECEIPT") ?></option>
                 <option value="card_on_receipt"><?php
                     echo GetMessage("CARD_RECEIPT") ?></option>
@@ -285,28 +365,22 @@ echo $ID ?>"
             </select>
         </td>
     </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("UNLOAD_PRICE") ?></td>
-        <td><input type="text" name="esl-unload-price" value="<?php
-            echo $orderData['PRICE_DELIVERY'] ?>"></td>
-    </tr>
-    <tr>
-        <td><?php
-            echo GetMessage("COMMENT") ?></td>
-        <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
-    </tr>
-
-    <tr>
-        <td>
-            <hr>
-        </td>
-        <td><h3><?php
-                echo GetMessage("ADD_FIELDS") ?></h3></td>
-    </tr>
 
     <?php
+    // Динамические поля выгрузки текущей ТК (lib/helpers/exportfileds.php). Группы с ключом
+    // "sender"/"sender[...]"/"delivery[location_from]..." относятся к отправителю и рендерятся
+    // на вкладке «Данные отправителя» (см. ниже); здесь — всё, что относится к получателю/заказу.
+    // "order[combine_places]" рендерится отдельно на вкладке «Места», сразу под таблицей.
     foreach ($fieldDelivery as $nameArr => $arr):
+        if ($nameArr === 'hr' || $nameArr === 'hr2' || $nameArr === 'hr3') {
+            continue;
+        }
+        if ($nameArr === 'order[combine_places]') {
+            continue;
+        }
+        if ($nameArr === 'sender' || strpos($nameArr, 'sender[') === 0 || strpos($nameArr, 'delivery[location_from') === 0) {
+            continue;
+        }
         ?>
 
         <?php
@@ -323,7 +397,7 @@ echo $ID ?>"
             if ($type === 'text'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
@@ -332,8 +406,17 @@ echo $ID ?>"
             if ($type === 'date'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'time'): ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
+                    <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
                 </tr>
             <?php
             endif; ?>
@@ -342,7 +425,7 @@ echo $ID ?>"
                 ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?></td>
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
                     <td>
                         <label class="esl-toggle">
                             <input type="checkbox" name="<?php
@@ -358,7 +441,7 @@ echo $ID ?>"
             if ($type === 'select'): ?>
                 <tr>
                     <td><?php
-                        echo GetMessage("ADDFIELDS_" . $name) ?>:
+                        echo eslFieldLabel($explodeKey, $name) ?>:
                     </td>
                     <td>
                         <select name="<?php
@@ -393,61 +476,49 @@ echo $ID ?>"
     <?php
     endforeach; ?>
 
+    <tr>
+        <td><span class="required">*</span><?php
+            echo GetMessage("UNLOAD_PRICE") ?></td>
+        <td><input type="text" name="esl-unload-price" value="<?php
+            echo $orderData['PRICE_DELIVERY'] ?>"></td>
+    </tr>
+    <?php
+    // В МС комментарий заказа скрыт для dpd/5POST/ПЭК (там его некуда девать в API
+    // этих служб) и для Яндекс.Доставки — кроме случая доставки курьером (door).
+    $showOrderComment = !in_array($typeMethod['name'], ['dpd', 'fivepost', 'pecom'], true)
+        && ($typeMethod['name'] !== 'yandex' || $typeMethod['type'] === 'door');
+    if ($showOrderComment): ?>
+    <tr>
+        <td><?php
+            echo GetMessage("COMMENT") ?></td>
+        <td><textarea class="typearea" name="comment" cols="45" rows="5" wrap="VIRTUAL"></textarea></td>
+    </tr>
+    <?php endif; ?>
+
     <?php
     $tabControl->BeginNextTab(); ?>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_NAME") ?></td>
-        <td><input type="text" name="receiver-name" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['FIO'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_PHONE") ?></td>
-        <td><input type="text" name="receiver-phone" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['PHONE'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_REGION") ?></td>
-        <td><input type="text" name="receiver-region"
-                   value="<?= htmlspecialcharsbx((string)($shippingMethods['region_to'] ?? '')) ?>">
-        </td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_CITY") ?></td>
-        <td><input type="text" name="receiver-city" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['CITY'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_STREET") ?></td>
-        <td><input type="text" name="receiver-street" value="<?= htmlspecialcharsbx((string)($propertyCodeValue['ADDRESS'] ?? '')) ?>"></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_HOUSE") ?></td>
-        <td><input type="text" name="receiver-house" value=""></td>
-    </tr>
-    <tr>
-        <td><span class="required">*</span><?php
-            echo GetMessage("RECEIVER_ROOM") ?></td>
-        <td><input type="text" name="receiver-room" value=""></td>
-    </tr>
-
-    <hr>
-
+    <?php
+    // 5POST и Почта России — этот блок в МС скрыт целиком (unloading.html.php), груз
+    // передаётся иначе (постамат/отделение), способ отгрузки в ТК/код терминала
+    // отгрузки для них не запрашиваются.
+    $showPickupSelect = Config::isCarrierFeatureEnabled('pickup_select', $typeMethod['name']);
+    if ($showPickupSelect): ?>
     <tr>
         <td><?php
             echo GetMessage("DELIVERY_METHOD_TERMINAL") ?>:
         </td>
         <td>
             <select name="pick_up">
-                <option value="0"><?php
+                <?php if ($typeMethod['name'] !== 'halva'): ?>
+                <option value="0" <?= ($pickupDefault === '0') ? 'selected' : '' ?>><?php
                     echo GetMessage("BRING_OURSELVES") ?></option>
-                <option value="1"><?php
+                <?php endif; ?>
+                <option value="1" <?= ($typeMethod['name'] === 'halva' || $pickupDefault === '1') ? 'selected' : '' ?>><?php
                     echo GetMessage("TRANSPORT_COMPANY_PICK") ?></option>
             </select>
         </td>
     </tr>
+    <?php endif; ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_NAME") ?></td>
@@ -469,13 +540,26 @@ echo $ID ?>"
                    value="<?php
                    echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-email')) ?>"></td>
     </tr>
+    <?php if ($showPickupSelect): ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_TERMINAL") ?></td>
         <td><input type="text" name="sender-terminal"
                    value="<?php
-                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name'])) ?>"></td>
+                   echo Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
+                       ? htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name']))
+                       : '' ?>"></td>
     </tr>
+    <?php endif; ?>
+    <?php if ($typeMethod['name'] === 'yandex' || $typeMethod['name'] === 'fivepost'): ?>
+    <tr>
+        <td><?php
+            echo GetMessage("PLATFORM_ID") ?></td>
+        <td><input type="text" name="platform_id"
+                   value="<?php
+                   echo htmlspecialcharsbx((string)Option::get(Config::MODULE_ID, 'platform_id-' . $typeMethod['name'])) ?>"></td>
+    </tr>
+    <?php endif; ?>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_REGION") ?></td>
@@ -513,11 +597,142 @@ echo $ID ?>"
     </tr>
 
     <?php
-    $tabControl->BeginNextTab(); ?>
+    // Динамические поля отправителя (группы "sender"/"sender[...]"/"delivery[location_from]...",
+    // отфильтрованные из общего цикла на вкладке «Данные получателя» выше).
+    foreach ($fieldDelivery as $nameArr => $arr):
+        if ($nameArr === 'hr' || $nameArr === 'hr2' || $nameArr === 'hr3') {
+            continue;
+        }
+        if (!($nameArr === 'sender' || strpos($nameArr, 'sender[') === 0 || strpos($nameArr, 'delivery[location_from') === 0)) {
+            continue;
+        }
+        ?>
+
+        <?php
+        foreach ($arr as $key => $value):
+            $explodeKey = explode('||', $key);
+            $name = $explodeKey[0];
+            $type = $explodeKey[1];
+            ?>
+
+            <?php
+            $fieldValue  = htmlspecialcharsbx((string)$value);
+            $fieldName   = htmlspecialcharsbx((string)$name);
+            $fieldArr    = htmlspecialcharsbx((string)$nameArr);
+            if ($type === 'text'): ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
+                    <td><input type="text" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'date'): ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
+                    <td><input type="date" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'time'): ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
+                    <td><input type="time" name="<?= $fieldArr ?>[<?= $fieldName ?>]" value="<?= $fieldValue ?>"></td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'checkbox'):
+                ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?></td>
+                    <td>
+                        <label class="esl-toggle">
+                            <input type="checkbox" name="<?php
+                            echo $nameArr ?>[<?php
+                            echo $name ?>]" <?php echo $value ?>>
+                            <span class="esl-toggle__track"></span>
+                        </label>
+                    </td>
+                </tr>
+            <?php
+            endif; ?>
+            <?php
+            if ($type === 'select'): ?>
+                <tr>
+                    <td><?php
+                        echo eslFieldLabel($explodeKey, $name) ?>:
+                    </td>
+                    <td>
+                        <select name="<?php
+                        echo $nameArr ?>[<?php
+                        echo $name ?>]">
+                            <?php
+                            foreach ($value as $k => $v): ?>
+                                <option value="<?php
+                                echo htmlspecialcharsbx((string)$k) ?>"><?php
+                                    echo htmlspecialcharsbx((string)$v) ?></option>
+                            <?php
+                            endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+            <?php
+            endif; ?>
+
+        <?php
+        endforeach; ?>
     <?php
-    $eslTable->prepare_items($orderItems);
-    $eslTable->display();
-    ?>
+    endforeach; ?>
+
+    <?php
+    $tabControl->BeginNextTab(); ?>
+    <tr>
+        <td colspan="2">
+            <?php
+            $eslTable->prepare_items($orderItems);
+            $eslTable->display();
+            ?>
+        </td>
+    </tr>
+
+    <?php
+    // "Объединить все грузовые места в одно" — под таблицей мест, а не среди полей получателя
+    // (как в МС/WP: unloading.html.php / unloading-form.php, секция с таблицей мест).
+    // Тело вкладки — table.edit-table, поэтому свой блок тоже оборачиваем в <tr><td colspan="2">,
+    // иначе браузер выносит "голый" <div> из <tbody> и рвёт границы вкладок (foster parenting).
+    if (isset($fieldDelivery['order[combine_places]'])): ?>
+        <tr>
+            <td colspan="2">
+                <div class="esl-combine-places">
+                    <?php foreach ($fieldDelivery['order[combine_places]'] as $key => $value):
+                        $explodeKey = explode('||', $key);
+                        $name = $explodeKey[0];
+                        $type = $explodeKey[1];
+                        $fieldId = 'esl-combine-places-' . htmlspecialcharsbx($name);
+                        ?>
+                        <div class="esl-combine-places__field<?= $type === 'checkbox' ? ' esl-combine-places__field--checkbox' : '' ?>">
+                            <label class="esl-combine-places__label" for="<?= $fieldId ?>"><?php
+                                echo eslFieldLabel($explodeKey, $name) ?></label>
+                            <?php if ($type === 'checkbox'): ?>
+                                <label class="esl-toggle">
+                                    <input id="<?= $fieldId ?>" type="checkbox" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" <?php echo $value ?>>
+                                    <span class="esl-toggle__track"></span>
+                                </label>
+                            <?php else: ?>
+                                <input id="<?= $fieldId ?>" type="text" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" value="<?= htmlspecialcharsbx((string)$value) ?>">
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+        </tr>
+    <?php endif; ?>
 
     <?php
     $tabControl->BeginNextTab(); ?>
@@ -537,6 +752,10 @@ echo $ID ?>"
                                     if (!isset($v['name'])) {
                                         continue;
                                     }
+                                    // Значение по умолчанию берётся из настроек ТК (options.php,
+                                    // кнопка "Настройка дополнительных услуг"), чтобы не отмечать
+                                    // одни и те же услуги вручную в каждом заказе.
+                                    $addFieldDefault = Option::get(Config::MODULE_ID, 'addfield-' . $typeMethod['name'] . '-' . $k);
                                     ?>
                                     <div class="form-field_add">
                                         <label class="label" for="esl-field-<?php echo $k ?>"><?php
@@ -545,17 +764,17 @@ echo $ID ?>"
                                         if ($v['type'] === 'integer'): ?>
                                             <input class="form-value_add form-value_number"
                                                    id="esl-field-<?php echo $k ?>"
-                                                   name="<?php echo $k ?>"
+                                                   name="complement[<?php echo $k ?>]"
                                                    type="number"
-                                                   value="0"
+                                                   value="<?= htmlspecialcharsbx((string)($addFieldDefault !== '' ? $addFieldDefault : 0)) ?>"
                                                    max="<?php echo $v['max_value'] ?>">
                                         <?php
                                         else: ?>
                                             <label class="esl-toggle" for="esl-field-<?php echo $k ?>">
                                                 <input class="form-value_add form-value_check"
                                                        id="esl-field-<?php echo $k ?>"
-                                                       name="<?php echo $k ?>"
-                                                       type="checkbox">
+                                                       name="complement[<?php echo $k ?>]"
+                                                       type="checkbox" <?= ($addFieldDefault === 'Y') ? 'checked' : '' ?>>
                                                 <span class="esl-toggle__track"></span>
                                             </label>
                                         <?php
@@ -585,7 +804,11 @@ echo $ID ?>"
         [
             "disabled" => ($saleRight < "W"),
             "back_url" => "/bitrix/admin/sale_order_view.php?ID=" . $orderData['ID'] . "&lang=" . LANG,
-
+            // "Применить" убран — на этой форме нет отдельного смысла "сохранить и остаться
+            // редактировать": "Сохранить" и так остаётся на странице и показывает результат,
+            // а вернуться к заказу можно явной кнопкой ниже (переименована в admin.js, см.
+            // eslUnloadingFormInit, вызов внизу файла).
+            "btnApply" => false,
         ],
     );
     ?>
@@ -598,6 +821,9 @@ echo $ID ?>"
     echo $orderData['STATUS_ID'] ?>">
     <input type="hidden" name="order_shipping_id" value="<?php
     echo $orderData['DELIVERY_ID'] ?>">
+    <?php if ($typeMethod['name'] !== 'yandex' && $typeMethod['name'] !== 'fivepost'): ?>
+    <input type="hidden" name="platform_id" value="<?= htmlspecialcharsbx((string)Option::get(Config::MODULE_ID, 'platform_id-' . $typeMethod['name'])) ?>">
+    <?php endif; ?>
     <?php
     if ($ID > 0): ?>
         <input type="hidden" name="ID" value="<?= $ID ?>">
@@ -616,7 +842,7 @@ echo $ID ?>"
     echo EndNote(); ?>
 </form>
 <script>
-    ajaxFormEsl(document.getElementById('eslUnloadngForm'), '/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.unloadingForm')
+    eslUnloadingFormInit('eslUnloadngForm', '/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.unloadingForm');
 </script>
 <?php
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/epilog_admin.php"); ?>

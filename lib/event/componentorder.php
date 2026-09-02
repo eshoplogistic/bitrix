@@ -33,6 +33,36 @@ class ComponentOrder
 	 */
 	public static function orderDeliveryBuildList(&$arResult, &$arUserResult, $arParams)
 	{
+		if (!isset($arResult['DELIVERY']) || !is_array($arResult['DELIVERY'])) {
+			return;
+		}
+
+		// Неотмеченные методы доставки Bitrix по умолчанию не пересчитывает (это происходит
+		// только для CHECKED-элемента или по AJAX после выбора), поэтому проверки на
+		// CALCULATE_ERRORS/cityNotFound ниже их не касаются — карточки конкретных ТК
+		// (СДЕК, Байкал Сервис и т.п.) остаются в списке даже при полностью нерабочем ключе.
+		// Поэтому дополнительно один раз проверяем статус авторизации (кэшируется на час,
+		// см. Api\Site::getAuthStatus) и, если ключ не авторизован, убираем из чекаута все
+		// профили eShopLogistic целиком, независимо от режима отображения и того, отмечен
+		// ли метод.
+		$authStatus = (new \Eshoplogistic\Delivery\Api\Site())->getAuthStatus();
+		if (empty($authStatus['success'])) {
+			$rsDelivery = Delivery\Services\Table::getList(array(
+				'filter' => array('ACTIVE' => 'Y', '=CODE' => Config::DELIVERY_CODE),
+				'select' => array('ID')
+			));
+			while ($delivery = $rsDelivery->fetch()) {
+				$rsProfile = Delivery\Services\Table::getList(array(
+					'filter' => array('PARENT_ID' => $delivery['ID']),
+					'select' => array('ID')
+				));
+				while ($profile = $rsProfile->fetch()) {
+					unset($arResult['DELIVERY'][$profile['ID']]);
+				}
+			}
+			return;
+		}
+
 		if (Option::get(Config::MODULE_ID, 'frame_lib')) {
             \CUtil::InitJSCore(array('framev2_lib'));
 			$arResult['DELIVERY'] = self::orderDeliveryBuildListFrame($arResult, $arUserResult);
@@ -107,6 +137,14 @@ class ComponentOrder
 						isset($arResult['DELIVERY'][$profile['ID']]) &&
 						$arResult['DELIVERY'][$profile['ID']]['CHECKED'] == 'Y') {
 
+						if (isset($arResult['DELIVERY'][$profile['ID']]['CALCULATE_ERRORS'])) {
+							// Расчёт стоимости не удался (в т.ч. из-за ошибки/невалидного API-ключа):
+							// PRICE у Bitrix не задан, а null == 0.0 — из-за этого ниже включался
+							// "price_empty" и покупатель видел фиктивное "бесплатно" вместо ошибки.
+							// Вместо этого просто убираем метод доставки из списка на чекауте.
+							unset($arResult['DELIVERY'][$profile['ID']]);
+							continue;
+						}
 
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($profile['CODE']);
 
@@ -186,64 +224,46 @@ class ComponentOrder
 
 			if ($delivery = $rsDelivery->fetch()) {
 				$isDeliveryHasPvz = self::isDeliveryHasPvz($delivery['CODE']);
-				if ($isDeliveryHasPvz) {
+				$choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
+				$shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
 
+				$neededCodes = array();
+				if ($isDeliveryHasPvz) $neededCodes[] = "ESHOPLOGISTIC_PVZ";
+				if ($choseFrame) $neededCodes[] = "ESHOPLOGISTIC_CHOSE_FRAME";
+				if ($shipMethod) $neededCodes[] = "ESHOPLOGISTIC_SHIPPING_METHODS";
+
+				if ($neededCodes) {
+					// Один запрос вместо трёх последовательных CSaleOrderProps::GetList
 					$db_props = \CSaleOrderProps::GetList(
 						array(),
 						array(
 							"PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-							"CODE" => "ESHOPLOGISTIC_PVZ",
+							"CODE" => $neededCodes,
 						),
 						false,
 						false,
-						array('ID')
+						array('ID', 'CODE')
 					);
 
-					if ($props = $db_props->Fetch()) {
-						$pvz = $request->getPost('ESHOPLOGISTIC_PVZ');
-						if ($pvz)
-							$arUserResult['ORDER_PROP'][$props['ID']] = $pvz;
+					$propIdByCode = array();
+					while ($props = $db_props->Fetch()) {
+						$propIdByCode[$props['CODE']] = $props['ID'];
 					}
 
+					if ($isDeliveryHasPvz && isset($propIdByCode['ESHOPLOGISTIC_PVZ'])) {
+						$pvz = $request->getPost('ESHOPLOGISTIC_PVZ');
+						if ($pvz)
+							$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_PVZ']] = $pvz;
+					}
+
+					if ($choseFrame && isset($propIdByCode['ESHOPLOGISTIC_CHOSE_FRAME'])) {
+						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_CHOSE_FRAME']] = $choseFrame;
+					}
+
+					if ($shipMethod && isset($propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS'])) {
+						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS']] = $shipMethod;
+					}
 				}
-
-                if($request->getPost('ESHOPLOGISTIC_CHOSE_FRAME')){
-                    $choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
-                    $db_props = \CSaleOrderProps::GetList(
-                        array(),
-                        array(
-                            "PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-                            "CODE" => "ESHOPLOGISTIC_CHOSE_FRAME",
-                        ),
-                        false,
-                        false,
-                        array('ID')
-                    );
-
-                    if ($props = $db_props->Fetch()) {
-                        if ($choseFrame)
-                            $arUserResult['ORDER_PROP'][$props['ID']] = $choseFrame;
-                    }
-                }
-
-                if($request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS')){
-                    $shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
-                    $db_props = \CSaleOrderProps::GetList(
-                        array(),
-                        array(
-                            "PERSON_TYPE_ID" => $arUserResult['PERSON_TYPE_ID'],
-                            "CODE" => "ESHOPLOGISTIC_SHIPPING_METHODS",
-                        ),
-                        false,
-                        false,
-                        array('ID')
-                    );
-
-                    if ($props = $db_props->Fetch()) {
-                        if ($shipMethod)
-                            $arUserResult['ORDER_PROP'][$props['ID']] = $shipMethod;
-                    }
-                }
 
 			}
 		}
@@ -292,7 +312,7 @@ class ComponentOrder
 					if ($parentDelivery = $rsParentDelivery->fetch()) {
 						$isDeliveryHasPvz = self::isDeliveryHasPvz($delivery['CODE']);
 
-						if ($parentDelivery['CODE'] == 'eslogistic' && $isDeliveryHasPvz) {
+						if ($parentDelivery['CODE'] == 'eslogistic') {
 
 							$propertyCollection = $order->getPropertyCollection();
                             $propertyPvz = '';
@@ -310,7 +330,7 @@ class ComponentOrder
                                 }
 								if ($propertyCode == 'ESHOPLOGISTIC_PVZ') {
                                     $propertyPvz = $propertyItem;
-									if (!$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term' && !$requaryPvz) {
+									if ($isDeliveryHasPvz && !$propertyItem->getValue() && $delivery['CODE'] !== 'eslogistic:postrf_term' && !$requaryPvz) {
                                         $typeError['ESHOPLOGISTIC_PVZ'] = 1;
 									}
 								}
@@ -381,6 +401,7 @@ class ComponentOrder
 	{
 
 		$selectedElement = '';
+		$invalidEslService = false;
 		$clearField = false;
 		$widgetKey = Option::get(Config::MODULE_ID, 'widget_key');
 		if (!$widgetKey)
@@ -455,6 +476,25 @@ class ComponentOrder
 					$requestDataEsl['selectPvz'] = '';
 				}
 				$selectedElement = self::findDeliveryByName($eslDelivery, $requestDataEsl['key'], $requestDataEsl['mode']);
+
+				if (!$selectedElement) {
+					// Покупатель выбрал в виджете службу (например ПЭК), для которой в админке
+					// не создан/не активен профиль в "Калькулятор доставки eShopLogistic".
+					// Раньше в этом случае мы молча подставляли первый попавшийся сконфигурированный
+					// профиль (например СДЭК) через current($eslDelivery), но цену, срок и ПВЗ ниже
+					// брали из данных виджета для выбранной покупателем службы — на чекауте
+					// показывались логотип/название одной ТК с ценой и пунктом выдачи другой.
+					// Возврат здесь недопустим: $requestDataEsl хранится в сессии и подставляется
+					// на КАЖДЫЙ рендер чекаута, поэтому return полностью ломал склейку профилей
+					// в один пункт "Калькулятор доставки eShopLogistic" — вместо него на любой
+					// стадии показывался сырой список отдельных профилей (СДЭК: курьер, СДЭК: ПВЗ,
+					// Байкал Сервис по отдельности). Вместо прерывания просто забываем невалидный
+					// выбор и идём дальше как при первой загрузке (без данных виджета) — ниже
+					// сработает обычный плейсхолдер "ещё не рассчитано", плюс покажем покупателю
+					// явное сообщение, что выбранная служба недоступна.
+					$requestDataEsl = null;
+					$invalidEslService = true;
+				}
 			}
 
 			if (!$selectedElement) {
@@ -549,9 +589,21 @@ class ComponentOrder
 
         $cityNotFound = empty($cityFirst);
 
+        if ($cityNotFound) {
+            // Город не удалось определить — это происходит и когда сломан/неверен API-ключ
+            // (LocationHandler ходит в eShopLogistic API). Раньше в этом случае метод доставки
+            // всё равно оставался в списке выбранным, с виджетом-заглушкой и ценой по умолчанию
+            // 0 -> "бесплатно", что вводит покупателя в заблуждение. Вместо этого просто не
+            // показываем метод доставки в чекауте, пока город не определится.
+            return $arResult['DELIVERY'];
+        }
+
 		$deliveryResult['DESCRIPTION'] =
 			'<div class="eslog-deliverey-desc">' . $descriptionTerminal . '</div>' .
 			'<div class="eslog-deliverey-desc-lk">' . $calcDesc . '</div>' .
+			($invalidEslService
+				? '<div class="eslog-service-not-configured" style="color:red;margin:8px 0;">' . Loc::getMessage("ESHOP_LOGISTIC_SERVICE_NOT_CONFIGURED") . '</div>'
+				: '') .
 			($cityNotFound
 				? '<div class="eslog-city-not-found" style="color:red;margin:8px 0;">' . Loc::getMessage("ESHOP_LOGISTIC_CITY_NOT_FOUND") . '</div>'
 				: '<a id="container_widget_esl_button" class="container_widget_esl_button eslog-btn-default loading-esl"><span class="button__text">' . Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_FRAME_BUT") . '</span>
@@ -567,7 +619,8 @@ class ComponentOrder
                   <div class="wave"></div>
                   <div class="wave"></div>
                 </div>
-             </a>'
+             </a>' .
+			'<div id="eslCalcErrorMsg" style="display:none;color:#dc2626;padding:12px 16px;border:1px solid #fecaca;border-radius:6px;background:#fef2f2;margin:8px 0;font-size:14px;line-height:1.5;"></div>'
 			) .
 			'<span>
                  <div id="eslogisticDescription" class="eslogistic-description">'.$descUser.'</div>
@@ -613,12 +666,23 @@ class ComponentOrder
 		if ($check)
 			$deliveryResult['CHECKED'] = 'Y';
 		if (!$requestDataEsl) {
-            $price = (isset($requestDataEsl['price']))?$requestDataEsl['price']:null;
-			$deliveryResult['PRICE'] = $price;
-			$deliveryResult['PRICE_FORMATED'] = CurrencyFormat($price, $deliveryResult['CURRENCY']);
+			$deliveryResult['PRICE'] = null;
+			$deliveryResult['PRICE_FORMATED'] = CurrencyFormat(null, $deliveryResult['CURRENCY']);
             $deliveryLogoPath = CFile::GetFileArray($delivery['LOGOTIP']);
             $deliveryResult['LOGOTIP'] = $deliveryLogoPath;
             $deliveryResult['DESCRIPTION'] .= "<input id='widgetEslNotCalc' value='1' type='hidden'>";
+		} elseif (array_key_exists('price', $requestDataEsl)) {
+            // Раньше цену виджета сюда не подставляли (мёртвая ветка: $requestDataEsl['price']
+            // проверялся внутри "if (!$requestDataEsl)", где сам $requestDataEsl всегда пуст).
+            // Из-за этого PRICE оставался равен $item['PRICE'] — тому, что вернул классический
+            // calculate() для CHECKED-профиля, который тут не показывается и может относиться к
+            // другой службе, чем выбрана в виджете. С оптимизацией skipRealCalculation() в
+            // CalculateHandler (обычный рендер чекаута в режиме виджета не делает реальный расчёт,
+            // раз он всё равно отбрасывается) это стало явной 0 руб. вместо настоящей цены виджета —
+            // сама причина, по которой этот блок здесь появился. Данные виджета — единственный
+            // источник, которому можно доверять для отображаемой цены в этом режиме.
+            $deliveryResult['PRICE'] = $requestDataEsl['price'];
+            $deliveryResult['PRICE_FORMATED'] = CurrencyFormat($requestDataEsl['price'], $deliveryResult['CURRENCY']);
 		}
 
 		$deliveryResult['CALCULATE_DESCRIPTION'] = '';
@@ -664,76 +728,12 @@ class ComponentOrder
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
         $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey);
-        $widgetErrorMsg = htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_WIDGET_CALC_ERROR'));
+        // Логика обнаружения зависшего/сломанного виджета и весь связанный с ней JS
+        // живут в install/js/framev2-script.js (см. #eslCalcErrorMsg ниже) — здесь только
+        // разметка. #eShopLogisticWidgetCart лежит в #invisibleBlockEsl (display:none, см.
+        // framev2-style.css) до открытия попапа, поэтому сообщение об ошибке нельзя
+        // вставлять внутрь него — оно будет не видно пользователю.
         $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
-        $widgetScript = <<<JS
-            <script>
-            (function () {
-                var errorMessage = '{$widgetErrorMsg}';
-                var loadTimer   = null;
-
-                function clearError() {
-                    var el = document.getElementById('eslCalcErrorMsg');
-                    if (el) el.remove();
-                }
-
-                function showError() {
-                    var widget = document.getElementById('eShopLogisticWidgetCart');
-                    if (!widget) return;
-                    clearError();
-                    var div = document.createElement('div');
-                    div.id = 'eslCalcErrorMsg';
-                    div.style.cssText = 'color:#dc2626;padding:12px 16px;border:1px solid #fecaca;'
-                        + 'border-radius:6px;background:#fef2f2;margin:8px 0;font-size:14px;line-height:1.5;';
-                    div.textContent = errorMessage;
-                    widget.insertAdjacentElement('afterbegin', div);
-                }
-
-                // Вызывается когда виджет начинает новый запрос (смена города)
-                function onWidgetRequest() {
-                    if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
-                    clearError();
-                }
-
-                // Перехват XHR
-                var origOpen = XMLHttpRequest.prototype.open;
-                XMLHttpRequest.prototype.open = function (method, url) {
-                    if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
-                        onWidgetRequest();
-                    }
-                    return origOpen.apply(this, arguments);
-                };
-
-                // Перехват fetch
-                if (window.fetch) {
-                    var origFetch = window.fetch;
-                    window.fetch = function (url) {
-                        if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
-                            onWidgetRequest();
-                        }
-                        return origFetch.apply(this, arguments);
-                    };
-                }
-
-                // JS-ошибка внутри скриптов виджета (api.esplc.ru)
-                window.addEventListener('error', function (e) {
-                    if (!e.filename || e.filename.indexOf('api.esplc.ru') === -1) return;
-                    if (!document.getElementById('eShopLogisticWidgetCart')) return;
-                    showError();
-                }, true);
-
-                // Таймаут 10 секунд: если кнопка всё ещё в состоянии загрузки — показать ошибку
-                loadTimer = setTimeout(function () {
-                    var btn = document.getElementById('container_widget_esl_button');
-                    if (btn && btn.classList.contains('loading-esl')) {
-                        btn.classList.remove('loading-esl');
-                        showError();
-                    }
-                }, 15000);
-            }());
-            </script>
-        JS;
-        $html .= $widgetScript;
         $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
 		foreach ($arResult['BASKET_ITEMS'] as $item) {

@@ -24,7 +24,10 @@ class UnloadingHandler
     {
         global $CModule;
         if(!\CModule::IncludeModule("sale"))
-            return false;
+            // Возврат false/'' здесь заставил бы ядро Bitrix удалить агента из b_agent
+            // насовсем (см. classes/general/agent.php: $eval_result == '' -> DELETE).
+            // Возвращаем строку переустановки, чтобы агент повторил попытку на следующем запуске.
+            return "Eshoplogistic\Delivery\Agent\UnloadingHandler::update();";
 
         $statusEnd = Option::get(Config::MODULE_ID, 'cron-status-unloading');
         $filter = [
@@ -77,14 +80,22 @@ class UnloadingHandler
             } elseif(isset($status['data'])) {
                 $result['unloading'] = $status;
                 $result['updateStatus'] = $unloading->updateStatusById($status['data'], $orderId);
+
+                // Трек/номер у служб с асинхронным подтверждением (например, ПЭК) мог не
+                // прийти сразу при создании заказа — как только он появился, снимаем флаг
+                // "ожидает подтверждения", выставленный в params_delivery_init().
+                if (isset($status['data']['state']['number']) && $unloading->getPendingConfirmation($orderId)) {
+                    $unloading->clearPendingConfirmation($orderId);
+                }
             }else{
                 $result['unloading'] = $status;
             }
 
-            if (class_exists('\Eshoplogistic\Delivery\Logger\Logger')) {
-                $logger = new Logger('unloading-cron');
-                $logger->log($result);
-            }
+            $severity = (isset($status['http_status']) && $status['http_status'] === 422)
+                ? \CEventLog::SEVERITY_ERROR
+                : \CEventLog::SEVERITY_INFO;
+            $description = 'Заказ #' . $orderId . '<br>' . Logger::pretty($result);
+            Logger::log('UNLOADING_CRON', $description, $severity, $orderId);
 
         }
 

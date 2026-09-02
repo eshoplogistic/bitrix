@@ -68,7 +68,11 @@ Class eshoplogistic_delivery extends CModule
 			array(
 				'CODE'  => "ESHOPLOGISTIC_SHIPPING_METHODS",
 				'NAME'  => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_NAME'),
-				'DESCR' => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC')
+				'DESCR' => GetMessage('ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC'),
+				// Хранит JSON-ответ ТК (create/get). Без явного MAXLENGTH Bitrix
+				// принудительно ограничивает свойства типа STRING 500 символами
+				// (Bitrix\Sale\EntityProperty::checkValue), а ответ ТК столько не влезает.
+				'SETTINGS' => array('MAXLENGTH' => 20000),
 			),
 			array(
 				'CODE'  => "ESHOPLOGISTIC_CHOSE_FRAME",
@@ -125,8 +129,15 @@ Class eshoplogistic_delivery extends CModule
 				"IS_ZIP" => "N",
 				"UTIL" => "Y"
 			);
+			if (isset($arProp['SETTINGS'])) {
+				$arFields['SETTINGS'] = $arProp['SETTINGS'];
+			}
 			if(!array_key_exists($person,$existedProps)) {
 				if(!CSaleOrderProps::Add($arFields)) $return = false;
+			} elseif (isset($arProp['SETTINGS'])) {
+				// Свойство уже создано на этом сайте раньше (без явного MAXLENGTH) —
+				// донастраиваем лимит длины и на уже установленных копиях модуля.
+				if(!CSaleOrderProps::Update($existedProps[$person], array('SETTINGS' => $arProp['SETTINGS']))) $return = false;
 			}
 		}
 		return $return;
@@ -222,6 +233,22 @@ Class eshoplogistic_delivery extends CModule
 			'saleOrderBeforeSaved'
 		);
 
+		$eventManager->unRegisterEventHandler(
+			'sale',
+			'OnOrderNewSendEmail',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\ComponentOrder',
+			'saleOrderPropertyMail'
+		);
+
+		$eventManager->unRegisterEventHandler(
+			'main',
+			'OnAdminContextMenuShow',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\Unloading',
+			'OrderDetailAdminContextMenuShow'
+		);
+
 		return true;
 	}
 
@@ -263,6 +290,11 @@ Class eshoplogistic_delivery extends CModule
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/components/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/components', true, true);
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".$this->MODULE_ID."/install/view/",$_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/', true, true);
 
+		// remove stale unnamespaced copy of the component left over from older module versions
+		// (had no CSRF/auth checks) — must run AFTER CopyDirFiles above, which re-copies the
+		// whole install/components/ tree and would otherwise restore it right back
+		DeleteDirFilesEx("/bitrix/components/button");
+
 		return true;
 	}
 
@@ -270,9 +302,14 @@ Class eshoplogistic_delivery extends CModule
 		DeleteDirFilesEx("/bitrix/js/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/css/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/components/".$this->MODULE_SHORT_ID."/button");
+		DeleteDirFilesEx("/bitrix/components/button");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_form.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_checkstatus.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_updatestatus.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_clearstatus.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_print.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_additionalservices.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_terminalsearch.php");
 
 		return true;
 	}

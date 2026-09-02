@@ -322,3 +322,353 @@ BX.ready(function () {
     syncStatusForm();
 });
 
+// Страница настроек модуля перерисовывается поверх плоских таблиц, которые рисует
+// нативный __AdmSettingsDrawList (сам он не умеет ни вкладки, ни свёртывание секций,
+// ни поиск). Всё ниже — надстройка над готовым DOM: группировка полей каждой ТК по
+// вкладкам служб доставки, сворачиваемые секции (аккордеон) и живой поиск по полям.
+BX.ready(function () {
+    Array.prototype.slice.call(document.querySelectorAll('table.edit-table')).forEach(function (table) {
+        initSettingsTable(table);
+    });
+});
+
+function initSettingsTable(table) {
+    relocateInlineButtons(table);
+    convertTimeFields(table);
+    convertDateFields(table);
+
+    var carrier = buildCarrierTabs(table);
+    var sections = buildSections(table, carrier);
+
+    wireAccordion(sections, carrier);
+    wireToolbar(table, sections, carrier);
+    wireVisibilityRules(table, carrier);
+}
+
+// Настройки модуля рендерятся через __AdmSettingsDrawList (bitrix/modules/main/admin/settings.php),
+// который умеет только text/checkbox/selectbox/... — нативного type=time там нет. Поля времени
+// заявлены как обычный "text" (см. options.php), здесь донастраиваем их в реальный time-picker.
+var ESL_TIME_FIELDS = ['sender-time-from-delline', 'sender-time-to-delline'];
+
+function convertTimeFields(table) {
+    ESL_TIME_FIELDS.forEach(function (name) {
+        var input = table.querySelector('input[name="' + name + '"]');
+        if (input && input.type !== 'time') {
+            input.type = 'time';
+        }
+    });
+}
+
+var ESL_DATE_FIELDS = ['sender-identity-date-pecom'];
+
+function convertDateFields(table) {
+    ESL_DATE_FIELDS.forEach(function (name) {
+        var input = table.querySelector('input[name="' + name + '"]');
+        if (input && input.type !== 'date') {
+            input.type = 'date';
+        }
+    });
+}
+
+// Условная видимость полей — портировано из МойСклад (Iframe.php:
+// visible_by_params_parent). Контроллер (чекбокс/селект) хранит значение, при
+// совпадении с которым перечисленные поля показываются, иначе скрываются. Поля
+// адресуются по name, как и везде в этом файле (совпадает с ключом настройки).
+var ESL_VISIBILITY_RULES = [
+    // СДЭК: "Габариты итогового места" имеет смысл только при включённом
+    // "Объединить все места" (см. Iframe.php:981-990).
+    { controller: 'combine-places-apply-sdek', values: ['1'], targets: ['combine-places-dimensions-sdek'] },
+    // Байкал Сервис: юрлицо -> реквизиты организации, физлицо -> серия/номер
+    // документа (см. Iframe.php:1871-1945, группы sender-org-baikal / sender-identity-baikal).
+    { controller: 'sender-type-baikal', values: ['1'], targets: ['sender-org-form-baikal', 'sender-company-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'] },
+    { controller: 'sender-type-baikal', values: ['2'], targets: ['sender-identity-series-baikal', 'sender-identity-number-baikal'] }
+];
+
+function eslControllerValue(el) {
+    if (!el) {
+        return null;
+    }
+    return el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+}
+
+// Строка может принадлежать вкладке ТК (см. buildCarrierTabs), а может быть общим
+// полем вне вкладок (например "Данные отправителя") — ищем её группу перебором, чтобы
+// eslApplyVisibilityRules могла отличить одно от другого.
+function eslRowCarrierGroup(groups, row) {
+    if (!groups) {
+        return null;
+    }
+    for (var i = 0; i < groups.length; i++) {
+        if (groups[i].rows.indexOf(row) !== -1) {
+            return groups[i];
+        }
+    }
+    return null;
+}
+
+// Вызывается повторно при каждом показе строк (переключение вкладки ТК,
+// разворачивание секции) — иначе tabs/accordion затирают скрытое правилами состояние
+// плоским "display = ''" для всех строк своей группы.
+//
+// groups/activeGroup — вкладки ТК и текущая активная (см. buildCarrierTabs), либо null,
+// если вызов не привязан к какой-то конкретной вкладке (например, разворачивание
+// секции "Данные отправителя", не содержащей вкладок). Раньше вызов с activeGroup=null
+// снимал всякую защиту: проверка "match && activeGroup && ..." при null всегда ложна,
+// и правило "показать" пробивало скрытие чужой, но структурно совпадающей по имени
+// вкладки насквозь — например, поля организации Байкал Сервис оставались видимыми при
+// разворачивании секции "Данные отправителя", хотя сама вкладка "Настройки служб
+// доставки" оставалась свёрнутой. Теперь принадлежность строки какой-либо вкладке ТК
+// проверяется всегда (через groups), а activeGroup лишь определяет, какая из них
+// считается активной — понятия "не в контексте вкладок" достаточно, чтобы держать
+// строки остальных вкладок скрытыми. Страница настроек рендерит несколько
+// <table class="edit-table"> (по одной на под-вкладку админки), поэтому лукап
+// контроллера/целевых полей всегда скопирован конкретной таблицей.
+// Скрытие (match=false) применяем всегда — оно безопасно независимо от активной вкладки.
+function eslApplyVisibilityRules(table, groups, activeGroup) {
+    ESL_VISIBILITY_RULES.forEach(function (rule) {
+        var controller = table.querySelector('[name="' + rule.controller + '"]');
+        if (!controller) {
+            return;
+        }
+        var match = rule.values.indexOf(eslControllerValue(controller)) !== -1;
+        rule.targets.forEach(function (targetName) {
+            var target = table.querySelector('[name="' + targetName + '"]');
+            var row = target && target.closest('tr');
+            if (!row) {
+                return;
+            }
+            var owningGroup = eslRowCarrierGroup(groups, row);
+            if (match && owningGroup && owningGroup !== activeGroup) {
+                return;
+            }
+            row.style.display = match ? '' : 'none';
+        });
+    });
+}
+
+function wireVisibilityRules(table, carrier) {
+    var bound = {};
+    ESL_VISIBILITY_RULES.forEach(function (rule) {
+        if (bound[rule.controller]) {
+            return;
+        }
+        bound[rule.controller] = true;
+        var controller = table.querySelector('[name="' + rule.controller + '"]');
+        if (controller) {
+            controller.addEventListener('change', function () {
+                eslApplyVisibilityRules(table, carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
+            });
+        }
+    });
+    eslApplyVisibilityRules(table, carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
+}
+
+// Кнопки вида "Поиск терминала" рендерятся options.php отдельной строкой (см.
+// __AdmSettingsDrawRow — у 'note'-элементов нет своей ячейки-лейбла, только
+// colspan=2), но по смыслу относятся к полю в предыдущей строке — переносим их
+// в ячейку с инпутом, чтобы они стояли рядом, а не отдельным блоком снизу.
+function relocateInlineButtons(table) {
+    Array.prototype.slice.call(table.querySelectorAll('.esl-inline-btn')).forEach(function (btn) {
+        var noteRow = btn.closest('tr');
+        var targetRow = noteRow && noteRow.previousElementSibling;
+        var targetCell = targetRow && targetRow.cells && targetRow.cells[1];
+        if (!noteRow || !targetCell) {
+            return;
+        }
+        targetCell.appendChild(btn);
+        noteRow.parentNode.removeChild(noteRow);
+    });
+}
+
+// Строки настроек каждой ТК рендерятся плоским списком между служебными
+// маркерами-границами и подписями служб, которые options.php вставил в заголовочные
+// строки (см. $transportOptions в options.php) — группируем их по службам на лету и
+// рисуем поверх обычную панель вкладок.
+function buildCarrierTabs(table) {
+    var startMarker = table.querySelector('#esl-carriers-boundary-start');
+    var endMarker = table.querySelector('#esl-carriers-boundary-end');
+    if (!startMarker || !endMarker) {
+        return null;
+    }
+    var startRow = startMarker.closest('tr');
+    var endRow = endMarker.closest('tr');
+    if (!startRow || !endRow) {
+        return null;
+    }
+
+    var groups = [];
+    var current = null;
+    var row = startRow.nextElementSibling;
+    while (row && row !== endRow) {
+        var next = row.nextElementSibling;
+        var headingSpan = row.querySelector('.esl-carrier-heading[data-esl-service]');
+        if (headingSpan) {
+            current = {
+                service: headingSpan.getAttribute('data-esl-service'),
+                label: headingSpan.textContent.replace(/^.*?:\s*/, ''),
+                rows: []
+            };
+            groups.push(current);
+            row.style.display = 'none';
+        } else if (current) {
+            current.rows.push(row);
+        }
+        row = next;
+    }
+    startRow.style.display = 'none';
+    endRow.style.display = 'none';
+    if (!groups.length) {
+        return null;
+    }
+
+    var tabsRow = document.createElement('tr');
+    var tabsCell = document.createElement('td');
+    tabsCell.colSpan = 2;
+    var bar = document.createElement('div');
+    bar.className = 'esl-carrier-tabs';
+
+    var active = groups[0];
+
+    function activate(targetGroup) {
+        var targetBtn = null;
+        groups.forEach(function (g) {
+            g.rows.forEach(function (r) { r.style.display = 'none'; });
+        });
+        bar.querySelectorAll('.esl-carrier-tab').forEach(function (b) {
+            b.classList.remove('esl-carrier-tab--active');
+            if (b.__eslGroup === targetGroup) {
+                targetBtn = b;
+            }
+        });
+        targetGroup.rows.forEach(function (r) { r.style.display = ''; });
+        if (targetBtn) {
+            targetBtn.classList.add('esl-carrier-tab--active');
+        }
+        active = targetGroup;
+        eslApplyVisibilityRules(table, groups, targetGroup);
+    }
+
+    groups.forEach(function (g, i) {
+        var btn = document.createElement('a');
+        btn.href = 'javascript:void(0)';
+        btn.className = 'esl-carrier-tab' + (i === 0 ? ' esl-carrier-tab--active' : '');
+        btn.__eslGroup = g;
+
+        var badge = document.createElement('span');
+        badge.className = 'esl-carrier-tab-badge';
+        badge.textContent = g.label.replace(/[^0-9A-Za-zА-Яа-яЁё]/g, '').slice(0, 2).toUpperCase() || '?';
+        btn.appendChild(badge);
+
+        var text = document.createElement('span');
+        text.textContent = g.label;
+        btn.appendChild(text);
+
+        btn.addEventListener('click', function () { activate(g); });
+        bar.appendChild(btn);
+        g.rows.forEach(function (r) { r.style.display = (i === 0 ? '' : 'none'); });
+    });
+
+    tabsCell.appendChild(bar);
+    tabsRow.appendChild(tabsCell);
+    startRow.parentNode.insertBefore(tabsRow, startRow.nextSibling);
+
+    return {
+        groups: groups,
+        tabsRow: tabsRow,
+        startRow: startRow,
+        endRow: endRow,
+        activate: activate,
+        getActive: function () { return active; }
+    };
+}
+
+// Разбивает строки таблицы на сворачиваемые секции по заголовкам вида
+// <span class="esl-section-heading">, которые options.php расставил между блоками
+// связанных полей. Секция, содержащая панель вкладок служб доставки, помечается
+// ссылкой на carrier — её раскрытие/схлопывание работает как с единым целым.
+function buildSections(table, carrier) {
+    var sections = [];
+    var current = null;
+    var rows = Array.prototype.slice.call(table.rows);
+
+    rows.forEach(function (row) {
+        var headingSpan = row.classList.contains('heading') ? row.querySelector('.esl-section-heading') : null;
+        if (headingSpan) {
+            current = { headingRow: row, headingSpan: headingSpan, rows: [], carrier: null, collapsed: false };
+            sections.push(current);
+            return;
+        }
+        if (current) {
+            current.rows.push(row);
+        }
+    });
+
+    sections.forEach(function (section) {
+        if (carrier && section.rows.indexOf(carrier.tabsRow) !== -1) {
+            section.carrier = carrier;
+        }
+    });
+
+    return sections;
+}
+
+function collapseSection(section) {
+    section.rows.forEach(function (r) { r.style.display = 'none'; });
+    section.headingRow.classList.add('esl-collapsed');
+    section.collapsed = true;
+}
+
+// carrier — вкладки ТК той же таблицы (см. buildCarrierTabs), нужны даже при
+// разворачивании секции БЕЗ вкладок ("Данные отправителя" и т.п.): поля вроде
+// организации Байкал Сервис относятся к другой, всё ещё свёрнутой вкладке "Настройки
+// служб доставки", и без этого carrier eslApplyVisibilityRules не может отличить их от
+// обычных общих полей — см. комментарий у eslApplyVisibilityRules.
+function expandSection(section, carrier) {
+    if (section.carrier) {
+        section.carrier.tabsRow.style.display = '';
+        // activate() уже переприменяет правила видимости для активной вкладки —
+        // повторный безусловный вызов ниже без контекста вкладки только что
+        // проставленное скрытие бы затёр.
+        section.carrier.activate(section.carrier.getActive());
+    } else {
+        section.rows.forEach(function (r) { r.style.display = ''; });
+        eslApplyVisibilityRules(section.headingRow.closest('table'), carrier ? carrier.groups : null, carrier ? carrier.getActive() : null);
+    }
+    section.headingRow.classList.remove('esl-collapsed');
+    section.collapsed = false;
+}
+
+function wireAccordion(sections, carrier) {
+    sections.forEach(function (section) {
+        section.headingRow.classList.add('esl-collapsible');
+        section.headingRow.addEventListener('click', function () {
+            if (section.collapsed) {
+                expandSection(section, carrier);
+            } else {
+                collapseSection(section);
+            }
+        });
+    });
+}
+
+function wireToolbar(table, sections, carrier) {
+    var toolbar = table.querySelector('[data-esl-toolbar]');
+    if (!toolbar) {
+        return;
+    }
+
+    var expandBtn = toolbar.querySelector('[data-esl-action="expand-all"]');
+    var collapseBtn = toolbar.querySelector('[data-esl-action="collapse-all"]');
+
+    if (expandBtn) {
+        expandBtn.addEventListener('click', function () {
+            sections.forEach(function (section) { expandSection(section, carrier); });
+        });
+    }
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', function () {
+            sections.forEach(collapseSection);
+        });
+    }
+}
+

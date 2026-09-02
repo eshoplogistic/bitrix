@@ -7,6 +7,7 @@ use \Bitrix\Sale,
     \Bitrix\Main\Error,
     \Bitrix\Main\Localization\Loc,
     \Bitrix\Main\EventManager,
+    \Bitrix\Main\Config\Option,
     \Eshoplogistic\Delivery\Api,
     \Eshoplogistic\Delivery\Helpers,
     \Bitrix\Main\Application,
@@ -30,6 +31,12 @@ class CalculateHandler
      */
     public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type)
     {
+        if (self::skipRealCalculation()) {
+            $result = new Sale\Delivery\CalculationResult();
+            $result->setDeliveryPrice(0);
+            return $result;
+        }
+
         $order = $shipment->getCollection()->getOrder();
         $basket = $order->getBasket();
         $props = $order->getPropertyCollection();
@@ -114,7 +121,7 @@ class CalculateHandler
 
         unset($deliveryProfileData['data']['terminals']);
 
-        if (isset($deliveryProfileData['success']) || (isset($deliveryProfileData['http_status']) && $deliveryProfileData['http_status'] == 200)) {
+        if (!empty($deliveryProfileData['success']) || (isset($deliveryProfileData['http_status']) && $deliveryProfileData['http_status'] == 200)) {
             if (empty($deliveryProfileData['data'][$type])) {
                 $result->addError(new \Bitrix\Main\Error($configClass->dataError));
             }
@@ -171,6 +178,37 @@ class CalculateHandler
         }
 
         return $result;
+    }
+
+    /** Bitrix Sale (sale.order.ajax) вызывает calculate() у CHECKED-профиля безусловно на
+     * КАЖДОМ построении заказа — и на обычном рендере/refresh страницы оформления (там
+     * Order создаётся заново и отбрасывается после вывода), и на реальном подтверждении
+     * заказа (processOrderAction(): isOrderConfirmed = POST + confirmorder=Y, единственный
+     * случай, когда посчитанная тут цена реально попадёт в сохранённый заказ).
+     * В режиме виджета (frame_lib) чекаут показывает один смёрженный пункт "Калькулятор
+     * доставки eShopLogistic" — цену/срок берёт из данных виджета или сессии (см.
+     * ComponentOrder::orderDeliveryBuildListFrame), а результат ЭТОГО расчёта отбрасывает
+     * целиком. Поэтому на всех НЕ-подтверждающих запросах реальный POST на api.esplc.ru тут
+     * не нужен — только на confirmorder=Y, где cчитаем как обычно, и в админке (ADMIN_SECTION),
+     * которая не проходит через виджет и должна видеть настоящую цену при просмотре/правке заказа.
+     * @return bool
+     */
+    private static function skipRealCalculation()
+    {
+        if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
+            return false;
+        }
+
+        if (defined('ADMIN_SECTION') && ADMIN_SECTION === true) {
+            return false;
+        }
+
+        $request = Application::getInstance()->getContext()->getRequest();
+        if ($request->isPost() && $request->get('confirmorder') == 'Y') {
+            return false;
+        }
+
+        return true;
     }
 
     /** Get paysystem type

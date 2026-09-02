@@ -3,7 +3,6 @@ namespace Eshoplogistic\Delivery;
 
 use \Bitrix\Main\Localization\Loc,
 	\Bitrix\Main\Config\Option;
-use Logger;
 
 Loc::loadMessages(__FILE__);
 
@@ -21,6 +20,16 @@ class Config
 	const CACHE_DIR = 'eshoplogistic';
 	const API_UNLOADIG = 'https://api.esplc.ru/';
 	const PARTNER_KEY = '264a7a5d5882787.70413622';
+	// Тестовый режим выгрузки заказов (портировано из МойСклад, AppConfig->appFake) —
+	// API eShopLogistic подменяет ответ вместо реального обращения к ТК. Меняется вручную
+	// в коде (не в админке — только для разработчика), не забыть вернуть 0 после теста.
+	// Значения проверены вживую (одинаковы для action=create и action=get):
+	// 0 - выключено (реальная отправка);
+	// 1 - фейковый успешный ответ (200, данные созданного заказа: order/state);
+	// 2 - фейковый ответ 200, но с данными трекинга (status/track) вместо заказа —
+	//     НЕ ошибка валидации, вопреки комментарию в МойСклад для этого же параметра;
+	// 3 - фейковая ошибка выгрузки (422, errors внутри data)
+	const API_FAKE_MODE = 0;
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;
@@ -75,8 +84,12 @@ class Config
 		$this->profileList = array(
 			'baikal_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_DOOR"),
 			'baikal_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_TERMINAL"),
-			'boxberry_door' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BOXBERRY_DOOR"),
-			'boxberry_term' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BOXBERRY_TERMINAL"),
+			// boxberry_door/boxberry_term намеренно убраны отсюда (но не из profileClasses/
+			// getEventDeliveryList выше) — Boxberry как служба больше не поддерживается и не
+			// должна предлагаться при создании НОВОГО профиля, но у магазинов, где она уже
+			// настроена, класс должен продолжать резолвиться (InitDeliveryService::
+			// getChildrenClassNames() без PROFILE_ID отдаёт весь profileClasses на каждом
+			// оформлении заказа — удаление класса/файла ломает оформление заказа вообще всем).
 			'custom_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_DOOR"),
 			'custom_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_TERMINAL"),
 			'delline_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DELLINE_DOOR"),
@@ -196,6 +209,94 @@ class Config
 		$paymentTypes['payment_upon_receipt'] = explode(',', $receipt);
 
 		return $paymentTypes;
+	}
+
+	// Сверка с эталонным МойСклад (Iframe.php, по каждой службе): часть общих настроек
+	// доставки там показывается не всем ТК, а только тем, где они осмысленны. Список
+	// служб по каждой фиче держится здесь, единой копией — используется и в options.php
+	// (что показывать в настройках), и в form.php/unloading.php (что реально применять),
+	// чтобы старое сохранённое значение настройки не продолжало тихо действовать для
+	// службы, для которой поле убрали из интерфейса. СберЛогистику и Почталион МойСклад
+	// вообще не поддерживает — сравнивать не с чем, для них поведение не меняем.
+	const CARRIER_FEATURE_SCOPE = array(
+		'pickup_terminal'  => array('sdek', 'boxberry', 'yandex', 'delline', 'kit', 'pecom', 'baikal', 'dpd', 'sberlogistics', 'pochtalion'),
+		'type_price_null'  => array('sdek', 'boxberry', 'yandex', 'fivepost', 'delline', 'kit', 'postrf', 'pecom', 'sberlogistics', 'pochtalion'),
+		'take_payment'     => array('sdek', 'yandex', 'fivepost', 'postrf', 'sberlogistics', 'pochtalion'),
+		'combine_places'   => array('sdek', 'sberlogistics', 'pochtalion'),
+		'seller'           => array('sdek', 'sberlogistics', 'pochtalion'),
+		// Отдельный список — источник другой (unloading.html.php, сама форма выгрузки
+		// заказа у МойСклад, а не Iframe.php с настройками): там блок "Способ отгрузки
+		// в ТК" / "Код терминала" скрыт целиком только у 5Post и Почты России — у Magnit
+		// он показывается, хотя дефолта в настройках для него нет (см. 'pickup_terminal').
+		'pickup_select'    => array('sdek', 'boxberry', 'yandex', 'delline', 'kit', 'pecom', 'halva', 'baikal', 'magnit', 'dpd', 'sberlogistics', 'pochtalion'),
+	);
+
+	/** Доступна ли фича (см. CARRIER_FEATURE_SCOPE) для данной службы доставки
+	 * @param string $feature
+	 * @param string $carrierCode
+	 * @return bool
+	 */
+	public static function isCarrierFeatureEnabled($feature, $carrierCode)
+	{
+		return in_array($carrierCode, self::CARRIER_FEATURE_SCOPE[$feature] ?? array(), true);
+	}
+
+	// Набор печатных форм по каждой ТК — портировано из МойСклад (views/widgets/unloadingprint.html.php).
+	// 'mode'/'type' — значения, передаваемые в API (action=print); 'danger' — форма, которую
+	// МС визуально выделяет как отдельную от "обычных" (Акт приёма-передачи), у нас — тем же
+	// принципом, что и опасное действие "Удалить у ТК" в clearstatus.php.
+	const PRINT_FORM_BUTTONS = array(
+		'delline' => array(
+			array('mode' => 'bill', 'label' => 'Печать счёта'),
+			array('mode' => 'order', 'label' => 'Печать ТТН'),
+			array('mode' => 'invoice', 'label' => 'Печать счёт-фактуры'),
+			array('mode' => 'label', 'label' => 'Печать этикеток'),
+		),
+		'sdek' => array(
+			array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
+			array('mode' => 'order', 'label' => 'Печать накладных'),
+		),
+		'dpd' => array(
+			array('mode' => 'label', 'label' => 'Печать наклеек'),
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+		),
+		'pecom' => array(
+			array('mode' => 'label', 'label' => 'Печать наклеек'),
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+		),
+		'integral' => array(
+			array('mode' => 'order', 'label' => 'Печать накладной'),
+			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
+			array('mode' => 'label', 'label' => 'Наклейки Zebra'),
+			array('mode' => 'label_A4', 'label' => 'Наклейки А4'),
+		),
+		'yandex' => array(
+			array('mode' => 'barcodes', 'type' => 'one', 'label' => 'Печать наклеек: одна на страницу'),
+			array('mode' => 'barcodes', 'type' => 'many', 'label' => 'Печать наклеек: максимум на страницу'),
+			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
+		),
+	);
+
+	// Служба доставки, для которой нет отдельного набора выше, получает один универсальный
+	// пункт (как у МойСклад: ветка else в unloadingprint.html.php).
+	const PRINT_FORM_BUTTONS_DEFAULT = array(
+		array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
+	);
+
+	// Выбор формата бумаги — не все ТК его используют (см. typePaperPrint в UnloadingPrint.php МС).
+	const PRINT_FORM_PAPER_TYPES = array(
+		'sdek' => array('A4', 'A5', 'A6'),
+		'dpd' => array('A5', 'A6'),
+		'halva' => array('58x60', '76x51', '70x28_a4'),
+	);
+
+	/** Набор кнопок печатных форм для службы доставки (см. PRINT_FORM_BUTTONS)
+	 * @param string $carrierCode
+	 * @return array
+	 */
+	public static function getPrintFormButtons($carrierCode)
+	{
+		return self::PRINT_FORM_BUTTONS[$carrierCode] ?? self::PRINT_FORM_BUTTONS_DEFAULT;
 	}
 
 }

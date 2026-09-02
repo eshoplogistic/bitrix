@@ -146,7 +146,8 @@ class AjaxHandler extends Controller
      * @return mixed
      */
     private static function getProfileClassByCode($profileCode) {
-        $profileCode = array_pop(explode(':', $profileCode));
+        $profileCodeParts = explode(':', $profileCode);
+        $profileCode = end($profileCodeParts);
         $config = new Config();
         $classList = $config->profileClasses;
         return $classList[$profileCode];
@@ -183,6 +184,27 @@ class AjaxHandler extends Controller
             exit();
         }
 
+        // widget/send places a real order, unlike the read-only methods sharing the general
+        // limit above, so it gets its own much tighter per-IP cap.
+        if ($method === 'widget/send' && !self::checkWidgetRateLimit($request, 10, 60, 'send')) {
+            http_response_code(429);
+            echo Json::encode(['error' => 'Too many requests']);
+            exit();
+        }
+
+        if ($method === 'widget/send' && !self::hasRecentWidgetCalculation()) {
+            \CEventLog::Add([
+                'SEVERITY' => \CEventLog::SEVERITY_SECURITY,
+                'AUDIT_TYPE_ID' => 'ESHOPLOGISTIC_WIDGET_SEND_BLOCKED',
+                'MODULE_ID' => Config::MODULE_ID,
+                'ITEM_ID' => $request->getRemoteAddress() ?: 'unknown',
+                'DESCRIPTION' => 'widget/send blocked: no valid widget/calculation marker in session',
+            ]);
+            http_response_code(403);
+            echo Json::encode(['error' => 'Forbidden']);
+            exit();
+        }
+
         if ( ! empty( $method ) ) {
             $query_data = @$_POST;
             unset( $query_data['method'] );
@@ -202,12 +224,66 @@ class AjaxHandler extends Controller
                     $out = $requestOut;
                 }
             }
+
+            if ($method === 'widget/calculation' && !empty($out)) {
+                self::markWidgetCalculationDone();
+            }
         }
 
         $json = Json::encode( $out );
         echo $json;
         exit();
 
+    }
+
+    /** Marks in the visitor's session that a widget/calculation call has completed, so that
+     * widget/send (which places a real delivery order) can require it — see hasRecentWidgetCalculation().
+     * Signed with Bitrix's own site key (TimeSigner) rather than a plain flag, so the marker
+     * can't be forged/extended by tampering with the stored session value directly, and expiry
+     * is enforced by the signature itself rather than a manually compared timestamp.
+     */
+    private static function markWidgetCalculationDone(): void
+    {
+        $session = Application::getInstance()->getSession();
+        $signed = (new \Bitrix\Main\Security\Sign\TimeSigner())->sign(self::WIDGET_CALC_MARKER, '+' . self::WIDGET_CALC_TTL . ' seconds');
+        $session->set('esl_widget_calc_token', $signed);
+    }
+
+    private const WIDGET_CALC_MARKER = 'esl_widget_calc_ok';
+    // Real users calculate a price and send within the same short checkout flow; keeping this
+    // tight shrinks the window in which a self-issued marker (see hasRecentWidgetCalculation())
+    // stays usable.
+    private const WIDGET_CALC_TTL = 300;
+
+    /** widget/send creates a real order via the proxied API, so — since it can't be gated behind
+     * Bitrix Authentication/Csrf (the widget is used by anonymous storefront visitors, see
+     * isSameOriginRequest() below) — it's instead gated behind a prior widget/calculation having
+     * completed in the same session. A blind/direct POST to widget/send (curl, forged Origin) has
+     * no session with that marker and is rejected; the real widget always calculates before sending.
+     *
+     * This does NOT stop an anonymous scripted attacker who calls widget/calculation themselves
+     * first (a legitimately public, read-only method) to mint their own valid marker, then calls
+     * widget/send with it — that's not closable without either requiring login (breaks anonymous
+     * storefront checkout) or adding user-facing friction (CAPTCHA/challenge), neither of which is
+     * a pure server-side fix. This raises the bar against blind/single-request abuse and — combined
+     * with the tight per-IP rate limit on widget/send and the logging below — makes sustained abuse
+     * both harder to automate and visible in the event log; it is not a complete authentication.
+     * @return bool
+     */
+    private static function hasRecentWidgetCalculation(): bool
+    {
+        $session = Application::getInstance()->getSession();
+        if (!$session->has('esl_widget_calc_token')) {
+            return false;
+        }
+
+        try {
+            $value = (new \Bitrix\Main\Security\Sign\TimeSigner())->unsign((string)$session->get('esl_widget_calc_token'));
+        } catch (\Bitrix\Main\Security\Sign\BadSignatureException $e) {
+            return false;
+        }
+
+        return $value === self::WIDGET_CALC_MARKER;
     }
 
     /** widgetData has no Authentication/Csrf filters by design — it's called anonymously by the
@@ -234,15 +310,16 @@ class AjaxHandler extends Controller
      * @param Request $request
      * @param int $limit
      * @param int $period seconds
+     * @param string $scope separates this counter's bucket from other callers sharing the same IP (e.g. 'send' vs. the general limit)
      * @return bool
      */
-    private static function checkWidgetRateLimit($request, int $limit = 120, int $period = 60): bool
+    private static function checkWidgetRateLimit($request, int $limit = 120, int $period = 60, string $scope = ''): bool
     {
         $ip = $request->getRemoteAddress() ?: 'unknown';
         // Bucketing the key by time window (instead of a rolling TTL that gets re-extended
         // on every hit) makes the window actually expire under continuous traffic.
         $bucket = (int)floor(time() / $period);
-        $cacheKey = 'widget_rl_' . md5($ip) . '_' . $bucket;
+        $cacheKey = 'widget_rl_' . $scope . '_' . md5($ip) . '_' . $bucket;
         $cache = Cache::createInstance();
 
         $count = 0;
@@ -360,6 +437,27 @@ class AjaxHandler extends Controller
         return false;
     }
 
+    /** Форма выгрузки заказа не задаёт checkbox'ам атрибут value, поэтому браузер шлёт для
+     * отмеченных полей литеральную строку "on" (как и в МС). В МС это нормализуется на клиенте
+     * (assets/js/script.js: serializeForm(), val === 'on' ? '1' : val) перед отправкой — у нас
+     * форма отправляется через raw FormData без такой нормализации, поэтому делаем то же самое
+     * здесь, один раз для всего запроса, чтобы "on" не улетал в API как есть (order[costly],
+     * order[packing], lift, complement[...] и т.д.).
+     * @param mixed $data
+     * @return mixed
+     */
+    private static function normalizeCheckboxValues($data)
+    {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = self::normalizeCheckboxValues($value);
+            }
+            return $data;
+        }
+
+        return $data === 'on' ? '1' : $data;
+    }
+
     public function unloadingFormAction()
     {
         global $APPLICATION;
@@ -370,6 +468,7 @@ class AjaxHandler extends Controller
         }
 
         $request = $this->getRequest()->getPostList()->toArray();
+        $request = self::normalizeCheckboxValues($request);
         $request['order_id'] = (int)($request['order_id'] ?? 0);
         if ($request['order_id'] <= 0) {
             $this->addError(new \Bitrix\Main\Error('Bad request'));
@@ -379,7 +478,18 @@ class AjaxHandler extends Controller
         $unloading = new Unloading();
         $result = $unloading->params_delivery_init($request);
         if (isset($result['errors'])) {
-            return ['success' => false, 'errors' => $result['errors']];
+            // http_status_message описывает HTTP-статус САМОГО запроса к API, а не бизнес-
+            // результат: часть ошибок (например неподтверждённый трек-номер СДЭК, см.
+            // params_delivery_init) — это наше решение считать выгрузку неуспешной при
+            // формально успешном (200/"OK") ответе API. Показывать в этом случае "OK" как
+            // заголовок ошибки было бы противоречиво, поэтому передаём его фронту только
+            // когда сам HTTP-статус запроса действительно означает сбой.
+            $httpStatus = $result['http_status'] ?? null;
+            return [
+                'success' => false,
+                'errors' => $result['errors'],
+                'http_status_message' => ($httpStatus !== null && $httpStatus >= 400) ? ($result['http_status_message'] ?? null) : null,
+            ];
         }
 
         return ['success' => true, 'message' => $result['http_status_message'] ?? 'OK'];

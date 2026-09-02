@@ -1,0 +1,268 @@
+/* Стили диалогов CAdminDialog вкладки "Заказ": "Проверить статус" (checkstatus.php),
+   "Обновить статус" (updatestatus.php), "Сбросить выгрузку" (clearstatus.php),
+   "Печатные формы" (print.php). Эти страницы рендерятся отдельным HTML-фрагментом,
+   без <head> основного шаблона админки, поэтому подключаются напрямую через <link>,
+   а не через CUtil::InitJSCore/CJSCore (см. include.php - тот механизм зависит от
+   шаблона, которого здесь нет). Переменные ниже дублируют install/css/settings.css. */
+
+.esl-dialog {
+    --esl-accent: #4a7dff;
+    --esl-accent-dark: #3563e0;
+    --esl-accent-soft: rgba(74, 125, 255, .12);
+    --esl-danger: #dc2626;
+    --esl-danger-dark: #b91c1c;
+    --esl-danger-soft: rgba(220, 38, 38, .08);
+    --esl-danger-border: rgba(220, 38, 38, .35);
+    --esl-text: #1a2540;
+    --esl-text-muted: #5a6782;
+    --esl-border: #dde3ed;
+    --esl-bg-card: #ffffff;
+    --esl-bg-subtle: #f8f9fc;
+    --esl-radius: 10px;
+    --esl-radius-sm: 6px;
+    --esl-shadow-card: 0 1px 2px rgba(20, 30, 60, .05), 0 2px 10px rgba(20, 30, 60, .045);
+    display: block;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--esl-text);
+}
+
+/* Карточка результата/статуса - checkstatus.php, updatestatus.php, clearstatus.php */
+.esl-status-result {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--esl-radius);
+    box-shadow: var(--esl-shadow-card);
+}
+.esl-status-result__icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+}
+.esl-status-result__body {
+    flex: 1;
+    padding-top: 4px;
+}
+.esl-status-result__text {
+    padding-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+.esl-status-result__table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.esl-status-result__table tr + tr td {
+    border-top: 1px solid var(--esl-border);
+}
+.esl-status-result__table td {
+    padding: 7px 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    vertical-align: top;
+}
+.esl-status-result__table td:first-child {
+    color: var(--esl-text-muted);
+    font-weight: 500;
+    width: 160px;
+    white-space: nowrap;
+    padding-right: 12px;
+}
+.esl-status-result__table td:last-child {
+    color: var(--esl-text);
+    font-weight: 600;
+}
+
+.esl-status-result--success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.esl-status-result--success .esl-status-result__icon { background: #dcfce7; color: #16a34a; }
+.esl-status-result--success .esl-status-result__text { color: #166534; }
+
+.esl-status-result--error { background: #fef2f2; border: 1px solid #fecaca; }
+.esl-status-result--error .esl-status-result__icon { background: #fee2e2; color: #dc2626; }
+.esl-status-result--error .esl-status-result__text { color: #7f1d1d; }
+
+.esl-status-result--warning { background: #fffbeb; border: 1px solid #fde68a; }
+.esl-status-result--warning .esl-status-result__icon { background: #fef3c7; color: #d97706; }
+.esl-status-result--warning .esl-status-result__text { color: #78350f; }
+
+.esl-status-result--info { background: #eff6ff; border: 1px solid #bfdbfe; }
+.esl-status-result--info .esl-status-result__icon { background: #dbeafe; color: #2563eb; }
+.esl-status-result--info .esl-status-result__text { color: #1e3a8a; }
+
+/* print.php - печатные формы */
+.esl-print-empty {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--esl-text-muted);
+}
+.esl-print-paper {
+    margin-bottom: 14px;
+}
+.esl-print-paper label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--esl-text-muted);
+}
+.esl-print-paper select {
+    padding: 6px 10px;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-bg-card);
+    color: var(--esl-text);
+    font-size: 13px;
+}
+.esl-print-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.esl-print-btn {
+    padding: 7px 16px;
+    background: var(--esl-bg-subtle);
+    color: var(--esl-text-muted);
+    border: 1px solid var(--esl-border);
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.esl-print-btn:hover {
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
+    color: var(--esl-accent-dark);
+}
+.esl-print-btn.esl-print-btn--active {
+    background: var(--esl-accent);
+    border-color: var(--esl-accent);
+    color: #fff;
+}
+.esl-print-btn--danger {
+    background: var(--esl-danger-soft);
+    border-color: var(--esl-danger-border);
+    color: var(--esl-danger);
+}
+.esl-print-btn--danger:hover {
+    background: var(--esl-danger);
+    border-color: var(--esl-danger);
+    color: #fff;
+}
+.esl-print-result {
+    padding: 12px 16px;
+    border-radius: var(--esl-radius);
+    box-shadow: var(--esl-shadow-card);
+    font-size: 13px;
+    line-height: 1.5;
+}
+.esl-print-result--success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+.esl-print-result--success a {
+    color: #166534;
+    font-weight: 600;
+    text-decoration: none;
+}
+.esl-print-result--success a:hover {
+    text-decoration: underline;
+}
+.esl-print-result--error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #7f1d1d;
+}
+.esl-print-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    font-size: 13px;
+    color: var(--esl-text-muted);
+}
+.esl-print-spinner {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--esl-accent-soft);
+    border-top-color: var(--esl-accent);
+    border-radius: 50%;
+    animation: esl-print-spin .7s linear infinite;
+}
+@keyframes esl-print-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* clearstatus.php - сброс/удаление выгрузки */
+.esl-clear-confirm__text {
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+    color: var(--esl-text-muted);
+}
+.esl-clear-confirm__option {
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: var(--esl-bg-card);
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    box-shadow: var(--esl-shadow-card);
+}
+.esl-clear-confirm__option:last-child {
+    margin-bottom: 0;
+}
+.esl-clear-confirm__note {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--esl-text-muted);
+    margin-top: 8px;
+}
+.esl-clear-btn {
+    padding: 7px 16px;
+    background: var(--esl-bg-subtle);
+    color: var(--esl-text-muted);
+    border: 1px solid var(--esl-border);
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.esl-clear-btn:hover {
+    background: var(--esl-accent-soft);
+    border-color: var(--esl-accent);
+    color: var(--esl-accent-dark);
+}
+.esl-clear-btn--danger {
+    background: var(--esl-danger-soft);
+    border-color: var(--esl-danger-border);
+    color: var(--esl-danger);
+}
+.esl-clear-btn--danger:hover {
+    background: var(--esl-danger);
+    border-color: var(--esl-danger);
+    color: #fff;
+}
+.esl-clear-btn[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+}
+.esl-clear-btn[disabled]:hover {
+    background: var(--esl-bg-subtle);
+    border-color: var(--esl-border);
+    color: var(--esl-text-muted);
+}

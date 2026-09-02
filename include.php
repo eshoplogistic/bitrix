@@ -31,9 +31,23 @@ $arJsConfig = array(
         'js' => '/bitrix/js/'.$moduleId.'/settings.js',
         'css' => '/bitrix/css/'.$moduleId.'/settings.css',
     ),
+    // Только CSS страницы настроек, без settings.js - для settings/additionalservices.php
+    // (диалог CAdminDialog без своего <head>, settings.js там не нужен и не проверялся).
+    'settings_css_lib' => array(
+        'css' => '/bitrix/css/'.$moduleId.'/settings.css',
+    ),
     'unloading_lib' => array(
         'js' => '/bitrix/js/'.$moduleId.'/admin.js',
         'css' => '/bitrix/css/'.$moduleId.'/admin.css',
+    ),
+    // Диалоги CAdminDialog вкладки "Заказ" (checkstatus/updatestatus/clearstatus/print.php) -
+    // рендерятся отдельным фрагментом без прогона prolog_admin_after.php, поэтому обычное
+    // InitJSCore($ext) молча теряется (некому вызвать ShowHeadScripts/ShowHeadStrings). Эти
+    // страницы вместо этого делают echo CUtil::InitJSCore(['dialog_lib'], true) - с $bReturn=true
+    // CJSCore возвращает готовые <link>/<script src> строкой, а не только регистрирует в Asset.
+    'dialog_lib' => array(
+        'js' => '/bitrix/js/'.$moduleId.'/unloading-dialog.js',
+        'css' => '/bitrix/css/'.$moduleId.'/unloading-dialog.css',
     ),
     'html5sortable' => array(
         'js' => '/bitrix/js/'.$moduleId.'/html5sortable.js',

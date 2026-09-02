@@ -1,7 +1,7 @@
 <?
 namespace Eshoplogistic\Delivery\Api;
 
-use \Bitrix\Main\Application,
+use \Bitrix\Main\Data\Cache,
     \Eshoplogistic\Delivery\Config,
     \Eshoplogistic\Delivery\Helpers\Client;
 
@@ -17,6 +17,9 @@ class Delivery
     static $cacheTime = Config::CACHE_TIME;
     static $cacheKey   = 'deliveryLocation';
     static $cacheDir = Config::CACHE_DIR;
+
+    // In-memory кэш на запрос — см. пояснение у формирования $cacheKey в getLocationDeliveryData().
+    private static $requestMemo = [];
 
     /**
      * @param string $service
@@ -59,29 +62,39 @@ class Delivery
         $serialized = serialize($encodeData);
         $basketHash = hash('md5', $serialized);
 
-        $cacheKey = self::$cacheKey.'-'.$currentUser.'-'.$service;
-        $cache = Application::getInstance()->getManagedCache();
+        // Хэш — часть ключа, а не отдельное поле для сверки внутри одной ячейки кэша. Раньше
+        // ключ был только 'user-service', и при смене состояния корзины/оплаты код не заводил новую
+        // запись, а перезаписывал ту же ячейку (см. ветку "хэш не совпал" ниже, которая была). Bitrix
+        // Sale (sale.order.ajax) на одном построении заказа несколько раз подряд пересчитывает
+        // CHECKED-доставку (SaleOrderAjax::getOrder(): initDelivery() -> recalculatePayment() ->
+        // calculateDeliveries()), и способ оплаты между первым и последующими проходами меняется
+        // (empirически: payment="" -> payment="card") — то есть у ОДНОГО рендера легитимно два разных
+        // $basketHash. Из-за общей на user+service ячейки второй проход затирал то, что записал
+        // первый, а на СЛЕДУЮЩЕМ рендере первый проход снова заставал в кэше чужой (последний)
+        // хэш — кэш промахивался на каждом единственном рендере, независимо от TTL. Теперь у каждого
+        // варианта входных данных своя ячейка — переиспользуются оба между рендерами, устаревшие
+        // сами истекут по TTL.
+        $cacheKey = self::$cacheKey.'-'.$currentUser.'-'.$service.'-'.$basketHash;
 
-        if ($cache->read(self::$cacheTime, $cacheKey, self::$cacheDir)) {
+        if (array_key_exists($cacheKey, self::$requestMemo)) {
+            return self::$requestMemo[$cacheKey];
+        }
 
-            $vars = $cache->get($cacheKey);
+        $cache = Cache::createInstance();
 
-            if($vars['hash'] === $basketHash) {
-                $currentDeliveryData = $vars['data'];
-            } else {
-                /**
-                 * Clear cache when basket is changed
-                 */
-                $requestDeliveryData = self::getDeliveryData($orderData, $from, $to, $service, $basketHash);
-                $cache->clean($cacheKey, self::$cacheDir);
-                $cache->set($cacheKey, $requestDeliveryData);
-                $currentDeliveryData = $requestDeliveryData['data'];
-            }
+        if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
+            $vars = $cache->getVars();
+            $currentDeliveryData = $vars['data'];
+        } elseif ($cache->startDataCache()) {
+            $requestDeliveryData = self::getDeliveryData($orderData, $from, $to, $service, $basketHash);
+            $cache->endDataCache($requestDeliveryData);
+            $currentDeliveryData = $requestDeliveryData['data'];
         } else {
             $requestDeliveryData = self::getDeliveryData($orderData, $from, $to, $service, $basketHash);
-            $cache->set($cacheKey, $requestDeliveryData);
             $currentDeliveryData = $requestDeliveryData['data'];
         }
+
+        self::$requestMemo[$cacheKey] = $currentDeliveryData;
         return $currentDeliveryData;
     }
 

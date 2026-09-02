@@ -12,6 +12,7 @@ $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_5"] = "службы доставки.";
 $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_4"] = "Выбран самый дешевый вариант";
 $MESS["ESHOP_LOGISTIC_ADDRESS_FULL"] = "Укажите полный адрес";
 $MESS["ESHOP_LOGISTIC_CITY_NOT_FOUND"] = "Город не найден. Проверьте адрес доставки.";
+$MESS["ESHOP_LOGISTIC_SERVICE_NOT_CONFIGURED"] = "Выбранный способ доставки недоступен. Пожалуйста, выберите другой.";
 $MESS["ESHOP_LOGISTIC_PER_DAY"] = "день";
 $MESS["ESHOP_LOGISTIC_WIDGET_CALC_ERROR"] = "Ошибка при расчёте стоимости доставки. Пожалуйста, попробуйте изменить адрес.";
 ?>

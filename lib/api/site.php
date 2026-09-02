@@ -28,6 +28,25 @@ class Site
         return $httpClient;
     }
 
+    private static $rawClientStateFetched = false;
+    private static $rawClientState;
+
+    // getAuthStatus() и getSendPoint() кэшируют один и тот же ответ client/state под разными
+    // ключами (авторизация/баланс и город/список служб отправки — разные срезы одного и того же
+    // JSON), поэтому при холодном кэше обоих на один рендер чекаута уходило два одинаковых
+    // POST на api.esplc.ru вместо одного. Файловое кэширование каждого метода (TTL, поведение
+    // при неуспехе) не трогаем — только сам сетевой вызов теперь на запрос выполняется не более
+    // одного раза.
+    private static function fetchRawClientState()
+    {
+        if (!self::$rawClientStateFetched) {
+            $httpClient = self::getHttpClient();
+            self::$rawClientState = $httpClient->request('POST', array());
+            self::$rawClientStateFetched = true;
+        }
+        return self::$rawClientState;
+    }
+
     /** Getting status of authorization and account balance
      * @return array
      */
@@ -40,13 +59,11 @@ class Site
             $vars = $cache->getVars();
             return $vars['authstatus'];
         } elseif ($cache->startDataCache()) {
-            $httpClient = self::getHttpClient();
-            $httpMethod = 'POST';
-            $params = array();
-            $response = $httpClient->request($httpMethod, $params);
+            $response = self::fetchRawClientState();
 
+            $isSuccess = !empty($response['success']) || (isset($response['http_status']) && $response['http_status'] == 200);
             $result = array(
-                'success'   => $response['http_status_message'],
+                'success'   => $isSuccess,
                 'blocked'   => $response['data']['blocked'] ?? 0,
                 'free_days' => $response['data']['free_days'] ?? 0,
                 'balance'   => $response['data']['balance'] ?? 0,
@@ -73,10 +90,7 @@ class Site
             $vars = $cache->getVars();
             return ($vars['sendpoint']);
         } elseif ($cache->startDataCache()) {
-            $httpClient = self::getHttpClient();
-            $httpMethod = 'POST';
-            $params = array();
-            $response = $httpClient->request($httpMethod, $params);
+            $response = self::fetchRawClientState();
             if($response['success'] && $response['data']['settings']['city_fias']) {
                 $result =  array(
                     'city_fias' => $response['data']['settings']['city_fias'],
