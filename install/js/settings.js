@@ -672,3 +672,138 @@ function wireToolbar(table, sections, carrier) {
     }
 }
 
+// Панель приоритета источников габарита (options.php: eslDimensionPriorityField) —
+// три скрытых поля dimension_priority_{width,height,length}, каждое хранит JSON-список
+// {source,code,name,unit}. Состояние живёт только в этом JSON (не дублируется отдельным
+// JS-объектом), поэтому каждое изменение — это "прочитать -> изменить -> записать ->
+// перерисовать" в одном месте (eslDimSetList), исключая рассинхрон.
+// Строки — в lang/ru/js/settings.js.php (см. 'lang' у settings_lib в include.php),
+// читаем через BX.message(). Именно функциями, а не var-объектом на верхнем уровне
+// файла: BX.message() на верхнем уровне settings.js уже один раз ловил гонку —
+// в момент разбора этого файла браузером сообщения из lang-бандла ещё не факт что
+// подгружены, а на верхнем уровне это выполняется немедленно. Внутри функций
+// (вызываются позже, из BX.ready/по клику) это безопасно — так и делают все
+// остальные BX.message() в этом файле.
+var ESL_DIM_AXES = ['width', 'height', 'length'];
+
+function eslDimUnitLabel(unit) {
+    return unit === 'cm' ? BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_UNIT_CM') : BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_UNIT_MM');
+}
+
+function eslDimSourceLabel(source) {
+    if (source === 'standard') return BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_SOURCE_STANDARD');
+    if (source === 'property') return BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_SOURCE_PROPERTY');
+    return source;
+}
+
+function eslDimInput(axis) {
+    return document.getElementById('esl-dimpriority-input-' + axis);
+}
+
+function eslDimGetList(axis) {
+    var input = eslDimInput(axis);
+    if (!input) return [];
+    try {
+        var list = JSON.parse(input.value || '[]');
+        return Array.isArray(list) ? list : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function eslDimSetList(axis, list) {
+    var input = eslDimInput(axis);
+    if (!input) return;
+    input.value = JSON.stringify(list);
+    eslDimRenderAxis(axis);
+}
+
+function eslDimRenderAxis(axis) {
+    var panel = document.querySelector('.esl-dimpriority__axis[data-axis="' + axis + '"]');
+    var rows = panel && panel.querySelector('.esl-dimpriority__rows');
+    if (!rows) return;
+
+    var list = eslDimGetList(axis);
+    rows.innerHTML = '';
+
+    if (!list.length) {
+        var empty = document.createElement('div');
+        empty.className = 'esl-dimpriority__empty';
+        empty.textContent = BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_EMPTY_LIST');
+        rows.appendChild(empty);
+        return;
+    }
+
+    list.forEach(function (entry, index) {
+        var row = document.createElement('div');
+        row.className = 'esl-dimpriority__row';
+
+        var order = document.createElement('span');
+        order.className = 'esl-dimpriority__row-order';
+        order.textContent = (index + 1) + '.';
+        row.appendChild(order);
+
+        var name = document.createElement('span');
+        name.className = 'esl-dimpriority__row-name';
+        name.textContent = entry.name || entry.code;
+        name.title = entry.code;
+        row.appendChild(name);
+
+        var src = document.createElement('span');
+        src.className = 'esl-dimpriority__row-src';
+        src.textContent = eslDimSourceLabel(entry.source);
+        row.appendChild(src);
+
+        var unit = document.createElement('select');
+        unit.className = 'esl-dimpriority__row-unit';
+        ['mm', 'cm'].forEach(function (u) {
+            var opt = document.createElement('option');
+            opt.value = u;
+            opt.textContent = eslDimUnitLabel(u);
+            if ((entry.unit || 'mm') === u) opt.selected = true;
+            unit.appendChild(opt);
+        });
+        unit.addEventListener('change', function () {
+            var current = eslDimGetList(axis);
+            current[index].unit = unit.value;
+            eslDimSetList(axis, current);
+        });
+        row.appendChild(unit);
+
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'esl-dimpriority__row-remove';
+        remove.title = BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_REMOVE_TITLE');
+        remove.textContent = '×';
+        remove.addEventListener('click', function () {
+            var current = eslDimGetList(axis);
+            current.splice(index, 1);
+            eslDimSetList(axis, current);
+        });
+        row.appendChild(remove);
+
+        rows.appendChild(row);
+    });
+}
+
+// Вызывается кликом по элементу диалога-пикера (dimensionfields.php). BX.CAdminDialog
+// вставляет содержимое прямо в этот же документ (не iframe, см. terminalsearch.php),
+// поэтому диалог может звать эту функцию напрямую, без window.opener/postMessage.
+window.eslDimAdd = function (axis, source, code, name) {
+    var list = eslDimGetList(axis);
+    var exists = list.some(function (e) { return e.source === source && e.code === code; });
+    if (!exists) {
+        list.push({source: source, code: code, name: name, unit: 'mm'});
+        eslDimSetList(axis, list);
+    }
+};
+
+function eslDimInit() {
+    if (!document.getElementById('esl-dimpriority-root')) return;
+    ESL_DIM_AXES.forEach(function (axis) {
+        eslDimRenderAxis(axis);
+    });
+}
+
+BX.ready(eslDimInit);
+

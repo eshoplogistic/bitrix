@@ -30,6 +30,7 @@ $arJsConfig = array(
     'settings_lib' => array(
         'js' => '/bitrix/js/'.$moduleId.'/settings.js',
         'css' => '/bitrix/css/'.$moduleId.'/settings.css',
+        'lang' => '/bitrix/modules/'.$moduleId.'/lang/'.LANGUAGE_ID.'/js/settings.js.php',
     ),
     // Только CSS страницы настроек, без settings.js - для settings/additionalservices.php
     // (диалог CAdminDialog без своего <head>, settings.js там не нужен и не проверялся).

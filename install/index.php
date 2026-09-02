@@ -310,6 +310,7 @@ Class eshoplogistic_delivery extends CModule
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_print.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_additionalservices.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_terminalsearch.php");
+		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_dimensionfields.php");
 
 		return true;
 	}

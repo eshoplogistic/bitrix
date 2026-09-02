@@ -736,21 +736,30 @@ class ComponentOrder
         $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
         $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
-		foreach ($arResult['BASKET_ITEMS'] as $item) {
-            if($item['DIMENSIONS']){
-                $dimensions = is_array($item['DIMENSIONS']) ? $item['DIMENSIONS'] : unserialize($item['DIMENSIONS'], ['allowed_classes' => false]);
-                if($dimensions['WIDTH']) $width = $dimensions['WIDTH'] / 10;
-                if($dimensions['HEIGHT']) $height = $dimensions['HEIGHT'] / 10;
-                if($dimensions['LENGTH']) $length = $dimensions['LENGTH'] / 10;
+        // Габариты берём тем же резолвером, что и обычный чекаут (Dimensions::resolveForProducts,
+        // приоритет источников настраивается в options.php), а не из $item['DIMENSIONS'] — это
+        // стандартное поле корзины Bitrix, которое само заполняется только из стандартных
+        // WIDTH/HEIGHT/LENGTH товара и не знает про кастомные свойства.
+        // ВАЖНО: $item['ID'] в BASKET_ITEMS — это ID строки корзины (b_sale_basket.ID), а не
+        // товара/предложения (см. sale.order.ajax/class.php: $arElementId[] = $arBasketItem["PRODUCT_ID"],
+        // отдельное поле). Резолвер должен получать именно PRODUCT_ID — иначе он ищет
+        // несуществующий элемент и всегда падает на дефолт (это и было причиной "габариты
+        // всегда 0" при заполненном кастомном свойстве).
+        $productIds = array_map(static function ($item) { return (int)$item['PRODUCT_ID']; }, $arResult['BASKET_ITEMS']);
+        $productDimensions = $productIds ? \Eshoplogistic\Delivery\Helpers\Dimensions::resolveForProducts($productIds) : [];
 
-            }
+		foreach ($arResult['BASKET_ITEMS'] as $item) {
+            $dimensions = $productDimensions[(int)$item['PRODUCT_ID']] ?? [];
+            $itemWidth  = $dimensions['WIDTH']  ?? $width;
+            $itemHeight = $dimensions['HEIGHT'] ?? $height;
+            $itemLength = $dimensions['LENGTH'] ?? $length;
 			$offers[] = array(
 				'article' => $item['ID'],
 				'name' => $item['NAME'],
 				'count' => $item['QUANTITY'],
 				'price' => $item['PRICE'],
 				'weight' => isset($item['WEIGHT']) && $item['WEIGHT'] != '0.00' ? $item['WEIGHT'] / 1000 : $weightDefault,
-                "dimensions" => $width."*".$height."*".$length
+                "dimensions" => $itemWidth."*".$itemHeight."*".$itemLength
 			);
 		}
 		$jsonValueOffers = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($offers));

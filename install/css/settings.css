@@ -2,7 +2,7 @@
    EShopLogistic — Страница настроек: единый стиль
    ============================================= */
 
-#edit, #faq, #unloading, .esl-terminal-search, .esl-addfield-services {
+#edit, #faq, #unloading, .esl-terminal-search, .esl-addfield-services, .esl-dimfield-picker {
     --esl-accent: #4a7dff;
     --esl-accent-dark: #3563e0;
     --esl-accent-soft: rgba(74, 125, 255, 0.12);
@@ -1000,3 +1000,168 @@ input[name="status-form"] {
     background: var(--esl-bg-subtle);
 }
 .esl-addfield-empty svg { color: var(--esl-text-muted); opacity: 0.7; }
+
+/* ---------- Поиск свойства для габарита (dimensionfields.php) ---------- */
+
+.esl-dimfield-picker__search { margin-bottom: 12px; }
+.esl-dimfield-picker__search input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8d0e0;
+    border-radius: var(--esl-radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--esl-text);
+    background: #fafbfd;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.esl-dimfield-picker__search input[type="text"]:focus {
+    border-color: var(--esl-accent);
+    box-shadow: 0 0 0 3px var(--esl-accent-soft);
+    background: #fff;
+}
+.esl-dimfield-picker__list {
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius);
+    max-height: 340px;
+    overflow-y: auto;
+    background: #fff;
+}
+.esl-dimfield-picker__group-title {
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--esl-text-faint);
+    background: var(--esl-bg-subtle);
+    border-bottom: 1px solid var(--esl-border-soft);
+}
+.esl-dimfield-picker__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--esl-bg-subtle);
+    font-size: 13px;
+    color: var(--esl-text);
+    transition: background 0.12s;
+}
+.esl-dimfield-picker__item:hover { background: var(--esl-accent-soft); }
+/* Атрибут [hidden] у браузера низкой специфичности (уровень тега) — класс выше
+   (display:flex) его перебивает, поэтому JS-фильтр (search.js: items[i].hidden = ...)
+   молча не работал. Явно возвращаем приоритет [hidden]. */
+.esl-dimfield-picker__item[hidden],
+.esl-dimfield-picker__group-title[hidden] { display: none !important; }
+.esl-dimfield-picker__item-name { font-weight: 600; }
+.esl-dimfield-picker__item-code { color: var(--esl-text-faint); font-size: 11px; font-family: monospace; }
+.esl-dimfield-picker__empty { padding: 24px 4px; text-align: center; font-size: 13px; color: var(--esl-text-faint); }
+
+/* ---------- Приоритет источников габарита (options.php, секция "Габариты") ---------- */
+
+/* Рендерится "сырой" строкой — options.php передаёт eslDimensionPriorityField() как
+   обычный элемент массива OPTIONS, а не array('note'=>...): 'note' заворачивает
+   контент в BeginNote()/EndNote() (main/filter_tools.php), и эта обёртка обрезала
+   всплывающую подсказку eslHint() у заголовка панели. "Сырая" строка рендерится
+   ядром как простой <tr class="heading"><td colspan="2">, без этой обёртки — здесь
+   снимаем стандартный вид "heading" (капс, серый фон, паддинги) и воссоздаём тот же
+   300px лейбл-столбец, что и у обычных полей (.adm-detail-content-cell-l), вручную. */
+#edit .edit-table tr.heading:has(.esl-dimpriority-wrap) td,
+#unloading .edit-table tr.heading:has(.esl-dimpriority-wrap) td,
+#edit .edit-table tr.heading:has(.esl-dimpriority-wrap):hover td,
+#unloading .edit-table tr.heading:has(.esl-dimpriority-wrap):hover td {
+    font-size: inherit !important;
+    font-weight: normal !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    color: inherit !important;
+    background: transparent !important;
+    border-top: none !important;
+    padding: 0 !important;
+    cursor: auto;
+}
+/* Подсказка у этого заголовка сидит у самого верха своей ячейки (панели ниже —
+   высокие), а всплывает она вверх (.esl-hint__tip: bottom:130%) — упирается в верхний
+   край ячейки/строки и обрезается там, даже с overflow:visible на всех обёртках
+   (похоже, обрезает сама ячейка родной админ-таблицы, её разметку мы не контролируем).
+   Разворачиваем именно этот тултип вниз — там места достаточно (под ним сама панель). */
+.esl-dimpriority-wrap__label .esl-hint__tip {
+    bottom: auto;
+    top: 130%;
+}
+
+.esl-dimpriority-wrap { display: flex; align-items: flex-start; overflow: visible; }
+.esl-dimpriority-wrap__label {
+    flex: 0 0 300px;
+    max-width: 300px;
+    box-sizing: border-box;
+    padding: 9px 12px 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--esl-text-muted);
+    text-align: right;
+}
+.esl-dimpriority-wrap__content { flex: 1 1 auto; min-width: 0; padding: 6px 16px 12px 10px; overflow: visible; }
+
+.esl-dimpriority { display: flex; flex-direction: column; gap: 10px; max-width: 640px; overflow: visible; }
+.esl-dimpriority__axis { border: 1px solid var(--esl-border); border-radius: var(--esl-radius); background: var(--esl-bg-card); overflow: hidden; }
+.esl-dimpriority__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--esl-bg-subtle);
+    border-bottom: 1px solid var(--esl-border-soft);
+}
+.esl-dimpriority__title { font-size: 12px; font-weight: 700; color: var(--esl-text); }
+.esl-dimpriority__add {
+    border: 1px solid var(--esl-accent);
+    background: #fff;
+    color: var(--esl-accent);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.esl-dimpriority__add:hover { background: var(--esl-accent); color: #fff; }
+.esl-dimpriority__rows { padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; }
+.esl-dimpriority__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--esl-border-soft);
+    border-radius: var(--esl-radius-sm);
+    background: var(--esl-bg-subtle);
+    font-size: 12px;
+}
+.esl-dimpriority__row-order { flex: none; width: 16px; color: var(--esl-text-faint); font-weight: 700; text-align: center; }
+.esl-dimpriority__row-name { flex: 1 1 auto; font-weight: 600; color: var(--esl-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.esl-dimpriority__row-src { flex: none; color: var(--esl-text-faint); font-size: 11px; }
+.esl-dimpriority__row-unit {
+    flex: none;
+    border: 1px solid var(--esl-border);
+    border-radius: var(--esl-radius-sm);
+    padding: 2px 6px;
+    font-size: 11px;
+    background: #fff;
+    color: var(--esl-text);
+}
+.esl-dimpriority__row-remove {
+    flex: none;
+    border: none;
+    background: transparent;
+    color: var(--esl-text-faint);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+.esl-dimpriority__row-remove:hover { color: #dc2626; }
+.esl-dimpriority__empty { padding: 8px; font-size: 12px; color: var(--esl-text-faint); font-style: italic; }

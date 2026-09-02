@@ -8,6 +8,7 @@ use Bitrix\Main\Localization\Loc,
 use Bitrix\Sale\OrderStatus;
 use Eshoplogistic\Delivery\Api\Counterparties;
 use Eshoplogistic\Delivery\Config;
+use Eshoplogistic\Delivery\Helpers\Dimensions;
 
 global $APPLICATION;
 
@@ -22,6 +23,51 @@ UI\Extension::load("ui.notification");
 function eslHint(string $text): string
 {
     return $text === '' ? '' : ' <span class="esl-hint" tabindex="0">?<span class="esl-hint__tip">' . htmlspecialcharsbx($text) . '</span></span>';
+}
+
+// Приоритет источников габарита (Ширина/Высота/Длина): список из стандартного поля
+// товара и/или произвольных свойств инфоблока, перебираемых по очереди — первое
+// непустое значение и используется (см. Helpers\Dimensions::resolveForProducts).
+// Сама панель — набор скрытых полей dimension_priority_{axis}, JSON которых собирает
+// и перерисовывает settings.js (eslDimInit/eslDimAdd) по клику в диалоге-пикере
+// (dimensionfields.php, тот же приём "не iframe", что и у "Поиск терминала").
+function eslDimensionPriorityField(): string
+{
+    $axisLabels = array(
+        'width' => Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_AXIS_WIDTH'),
+        'height' => Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_AXIS_HEIGHT'),
+        'length' => Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_AXIS_LENGTH'),
+    );
+    $config = Dimensions::getPriorityConfig();
+
+    // Тот же лейбл-столбец (300px, как .adm-detail-content-cell-l у обычных полей),
+    // что и у остальных настроек — 'note' сама по себе рендерится на всю ширину
+    // строки (colspan=2, см. __AdmSettingsDrawRow в ядре), без родного разделения
+    // на колонку подписи и колонку контрола.
+    $html = '<div class="esl-dimpriority-wrap">';
+    $html .= '<div class="esl-dimpriority-wrap__label">' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_PRIORITY_TITLE')) . eslHint(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_PRIORITY_HINT')) . '</div>';
+    $html .= '<div class="esl-dimpriority-wrap__content"><div class="esl-dimpriority" id="esl-dimpriority-root">';
+    foreach ($axisLabels as $axis => $label) {
+        // ENT_QUOTES явно: значение JSON (в т.ч. названия свойств из инфоблока, не
+        // полностью доверенные данные) идёт в атрибут value='...' — по умолчанию
+        // htmlspecialcharsbx не экранирует одинарные кавычки (ENT_COMPAT).
+        $jsonValue = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($config[$axis] ?? array()), ENT_QUOTES);
+        $dialogUrl = '/bitrix/admin/eshoplogistic_delivery_dimensionfields.php?axis=' . $axis;
+        $html .= '<div class="esl-dimpriority__axis" data-axis="' . $axis . '">'
+            . '<div class="esl-dimpriority__head">'
+            . '<span class="esl-dimpriority__title">' . htmlspecialcharsbx($label) . '</span>'
+            . '<button type="button" class="esl-dimpriority__add" onclick="window.__eslDimDialog=(new BX.CAdminDialog({'
+            . "'content_url': '" . $dialogUrl . "',"
+            . "'draggable': true, 'resizable': true, 'width': 480, 'height': 420"
+            . '}));window.__eslDimDialog.Show();">' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_DIM_ADD_BUTTON')) . '</button>'
+            . '</div>'
+            . '<div class="esl-dimpriority__rows"></div>'
+            . '<input type="hidden" class="esl-dimpriority__input" id="esl-dimpriority-input-' . $axis . '" name="dimension_priority_' . $axis . '" value=\'' . $jsonValue . '\'>'
+            . '</div>';
+    }
+    $html .= '</div></div></div>';
+
+    return $html;
 }
 
 $request = HttpApplication::getInstance()->getContext()->getRequest();
@@ -727,6 +773,15 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "0",
                     array("text")
                 ),
+                // Не array('note'=>...) специально: 'note' заворачивает контент в
+                // BeginNote()/EndNote() (.adm-info-message-wrap > .adm-info-message,
+                // см. main/filter_tools.php) — эта обёртка обрезает всплывающую
+                // подсказку eslHint() у заголовка панели. "Сырая" строка (как у
+                // .esl-section-heading) рендерится без нее — просто <tr class="heading">,
+                // без BeginNote (см. __AdmSettingsDrawRow). buildSections() в settings.js
+                // подхватывает как раздел только tr.heading С .esl-section-heading внутри,
+                // так что на аккордеон секции "Габариты" это не влияет.
+                eslDimensionPriorityField(),
 				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_DISPLAY")) . '</span>',
                 array(
                     "api_address_requar",
@@ -917,6 +972,23 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 					Option::set($module_id, $arOption[0], $arOption[2]);
 				}
 			}
+		}
+
+		// Панель приоритета габаритов — 'note'-блок (eslDimensionPriorityField), его
+		// dimension_priority_{axis} общий цикл выше пропускает (см. проверку note),
+		// поэтому сохраняем эти три поля отдельно, тем же приёмом apply/default.
+		if ($request["apply"] || $request["default"]) {
+			$dimensionRawConfig = array();
+			if ($request["apply"]) {
+				foreach (Dimensions::AXES as $axis) {
+					$posted = $request->getPost('dimension_priority_' . $axis);
+					$decoded = ($posted !== null && $posted !== '') ? json_decode($posted, true) : array();
+					$dimensionRawConfig[$axis] = is_array($decoded) ? $decoded : array();
+				}
+			}
+			// При "default" $dimensionRawConfig остаётся пустым — sanitizeConfig сам
+			// подставит для каждой оси единственное стандартное поле, как и раньше.
+			Dimensions::saveConfig($dimensionRawConfig);
 		}
 
 		LocalRedirect($APPLICATION->GetCurPage()."?mid=".$module_id."&lang=".LANG);

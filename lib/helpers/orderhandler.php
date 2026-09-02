@@ -40,29 +40,17 @@ class OrderHandler
 			$productIds[]  = $basketItem->getProductId();
 		}
 
-		// Один батч-запрос вместо N запросов в цикле
-		$productDimensions = array();
-		if ($productIds) {
-			$result = Catalog\ProductTable::getList(array(
-				'filter' => array('=ID' => $productIds),
-				'select' => array('ID', 'WIDTH', 'LENGTH', 'HEIGHT')
-			));
-			while ($product = $result->fetch()) {
-				$productDimensions[$product['ID']] = $product;
-			}
-		}
+		// Один батч-запрос вместо N запросов в цикле; сами габариты (в т.ч. приоритет
+		// источников — стандартные поля ДхШхВ и/или кастомные свойства товара) считает
+		// Dimensions::resolveForProducts (см. options.php, секция "Габариты").
+		$productDimensions = $productIds ? Dimensions::resolveForProducts($productIds) : array();
 
-		$width  = $widthDefault;
-		$height = $heightDefault;
-		$length = $lengthDefault;
 		foreach ($basketItems as $basketItem) {
 			$productId = $basketItem->getProductId();
-			if (isset($productDimensions[$productId])) {
-				$product = $productDimensions[$productId];
-				if ($product['WIDTH'])  $width  = $product['WIDTH']  / 10;
-				if ($product['LENGTH']) $height = $product['LENGTH'] / 10;
-				if ($product['HEIGHT']) $length = $product['HEIGHT'] / 10;
-			}
+			$dimensions = $productDimensions[$productId] ?? array();
+			$width  = $dimensions['WIDTH']  ?? $widthDefault;
+			$height = $dimensions['HEIGHT'] ?? $heightDefault;
+			$length = $dimensions['LENGTH'] ?? $lengthDefault;
 
 			$item = array(
 				"article"    => $productId,
