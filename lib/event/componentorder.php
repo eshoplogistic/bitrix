@@ -115,18 +115,7 @@ class ComponentOrder
                 $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
                 $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
                 $priceHide  = Option::get(Config::MODULE_ID, 'price_hide');
-                $locationTypeIdsClassic = [];
-                $dbLocationProps = \CSaleOrderProps::GetList(
-                    array('SORT' => 'ASC'),
-                    array('TYPE' => 'LOCATION', 'UTIL' => 'N'),
-                    false,
-                    false,
-                    array('ID')
-                );
-                while ($locProp = $dbLocationProps->Fetch()) {
-                    $locationTypeIdsClassic[] = $locProp['ID'];
-                }
-                $locationTypeIdsClassicStr = implode(',', $locationTypeIdsClassic);
+                $locationTypeIdsClassicStr = implode(',', self::getLocationPropertyIds());
 
 				while ($profile = $rsProfile->fetch()) {
 
@@ -382,6 +371,45 @@ class ComponentOrder
 	}
 
 
+	/** IDs свойств заказа с TYPE=LOCATION
+	 * @return array
+	 */
+	private static function getLocationPropertyIds()
+	{
+		$ids = [];
+		$dbLocationProps = \CSaleOrderProps::GetList(
+			array('SORT' => 'ASC'),
+			array('TYPE' => 'LOCATION', 'UTIL' => 'N'),
+			false,
+			false,
+			array('ID')
+		);
+		while ($locProp = $dbLocationProps->Fetch()) {
+			$ids[] = $locProp['ID'];
+		}
+		return $ids;
+	}
+
+	/** Значение свойства заказа, только что отправленное в этом же AJAX-запросе.
+	 * @param int|string $propId
+	 * @param array $requestOrderPost
+	 * @param array $arUserResult
+	 * @return string|null
+	 */
+	private static function getFreshOrderPropValue($propId, $requestOrderPost, $arUserResult)
+	{
+		if (!$propId) {
+			return null;
+		}
+		if (isset($requestOrderPost['ORDER_PROP_' . $propId]) && $requestOrderPost['ORDER_PROP_' . $propId] !== '') {
+			return $requestOrderPost['ORDER_PROP_' . $propId];
+		}
+		if (isset($arUserResult['ORDER_PROP'][$propId]) && $arUserResult['ORDER_PROP'][$propId] !== '') {
+			return $arUserResult['ORDER_PROP'][$propId];
+		}
+		return null;
+	}
+
 	/** Check delivery type
 	 * @param $deliveryCode
 	 * @return bool
@@ -409,21 +437,13 @@ class ComponentOrder
 
 		$request = Main\Application::getInstance()->getContext()->getRequest();
 		$requestDataEsl = $request->getPost("eslData");
-
-        $registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
-        $orderClassName = $registry->getOrderClassName();
-        $order = $orderClassName::create(\Bitrix\Main\Application::getInstance()->getContext()->getSite());
-        $propertyCollection = $order->getPropertyCollection();
+        // Сырые данные того же AJAX-запроса — единственный надёжный источник
+        $requestOrderPost = $request->getPost("order");
+        $locationTypeIds = self::getLocationPropertyIds();
         $requestDataLocation = '';
-        $locationTypeIds = [];
-        foreach ($propertyCollection as $property){
-            if ($property->isUtil())
-                continue;
-
-            $arProperty = $property->getProperty();
-            if($arProperty['TYPE'] === 'LOCATION' && isset($arUserResult['ORDER_PROP'][$arProperty['ID']])){
-                $requestDataLocation = $arProperty['ID'];
-                $locationTypeIds[] = $arProperty['ID'];
+        foreach ($locationTypeIds as $locPropId) {
+            if (isset($arUserResult['ORDER_PROP'][$locPropId])) {
+                $requestDataLocation = $locPropId;
             }
         }
         if(!$requestDataLocation)
@@ -534,11 +554,12 @@ class ComponentOrder
         $addressRequarIds = $addressRequarOption ? array_filter(array_map('trim', explode(',', $addressRequarOption))) : [];
         $addressCityName = null;
         foreach ($addressRequarIds as $reqId) {
-            if ((string)$reqId !== (string)$requestDataLocation
-                && isset($arUserResult['ORDER_PROP'][$reqId])
-                && $arUserResult['ORDER_PROP'][$reqId]
-            ) {
-                $addressCityName = $arUserResult['ORDER_PROP'][$reqId];
+            if ((string)$reqId === (string)$requestDataLocation) {
+                continue;
+            }
+            $value = self::getFreshOrderPropValue($reqId, $requestOrderPost, $arUserResult);
+            if ($value !== null) {
+                $addressCityName = $value;
                 break;
             }
         }
@@ -546,7 +567,8 @@ class ComponentOrder
             $resolved = LocationHandler::resolveCityFromText($addressCityName);
             $cityFirst = $resolved['parsedCity'] ?? [];
         } else {
-            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($arUserResult['ORDER_PROP'][$requestDataLocation]);
+            $locationValue = self::getFreshOrderPropValue($requestDataLocation, $requestOrderPost, $arUserResult);
+            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationValue);
             // getAvailableDeliveriesByLocation уже вернул распарсенный объект города —
             // повторный запрос Search::getCity не нужен
             $cityFirst = $deliveriesListTo;

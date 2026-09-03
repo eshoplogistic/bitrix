@@ -44,6 +44,12 @@ eslog-deliverey-desc-lk {
     transition: all 0.4s;
 }
 
+#container_widget_esl_button .button__text,
+#container_widget_esl_button .center,
+#container_widget_esl_button .wave {
+    pointer-events: none;
+}
+
 .eslog-btn-default.loading-esl .button__text {
     display: none;
     opacity: 0;
