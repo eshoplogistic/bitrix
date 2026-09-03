@@ -30,6 +30,13 @@ class Config
 	//     НЕ ошибка валидации, вопреки комментарию в МойСклад для этого же параметра;
 	// 3 - фейковая ошибка выгрузки (422, errors внутри data)
 	const API_FAKE_MODE = 0;
+	// События модуля для доработчиков проекта: позволяют скорректировать массив данных
+	// прямо перед отправкой запроса во внешний API (расчёт стоимости / выгрузка заказа ТК),
+	// когда штатных настроек модуля не хватает. Подписка — обычным
+	// EventManager::addEventHandler(Config::MODULE_ID, Config::EVENT_BEFORE_CALCULATE, ...)
+	// в init.php проекта, обработчик возвращает EventResult::SUCCESS с массивом полей для замены.
+	const EVENT_BEFORE_CALCULATE = 'onBeforeCalculate';
+	const EVENT_BEFORE_EXPORT = 'onBeforeExport';
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;

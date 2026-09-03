@@ -7,11 +7,15 @@ use \Bitrix\Sale,
     \Bitrix\Main\Error,
     \Bitrix\Main\Localization\Loc,
     \Bitrix\Main\EventManager,
+    \Bitrix\Main\Event,
+    \Bitrix\Main\EventResult,
     \Bitrix\Main\Config\Option,
     \Eshoplogistic\Delivery\Api,
     \Eshoplogistic\Delivery\Helpers,
     \Bitrix\Main\Application,
     \Eshoplogistic\Delivery\Config;
+
+use Eshoplogistic\Delivery\Logger\Logger;
 
 //EventManager::getInstance()->addEventHandler('sale', 'onSaleDeliveryServiceCalculate', 'getDefaultCalculateDelivery');
 /** Class for calculate deliveries
@@ -110,6 +114,48 @@ class CalculateHandler
             $fullAdressValue = trim($requestData['ESHOPLOGISTIC_FULL_ADDRESS']);
             if($fullAdressValue)
                 $to = $fullAdressValue;
+        }
+
+        // Точка доработки: позволяет обработчику события в проекте скорректировать состав
+        // заказа/адреса перед реальным запросом к API (например, поправить кол-во/вес позиций,
+        // если это не покрывается настройками модуля).
+        $originalTo = $to;
+        $originalOrderData = $orderData;
+
+        $event = new Event(Config::MODULE_ID, Config::EVENT_BEFORE_CALCULATE, array(
+            'shipment' => $shipment,
+            // 'order' и 'basket' — для обработчика: значения
+            // свойства заказа (order->getPropertyCollection()) или реальных данных товара из
+            // каталога (basketItem->getProductId() + CIBlockElement::GetByID/ProductTable).
+            'order' => $order,
+            'basket' => $basket,
+            'service' => $service,
+            'type' => $type,
+            'from' => $from,
+            'to' => $to,
+            'orderData' => $orderData,
+        ));
+        $event->send();
+        foreach ($event->getResults() as $eventResult) {
+            if ($eventResult->getType() !== EventResult::SUCCESS) continue;
+            $modified = $eventResult->getParameters();
+            if (isset($modified['to'])) {
+                $to = $modified['to'];
+            }
+            if (isset($modified['orderData'])) {
+                $orderData = $modified['orderData'];
+            }
+        }
+
+        if ($to !== $originalTo || $orderData !== $originalOrderData) {
+            Logger::log(
+                'EVENT_BEFORE_CALCULATE',
+                'Заказ #' . $order->getId() . ', служба: ' . $service . '<br>'
+                . 'До:<br>' . Logger::pretty(array('to' => $originalTo, 'orderData' => $originalOrderData)) . '<br>'
+                . 'После:<br>' . Logger::pretty(array('to' => $to, 'orderData' => $orderData)),
+                \CEventLog::SEVERITY_INFO,
+                $order->getId() ?: false
+            );
         }
 
         if (!$to) {

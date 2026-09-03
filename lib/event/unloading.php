@@ -3,6 +3,8 @@
 namespace Eshoplogistic\Delivery\Event;
 
 use Bitrix\Main\Config\Option;
+use Bitrix\Main\Event;
+use Bitrix\Main\EventResult;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Delivery\Services\Manager;
 use CSaleOrder;
@@ -12,6 +14,7 @@ use Eshoplogistic\Delivery\Config;
 use Bitrix\Sale;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Helpers\ShippingHelper;
+use Eshoplogistic\Delivery\Logger\Logger;
 
 class Unloading
 {
@@ -534,6 +537,46 @@ class Unloading
             $defaultFields['seller'] = array(
                 'name' => $sellerName,
                 'phone' => $sellerPhone,
+            );
+        }
+
+        // Точка доработки: обработчик события в проекте получает уже полностью собранный
+        // запрос на выгрузку (places/receiver/sender/delivery и т.д.) и может поправить его
+        // перед фактической отправкой ТК — например, если штатных настроек ТК не хватает.
+        // См. Config::EVENT_BEFORE_EXPORT.
+        $originalFields = $defaultFields;
+
+        // 'order' — загруженный объект заказа сайта (не заказа ТК), чтобы обработчик мог
+        // читать свойства/состав заказа, а не только плоские данные формы выгрузки ($data).
+        $order = !empty($data['order_id']) ? Sale\Order::load($data['order_id']) : null;
+
+        $event = new Event(Config::MODULE_ID, Config::EVENT_BEFORE_EXPORT, array(
+            'order' => $order,
+            'data' => $data,
+            'fields' => $defaultFields,
+        ));
+        $event->send();
+        foreach ($event->getResults() as $eventResult) {
+            if ($eventResult->getType() !== EventResult::SUCCESS) continue;
+            $modified = $eventResult->getParameters();
+            if (isset($modified['fields'])) {
+                $defaultFields = $modified['fields'];
+            }
+        }
+
+        if ($defaultFields !== $originalFields) {
+            // 'key' — токен доступа к API, в журнал событий не пишем
+            $sanitizedBefore = $originalFields;
+            $sanitizedAfter = $defaultFields;
+            unset($sanitizedBefore['key'], $sanitizedAfter['key']);
+
+            Logger::log(
+                'EVENT_BEFORE_EXPORT',
+                'Заказ #' . ($data['order_id'] ?? '') . ', ТК: ' . ($data['delivery_id'] ?? '') . '<br>'
+                . 'До:<br>' . Logger::pretty($sanitizedBefore) . '<br>'
+                . 'После:<br>' . Logger::pretty($sanitizedAfter),
+                \CEventLog::SEVERITY_INFO,
+                $data['order_id'] ?? false
             );
         }
 
