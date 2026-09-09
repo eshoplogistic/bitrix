@@ -235,8 +235,16 @@ class CalculateHandler
      * доставки eShopLogistic" — цену/срок берёт из данных виджета или сессии (см.
      * ComponentOrder::orderDeliveryBuildListFrame), а результат ЭТОГО расчёта отбрасывает
      * целиком. Поэтому на всех НЕ-подтверждающих запросах реальный POST на api.esplc.ru тут
-     * не нужен — только на confirmorder=Y, где cчитаем как обычно, и в админке (ADMIN_SECTION),
-     * которая не проходит через виджет и должна видеть настоящую цену при просмотре/правке заказа.
+     * не нужен — только на реальном оформлении заказа, где считаем как обычно, и в админке
+     * (ADMIN_SECTION), которая не проходит через виджет и должна видеть настоящую цену при
+     * просмотре/правке заказа.
+     * ВАЖНО: используемый на сайте компонент — sale.order.ajax (не старый sale.order), и его
+     * фронтенд на кнопке "Оформить заказ" шлёт action=saveOrderAjax (см. bootstrap_v4/order_ajax.js,
+     * OrderAjaxComponent.sendRequest) — параметра confirmorder в этом запросе нет вообще, это
+     * поле от старого не-ajax компонента. Проверка по confirmorder здесь была всегда false,
+     * поэтому реальный расчёт не выполнялся никогда и в заказ уходила нулевая цена — см. class.php
+     * sale.order.ajax: $this->action === 'saveOrderAjax' (а не confirmorder) — тот же признак,
+     * которым сам Bitrix определяет подтверждение заказа.
      * @return bool
      */
     private static function skipRealCalculation()
@@ -250,7 +258,7 @@ class CalculateHandler
         }
 
         $request = Application::getInstance()->getContext()->getRequest();
-        if ($request->isPost() && $request->get('confirmorder') == 'Y') {
+        if ($request->isPost() && $request->get('action') === 'saveOrderAjax') {
             return false;
         }
 

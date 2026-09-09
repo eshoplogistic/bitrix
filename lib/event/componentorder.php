@@ -13,6 +13,7 @@ use CFile;
 use Eshoplogistic\Delivery\Api\Search;
 use Eshoplogistic\Delivery\Helpers\LocationHandler;
 use Bitrix\Sale\Delivery\Services\Manager;
+use Eshoplogistic\Delivery\Logger\Logger;
 
 
 Main\Loader::includeModule('sale');
@@ -285,6 +286,30 @@ class ComponentOrder
 	 */
 	public static function saleOrderBeforeSaved(Sale\Order $order)
 	{
+		// В режиме виджета (frame_lib) реальная цена доставки считается только на реальном
+		// оформлении заказа (см. CalculateHandler::skipRealCalculation, action=saveOrderAjax) —
+		// на всех остальных AJAX-обновлениях чекаута она сознательно отбрасывается и
+		// возвращается 0. Но Bitrix (sale.order.ajax::synchronizeOrder()) вызывает calculate()
+		// заново только если DELIVERY_ID (или локационное свойство) реально ИЗМЕНИЛИСЬ в этом
+		// же запросе. На самом запросе оформления способ доставки обычно уже выбран раньше и
+		// не меняется — Bitrix calculate() вообще не перевызывает, и в заказ сохраняется та
+		// самая нулевая цена с последнего обычного (не подтверждающего) обновления. Форсируем
+		// пересчёт здесь: OnSaleOrderBeforeSaved срабатывает один раз, ровно перед реальным
+		// сохранением заказа, и action=saveOrderAjax на этот момент гарантированно виден
+		// CalculateHandler'у — реальный запрос к api.esplc.ru уйдёт ровно один раз.
+		$calcResult = $order->getShipmentCollection()->calculateDelivery();
+		if (!$calcResult->isSuccess()) {
+			Logger::log(
+				'DELIVERY_RECALC_FAILED',
+				'Заказ #' . $order->getId() . ': ' . implode('; ', array_map(
+					function ($e) { return $e->getCode() . ':' . $e->getMessage(); },
+					$calcResult->getErrors()
+				)),
+				\CEventLog::SEVERITY_ERROR,
+				$order->getId() ?: false
+			);
+		}
+
 		$deliveryIds = $order->getDeliverySystemId();
 		foreach ($deliveryIds as $deliveryId) {
 			$rsDelivery = Delivery\Services\Table::getList(array(
