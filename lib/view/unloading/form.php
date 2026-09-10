@@ -358,10 +358,6 @@ echo $ID ?>"
                     echo GetMessage("ALREADY_PAID") ?></option>
                 <option value="cash_on_receipt" <?= ($paymentTypeDefault === 'cash_on_receipt') ? 'selected' : '' ?>><?php
                     echo GetMessage("CASH_RECEIPT") ?></option>
-                <option value="card_on_receipt"><?php
-                    echo GetMessage("CARD_RECEIPT") ?></option>
-                <option value="cashless"><?php
-                    echo GetMessage("CASHLESS") ?></option>
             </select>
         </td>
     </tr>
