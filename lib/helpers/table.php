@@ -15,6 +15,7 @@ class Table
     function get_columns()
     {
         return $columns = array(
+            'number' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_NUMBER"),
             'product_id' => 'ID',
             'name' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_NAME"),
             'quantity' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_QUANTITY"),
@@ -27,21 +28,6 @@ class Table
         );
     }
 
-    /** Значения по умолчанию для новой (добавленной кнопкой) строки таблицы мест. */
-    private function getDefaults()
-    {
-        return array(
-            'product_id' => '',
-            'name' => '',
-            'quantity' => '1',
-            'price' => '0',
-            'weight' => '0',
-            'width' => '0',
-            'length' => '0',
-            'height' => '0',
-        );
-    }
-
     function prepare_items($items = array())
     {
         $this->items = $items;
@@ -50,21 +36,28 @@ class Table
     /** Таблица мест — своя разметка (<table class="esl-places-table">), а не строки внутри
      * административной table.edit-table, как в остальных вкладках формы. Порт вида и разметки
      * из wp-content/plugins/eshoplogisticru/views/unloading-form.php (секция content4) —
-     * тот же набор колонок/классов, чтобы кнопка "Добавить"/удаление строки/шаблон новой
-     * строки работали идентично, включая переиндексацию products[N][...] после удаления
-     * (см. eslPlacesRenumber в install/js/admin.js).
+     * тот же набор колонок/классов, чтобы кнопка "Добавить"/удаление строки/переиндексация
+     * products[N][...] после удаления работали идентично (см. eslPlacesRenumber в
+     * install/js/admin.js). Разметка новой (добавляемой кнопкой) строки строится в JS
+     * (eslBuildPlaceRow), а не серверным <template>/скрытой table — на инсталляциях с
+     * AJAX-подгрузкой вкладок браузер терял инертность вложенной разметки, и лишняя строка
+     * просачивалась в живой DOM, сбивая нумерацию мест.
      */
     function display()
     {
         $records = $this->items;
         $columns = $this->get_columns();
-        $defaults = $this->getDefaults();
         ?>
         <div class="esl-places__main">
             <button id="buttonModalUnloadAdd" type="button" class="esl-places__add"><?php
                 echo Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_ADD_PLACE") ?></button>
             <div class="esl-table-scroll">
                 <table class="esl-places-table">
+                    <colgroup>
+                        <?php foreach ($columns as $columnKey => $columnLabel): ?>
+                            <col class="esl-col-<?php echo $columnKey ?>">
+                        <?php endforeach; ?>
+                    </colgroup>
                     <thead>
                     <tr>
                         <?php foreach ($columns as $columnLabel): ?>
@@ -89,6 +82,9 @@ class Table
                                                     echo Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_DELETE") ?>">&times;</button>
                                             <?php endif; ?>
                                         </td>
+                                    <?php elseif ($columnKey === 'number'): ?>
+                                        <td class="column-number"><span class="esl-place-number"><?php
+                                                echo $rowIndex + 1 ?></span></td>
                                     <?php else:
                                         $cellValue = $rec[$columnKey] ?? '';
                                         ?>
@@ -107,21 +103,6 @@ class Table
                     </tbody>
                 </table>
             </div>
-            <template class="esl-row-template">
-                <tr>
-                    <?php foreach ($columns as $columnKey => $columnLabel): ?>
-                        <?php if ($columnKey === 'delete'): ?>
-                            <td class="column-delete"><button type="button" class="esl-delete_table_elem" title="<?php
-                                echo Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_DELETE") ?>">&times;</button></td>
-                        <?php else: ?>
-                            <td class="column-<?php echo $columnKey ?>">
-                                <input type="text" data-field="<?php echo $columnKey ?>"
-                                       value="<?php echo htmlspecialcharsbx((string)($defaults[$columnKey] ?? '')) ?>">
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
-            </template>
         </div>
         <?php
     }

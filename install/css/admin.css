@@ -241,9 +241,24 @@ form[name^=unloading_form] .esl-table-scroll {
 
 form[name^=unloading_form] .esl-places-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: separate !important;
     border-spacing: 0 !important;
 }
+
+/* Column widths keyed to the <col> classes emitted from Table::get_columns() order
+   (see lib/helpers/table.php) — "Наименование" gets the lion's share, the rest
+   (number/id/qty/price/dimensions/delete) stay narrow. Must sum to 100%. */
+form[name^=unloading_form] .esl-col-number { width: 5%; }
+form[name^=unloading_form] .esl-col-product_id { width: 8%; }
+form[name^=unloading_form] .esl-col-name { width: 27%; }
+form[name^=unloading_form] .esl-col-quantity { width: 7%; }
+form[name^=unloading_form] .esl-col-price { width: 9%; }
+form[name^=unloading_form] .esl-col-weight { width: 9%; }
+form[name^=unloading_form] .esl-col-width { width: 9%; }
+form[name^=unloading_form] .esl-col-length { width: 9%; }
+form[name^=unloading_form] .esl-col-height { width: 9%; }
+form[name^=unloading_form] .esl-col-delete { width: 8%; }
 
 /* Заголовки колонок */
 form[name^=unloading_form] .esl-places-table thead th {
@@ -275,8 +290,13 @@ form[name^=unloading_form] .esl-places-table td {
 }
 
 form[name^=unloading_form] .esl-places-table td.column-delete {
-    width: 40px;
     text-align: center;
+}
+
+form[name^=unloading_form] .esl-places-table td.column-number {
+    text-align: center;
+    color: #6b7a99;
+    font-weight: 600;
 }
 
 /* Инпуты в таблице мест */

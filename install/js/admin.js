@@ -119,7 +119,65 @@ function eslPlacesRenumber(table) {
         tr.querySelectorAll('td input[data-field]').forEach(function (input) {
             input.name = 'products[' + index + '][' + input.getAttribute('data-field') + ']';
         });
+        let numberCell = tr.querySelector('.esl-place-number');
+        if (numberCell) {
+            numberCell.textContent = index + 1;
+        }
     });
+}
+
+// Колонки новой строки и их значения по умолчанию — держим в соответствии с
+// Table::get_columns()/get_columns() ключами (lib/helpers/table.php). Строка собирается
+// в JS через createElement, а не клонированием серверного <template>/скрытой table: на
+// инсталляциях с AJAX-подгрузкой вкладок браузер терял инертность такой вложенной
+// разметки, и лишняя строка просачивалась в живой DOM, сбивая нумерацию мест на +1.
+var ESL_PLACE_ROW_COLUMNS = [
+    { key: 'number' },
+    { key: 'product_id', value: '' },
+    { key: 'name', value: '' },
+    { key: 'quantity', value: '1' },
+    { key: 'price', value: '0' },
+    { key: 'weight', value: '0' },
+    { key: 'width', value: '0' },
+    { key: 'length', value: '0' },
+    { key: 'height', value: '0' },
+    { key: 'delete' }
+];
+
+function eslBuildPlaceRow() {
+    let tr = document.createElement('tr');
+
+    ESL_PLACE_ROW_COLUMNS.forEach(function (column) {
+        let td = document.createElement('td');
+        td.className = 'column-' + column.key;
+
+        if (column.key === 'delete') {
+            let button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'esl-delete_table_elem';
+            // Подпись кнопки берём с уже существующей строки (если она есть), а не хардкодим -
+            // так работает, даже если словарь ESHOP_LOGISTIC_HELPERS_TABLE_DELETE когда-нибудь
+            // изменится.
+            let existingButton = document.querySelector('.esl-delete_table_elem');
+            button.title = existingButton ? existingButton.title : 'Удалить';
+            button.innerHTML = '&times;';
+            td.appendChild(button);
+        } else if (column.key === 'number') {
+            let span = document.createElement('span');
+            span.className = 'esl-place-number';
+            td.appendChild(span);
+        } else {
+            let input = document.createElement('input');
+            input.type = 'text';
+            input.setAttribute('data-field', column.key);
+            input.value = column.value;
+            td.appendChild(input);
+        }
+
+        tr.appendChild(td);
+    });
+
+    return tr;
 }
 
 function eslAddPlaceRow(button) {
@@ -129,13 +187,12 @@ function eslAddPlaceRow(button) {
     }
 
     let table = wrapper.querySelector('.esl-places-table');
-    let template = wrapper.querySelector('template.esl-row-template');
-    if (!table || !template) {
+    let tbody = table && table.querySelector('tbody');
+    if (!tbody) {
         return;
     }
 
-    let row = template.content.firstElementChild.cloneNode(true);
-    table.querySelector('tbody').appendChild(row);
+    tbody.appendChild(eslBuildPlaceRow());
     eslPlacesRenumber(table);
 }
 
