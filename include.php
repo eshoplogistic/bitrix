@@ -40,6 +40,7 @@ $arJsConfig = array(
     'unloading_lib' => array(
         'js' => '/bitrix/js/'.$moduleId.'/admin.js',
         'css' => '/bitrix/css/'.$moduleId.'/admin.css',
+        'lang' => '/bitrix/modules/'.$moduleId.'/lang/'.LANGUAGE_ID.'/js/admin.js.php',
     ),
     // Диалоги CAdminDialog вкладки "Заказ" (checkstatus/updatestatus/clearstatus/print.php) -
     // рендерятся отдельным фрагментом без прогона prolog_admin_after.php, поэтому обычное

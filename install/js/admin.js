@@ -260,7 +260,7 @@ function eslUnloadingFormInit(formId, actionUrl) {
     BX.ready(function () {
         var cancelBtn = form.querySelector('input[name="cancel"]');
         if (cancelBtn) {
-            cancelBtn.value = 'Вернуться к заказу';
+            cancelBtn.value = BX.message('ESHOP_LOGISTIC_UNLOADING_BACK_BTN');
         }
     });
 }
