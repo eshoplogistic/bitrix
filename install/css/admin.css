@@ -377,7 +377,7 @@ form[name^=unloading_form] .esl-combine-places {
 }
 
 form[name^=unloading_form] .esl-combine-places__field {
-    flex: 1 1 0;
+    flex: 0 1 325px;
     min-width: 160px;
 }
 
