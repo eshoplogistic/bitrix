@@ -51,16 +51,16 @@ $aTabs = [
         "TITLE" => GetMessage("FORM_SECTION_2"),
     ],
     [
-        "DIV" => "edit3",
-        "TAB" => GetMessage("FORM_SECTION_3"),
-        "ICON" => "main_user_edit",
-        "TITLE" => GetMessage("FORM_SECTION_3"),
-    ],
-    [
         "DIV" => "edit4",
         "TAB" => GetMessage("FORM_SECTION_4"),
         "ICON" => "main_user_edit",
         "TITLE" => GetMessage("FORM_SECTION_4"),
+    ],
+    [
+        "DIV" => "edit3",
+        "TAB" => GetMessage("FORM_SECTION_3"),
+        "ICON" => "main_user_edit",
+        "TITLE" => GetMessage("FORM_SECTION_3"),
     ],
 ];
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
@@ -692,50 +692,6 @@ echo $ID ?>"
 
     <?php
     $tabControl->BeginNextTab(); ?>
-    <tr>
-        <td colspan="2">
-            <?php
-            $eslTable->prepare_items($orderItems);
-            $eslTable->display();
-            ?>
-        </td>
-    </tr>
-
-    <?php
-    // "Объединить все грузовые места в одно" — под таблицей мест, а не среди полей получателя
-    // (как в МС/WP: unloading.html.php / unloading-form.php, секция с таблицей мест).
-    // Тело вкладки — table.edit-table, поэтому свой блок тоже оборачиваем в <tr><td colspan="2">,
-    // иначе браузер выносит "голый" <div> из <tbody> и рвёт границы вкладок (foster parenting).
-    if (isset($fieldDelivery['order[combine_places]'])): ?>
-        <tr>
-            <td colspan="2">
-                <div class="esl-combine-places">
-                    <?php foreach ($fieldDelivery['order[combine_places]'] as $key => $value):
-                        $explodeKey = explode('||', $key);
-                        $name = $explodeKey[0];
-                        $type = $explodeKey[1];
-                        $fieldId = 'esl-combine-places-' . htmlspecialcharsbx($name);
-                        ?>
-                        <div class="esl-combine-places__field<?= $type === 'checkbox' ? ' esl-combine-places__field--checkbox' : '' ?>">
-                            <label class="esl-combine-places__label" for="<?= $fieldId ?>"><?php
-                                echo eslFieldLabel($explodeKey, $name) ?></label>
-                            <?php if ($type === 'checkbox'): ?>
-                                <label class="esl-toggle">
-                                    <input id="<?= $fieldId ?>" type="checkbox" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" <?php echo $value ?>>
-                                    <span class="esl-toggle__track"></span>
-                                </label>
-                            <?php else: ?>
-                                <input id="<?= $fieldId ?>" type="text" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" value="<?= htmlspecialcharsbx((string)$value) ?>">
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </td>
-        </tr>
-    <?php endif; ?>
-
-    <?php
-    $tabControl->BeginNextTab(); ?>
     <?php
     if (isset($additionalFields['data']) && $additionalFields['data']): ?>
         <tr>
@@ -797,6 +753,50 @@ echo $ID ?>"
         </tr>
     <?php
     endif; ?>
+
+    <?php
+    $tabControl->BeginNextTab(); ?>
+    <tr>
+        <td colspan="2">
+            <?php
+            $eslTable->prepare_items($orderItems);
+            $eslTable->display();
+            ?>
+        </td>
+    </tr>
+
+    <?php
+    // "Объединить все грузовые места в одно" — под таблицей мест, а не среди полей получателя
+    // (как в МС/WP: unloading.html.php / unloading-form.php, секция с таблицей мест).
+    // Тело вкладки — table.edit-table, поэтому свой блок тоже оборачиваем в <tr><td colspan="2">,
+    // иначе браузер выносит "голый" <div> из <tbody> и рвёт границы вкладок (foster parenting).
+    if (isset($fieldDelivery['order[combine_places]'])): ?>
+        <tr>
+            <td colspan="2">
+                <div class="esl-combine-places">
+                    <?php foreach ($fieldDelivery['order[combine_places]'] as $key => $value):
+                        $explodeKey = explode('||', $key);
+                        $name = $explodeKey[0];
+                        $type = $explodeKey[1];
+                        $fieldId = 'esl-combine-places-' . htmlspecialcharsbx($name);
+                        ?>
+                        <div class="esl-combine-places__field<?= $type === 'checkbox' ? ' esl-combine-places__field--checkbox' : '' ?>">
+                            <label class="esl-combine-places__label" for="<?= $fieldId ?>"><?php
+                                echo eslFieldLabel($explodeKey, $name) ?></label>
+                            <?php if ($type === 'checkbox'): ?>
+                                <label class="esl-toggle">
+                                    <input id="<?= $fieldId ?>" type="checkbox" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" <?php echo $value ?>>
+                                    <span class="esl-toggle__track"></span>
+                                </label>
+                            <?php else: ?>
+                                <input id="<?= $fieldId ?>" type="text" name="order[combine_places][<?= htmlspecialcharsbx($name) ?>]" value="<?= htmlspecialcharsbx((string)$value) ?>">
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+        </tr>
+    <?php endif; ?>
 
 
     <?php
