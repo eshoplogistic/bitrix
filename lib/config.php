@@ -91,31 +91,20 @@ class Config
 		$this->profileList = array(
 			'baikal_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_DOOR"),
 			'baikal_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_BAIKAL_TERMINAL"),
-			// boxberry_door/boxberry_term намеренно убраны отсюда (но не из profileClasses/
-			// getEventDeliveryList выше) — Boxberry как служба больше не поддерживается и не
-			// должна предлагаться при создании НОВОГО профиля, но у магазинов, где она уже
-			// настроена, класс должен продолжать резолвиться (InitDeliveryService::
-			// getChildrenClassNames() без PROFILE_ID отдаёт весь profileClasses на каждом
-			// оформлении заказа — удаление класса/файла ломает оформление заказа вообще всем).
 			'custom_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_DOOR"),
 			'custom_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_CUSTOM_TERMINAL"),
 			'delline_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DELLINE_DOOR"),
 			'delline_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DELLINE_TERMINAL"),
 			'dpd_door'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DPD_DOOR"),
 			'dpd_term'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DPD_TERMINAL"),
-			'iml_door'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_IML_DOOR"),
-			'iml_term'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_IML_TERMINAL"),
 			'pecom_door'    => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_PECOM_DOOR"),
 			'pecom_term'    => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_PECOM_TERMINAL"),
 			'postrf_term'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_POSTRF_TERMINAL"),
 			'postrf_door'   => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_POSTRF_DOOR"),
 			'sdek_door'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SDEK_DOOR"),
 			'sdek_term'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SDEK_TERMINAL"),
-			'ozon_door'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_OZON_DOOR"),
-			'ozon_term'     => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_OZON_TERMINAL"),
 			'zde_door'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_ZDE_DOOR"),
 			'zde_term'      => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_ZDE_TERMINAL"),
-			'picpoint_term' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_PICPOINT_TERMINAL"),
 			'energija_door' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_ENERGIJA_DOOR"),
 			'energija_term' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_ENERGIJA_TERMINAL"),
 			'vozovoz_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_VOZOVOZ_DOOR"),
@@ -123,8 +112,6 @@ class Config
 			'grastin_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_GRASTIN_DOOR"),
 			'grastin_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_GRASTIN_TERMINAL"),
 			'fivepost_term' => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_FIVEPOST_TERMINAL"),
-			'sberlogistics_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SBERLOGISTICS_DOOR"),
-			'sberlogistics_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_SBERLOGISTICS_TERMINAL"),
 			'yandex_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_YANDEX_DOOR"),
 			'yandex_term'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_YANDEX_TERMINAL"),
             'dostavista_door'  => Loc::GetMessage("ESHOP_LOGISTIC_PROFILELIST_DOSTAVISTA_DOOR"),
