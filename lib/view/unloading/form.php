@@ -473,9 +473,9 @@ echo $ID ?>"
     endforeach; ?>
 
     <tr>
-        <td><span class="required">*</span><?php
+        <td><?php
             echo GetMessage("UNLOAD_PRICE") ?></td>
-        <td><input type="text" name="esl-unload-price" value="<?php
+        <td><input type="text" name="esl-unload-price" readonly="readonly" value="<?php
             echo $orderData['PRICE_DELIVERY'] ?>"></td>
     </tr>
     <?php
