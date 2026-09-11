@@ -83,10 +83,16 @@ class Unloading
         $currectDeliveryEsl = null;
         $checkUnloading = false;
 
-        $arReports[] = array(
-            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER"),
-            "LINK" => "/bitrix/admin/eshoplogistic_delivery_form.php?elementId=" . $elementId . "",
-        );
+        $arReports = array();
+        $exportAnswer = self::loadShippingMethodsAnswer($elementId);
+        $isUnloaded = !empty($exportAnswer['order']['id']);
+
+        if (!$isUnloaded) {
+            $arReports[] = array(
+                "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER"),
+                "LINK" => "/bitrix/admin/eshoplogistic_delivery_form.php?elementId=" . $elementId . "",
+            );
+        }
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"),
             "ACTION" => "(new BX.CAdminDialog({
@@ -783,7 +789,7 @@ class Unloading
         }
 
         $deliveryId = $this->resolveDeliveryId($orderId);
-        $answer = $this->loadShippingMethodsAnswer($orderId);
+        $answer = self::loadShippingMethodsAnswer($orderId);
         $carrierOrderId = $answer['order']['id'] ?? null;
 
         if (!$deliveryId || !$carrierOrderId) {
@@ -843,7 +849,7 @@ class Unloading
     public function getPrintForm($orderId, $mode, $paper = '', $type = '')
     {
         $deliveryId = $this->resolveDeliveryId($orderId);
-        $answer = $this->loadShippingMethodsAnswer($orderId);
+        $answer = self::loadShippingMethodsAnswer($orderId);
         $carrierOrderId = $answer['order']['id'] ?? null;
 
         if (!$deliveryId || !$carrierOrderId) {
@@ -925,7 +931,7 @@ class Unloading
      * @param int $orderId
      * @return array|null
      */
-    private function loadShippingMethodsAnswer($orderId)
+    public static function loadShippingMethodsAnswer($orderId)
     {
         $order = Sale\Order::load($orderId);
         if (!$order) {
