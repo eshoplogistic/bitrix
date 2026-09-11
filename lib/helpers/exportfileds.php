@@ -315,7 +315,12 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            $savedTariff = $shippingMethods['terminal']['tariff'] ?? null;
+            // calculatehandler.php кладёт выбранный на расчёте тариф в ESHOPLOGISTIC_SHIPPING_METHODS
+            // плоским ключом "terminal_tarrif" (см. $debugArr), а не вложенным ['terminal']['tariff'] -
+            // с последним $savedTariff был всегда null, и селект тарифа откатывался на первый пункт
+            // из API вместо реально рассчитанного (например, СДЭК показывал "документы дверь-дверь"
+            // вместо выбранного покупателем "посылка склад-склад").
+            $savedTariff = $shippingMethods['terminal_tarrif'] ?? null;
             if($savedTariff){
                 $selectedTariffCode = $savedTariff['code'];
                 if(isset($tariffs[$selectedTariffCode])) {
@@ -580,7 +585,12 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            $savedTariff = $shippingMethods['terminal']['tariff'] ?? null;
+            // calculatehandler.php кладёт выбранный на расчёте тариф в ESHOPLOGISTIC_SHIPPING_METHODS
+            // плоским ключом "terminal_tarrif" (см. $debugArr), а не вложенным ['terminal']['tariff'] -
+            // с последним $savedTariff был всегда null, и селект тарифа откатывался на первый пункт
+            // из API вместо реально рассчитанного (например, СДЭК показывал "документы дверь-дверь"
+            // вместо выбранного покупателем "посылка склад-склад").
+            $savedTariff = $shippingMethods['terminal_tarrif'] ?? null;
             if($savedTariff){
                 $selectedTariffCode = $savedTariff['code'];
                 if(isset($tariffs[$selectedTariffCode])) {
