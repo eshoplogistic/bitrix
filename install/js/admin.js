@@ -45,7 +45,11 @@ var ESL_UNLOADING_VISIBILITY_RULES = [
     // получательский блок выше — оба поля были переведены из text в select в этом же
     // разделе, но правила видимости для них тогда не завели.
     { controller: 'sender[legal]', values: ['1'], targets: ['sender[identity][type]', 'sender[requisites][inn]', 'sender[requisites][kpp]'], carrier: 'baikal' },
-    { controller: 'sender[legal]', values: ['2'], targets: ['sender[identity][series]', 'sender[identity][number]'], carrier: 'baikal' }
+    { controller: 'sender[legal]', values: ['2'], targets: ['sender[identity][series]', 'sender[identity][number]'], carrier: 'baikal' },
+    // "Взять за доставку" (сумма к получению) имеет смысл только если включена
+    // "Взять оплату с получателя за доставку" — оба поля рендерятся в группе "delivery"
+    // с одинаковыми именами у всех ТК, использующих этот блок (см. exportfileds.php).
+    { controller: 'delivery[take_payment]', values: ['1'], targets: ['delivery[delivery-custom-cost]'] }
 ];
 
 // Значение скрытого поля "delivery_id" (см. lib/view/unloading/form.php) — код текущей
