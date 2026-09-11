@@ -375,9 +375,9 @@ function convertDateFields(table) {
 // совпадении с которым перечисленные поля показываются, иначе скрываются. Поля
 // адресуются по name, как и везде в этом файле (совпадает с ключом настройки).
 var ESL_VISIBILITY_RULES = [
-    // СДЭК: "Габариты итогового места" имеет смысл только при включённом
-    // "Объединить все места" (см. Iframe.php:981-990).
-    { controller: 'combine-places-apply-sdek', values: ['1'], targets: ['combine-places-dimensions-sdek'] },
+    // СДЭК: "Габариты итогового места" и "Вес итогового места" имеют смысл только при
+    // включённом "Объединить все места" (см. Iframe.php:981-990).
+    { controller: 'combine-places-apply-sdek', values: ['1'], targets: ['combine-places-dimensions-sdek', 'combine-places-weight-sdek'] },
     // Байкал Сервис: юрлицо -> реквизиты организации, физлицо -> серия/номер
     // документа (см. Iframe.php:1871-1945, группы sender-org-baikal / sender-identity-baikal).
     { controller: 'sender-type-baikal', values: ['1'], targets: ['sender-org-form-baikal', 'sender-company-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'] },
