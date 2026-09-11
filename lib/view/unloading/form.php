@@ -84,18 +84,34 @@ $shipmentCollection = $order->getShipmentCollection()->getNotSystemItems();
 
 
 foreach ($basket as $item) {
-    $weight = $item->getWeight();
-    $dimensions = $item->getField('DIMENSIONS');
-    if ($dimensions) {
-        $dimensions = unserialize($dimensions, ['allowed_classes' => false]);
-        if ($dimensions['WIDTH']) {
-            $width = $dimensions['WIDTH'] / 10;
-        }
-        if ($dimensions['LENGTH']) {
-            $height = $dimensions['LENGTH'] / 10;
-        }
-        if ($dimensions['HEIGHT']) {
-            $length = $dimensions['HEIGHT'] / 10;
+    // getWeight()/DIMENSIONS могут вернуть числовую строку вида "0.00" — она не empty(),
+    // поэтому сравниваем как числа, а не через empty()/приведение к bool.
+    $weight = (float)$item->getWeight();
+    $dimensionsField = $item->getField('DIMENSIONS');
+    $dimensions = $dimensionsField ? unserialize($dimensionsField, ['allowed_classes' => false]) : [];
+    $width = (float)($dimensions['WIDTH'] ?? 0);
+    $length = (float)($dimensions['LENGTH'] ?? 0);
+    $height = (float)($dimensions['HEIGHT'] ?? 0);
+
+    // Вес/габариты в корзине заказа — это снимок на момент добавления товара в
+    // корзину. Если на карточке товара их выставили/изменили позже, в уже
+    // оформленном заказе они остаются пустыми — подтягиваем актуальные значения
+    // с карточки товара.
+    if ($weight <= 0 || $width <= 0 || $length <= 0 || $height <= 0) {
+        $catalogProduct = \CCatalogProduct::GetByID($item->getProductId());
+        if ($catalogProduct) {
+            if ($weight <= 0) {
+                $weight = (float)$catalogProduct['WEIGHT'];
+            }
+            if ($width <= 0) {
+                $width = (float)$catalogProduct['WIDTH'];
+            }
+            if ($length <= 0) {
+                $length = (float)$catalogProduct['LENGTH'];
+            }
+            if ($height <= 0) {
+                $height = (float)$catalogProduct['HEIGHT'];
+            }
         }
     }
 
@@ -104,10 +120,10 @@ foreach ($basket as $item) {
         "name" => $item->getField('NAME'),
         "quantity" => $item->getQuantity(),
         "price" => $item->getPrice(),
-        "weight" => isset($weight) && $weight != '0.00' ? $weight / 1000 : 1,
-        "width" => isset($width) && $width != '0.00' ? $width : 0,
-        "length" => isset($length) && $length != '0.00' ? $length : 0,
-        "height" => isset($height) && $height != '0.00' ? $height : 0,
+        "weight" => $weight > 0 ? $weight / 1000 : 1,
+        "width" => $width > 0 ? $width / 10 : 0,
+        "length" => $length > 0 ? $length / 10 : 0,
+        "height" => $height > 0 ? $height / 10 : 0,
     ];
 }
 
