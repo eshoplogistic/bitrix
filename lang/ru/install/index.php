@@ -1,5 +1,5 @@
 <?
-$MESS["ESHOP_LOGISTIC_MODULE_NAME"] = "Расчет доставки: Почта, СДЭК, DPD, Ozon Rocket, PickPoint, IML, Деловые Линии, ПЭК и др.";
+$MESS["ESHOP_LOGISTIC_MODULE_NAME"] = "Интеграция служб доставки: СДЭК, Яндекс Доставка, 5Post, Почта, DPD, Деловые Линии, Байкал, ПЭК и др.";
 $MESS["ESHOP_LOGISTIC_MODULE_DESC"] = "Несколько служб доставки в одной интеграции:
 CDEK, DPD, IML, Почта России, Деловые Линии, ПЭК, Dostavista, GTD, Байкал Сервис";
 $MESS["ESHOP_LOGISTIC_PARTNER_NAME"] = "eShopLogistic";
