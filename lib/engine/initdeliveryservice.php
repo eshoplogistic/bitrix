@@ -63,7 +63,7 @@ class InitDeliveryService extends \Bitrix\Sale\Delivery\Services\Base
     public static function getChildrenClassNames()
     {
         $config = new Config();
-        if($_REQUEST['PROFILE_ID']) {
+        if(!empty($_REQUEST['PROFILE_ID'])) {
             $profile = $_REQUEST['PROFILE_ID'];
             if(isset($config->profileClasses[$profile])){
                 $childrenClass = array($config->profileClasses[$profile]);

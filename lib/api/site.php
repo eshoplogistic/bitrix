@@ -91,21 +91,25 @@ class Site
             return ($vars['sendpoint']);
         } elseif ($cache->startDataCache()) {
             $response = self::fetchRawClientState();
-            if($response['success'] && $response['data']['settings']['city_fias']) {
-                $result =  array(
+
+            if (!empty($response['success']) && !empty($response['data']['settings']['city_fias'])) {
+                $result = array(
                     'city_fias' => $response['data']['settings']['city_fias'],
-                    'city_name' => $response['data']['settings']['city_name'],
-                    'services'  => $response['data']['services']
+                    'city_name' => $response['data']['settings']['city_name'] ?? '',
+                    'services'  => $response['data']['services'] ?? array(),
                 );
-                $cache->endDataCache(array("sendpoint" => $result));
-            }
-            if(isset($response['http_status']) && $response['http_status'] == 200){
-                $result =  array(
-                    'services'  => $response['data']['services']
+            } elseif (isset($response['http_status']) && $response['http_status'] == 200) {
+                $result = array(
+                    'services' => $response['data']['services'] ?? array(),
                 );
-                $cache->endDataCache(array("sendpoint" => $result));
+            } else {
+                $cache->abortDataCache();
+                return array();
             }
+
+            $cache->endDataCache(array('sendpoint' => $result));
+            return $result;
         }
-        return $result;
+        return array();
     }
 }

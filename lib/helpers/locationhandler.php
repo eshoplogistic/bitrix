@@ -42,6 +42,10 @@ class LocationHandler
 				$cache->endDataCache(array("fias" => $cityDeliveries));
 				return $cityDeliveries;
 			}
+
+			// Неуспешный ответ API: без abortDataCache() блокировка записи кэша остаётся
+			// висеть, и все последующие запросы этого ключа снова уходят мимо кэша в API.
+			$cache->abortDataCache();
 		}
 
 	}
@@ -69,6 +73,10 @@ class LocationHandler
 
                 if ($cityList['success'] == true || $cityList['http_status'] == 200) {
                     $cache->endDataCache(array("citylist" => $cityDeliveries));
+                } else {
+                    // Неуспешный ответ API: снимаем блокировку записи кэша, иначе она
+                    // висит до истечения TTL и следующие запросы этого ключа не кэшируются.
+                    $cache->abortDataCache();
                 }
             }
 
@@ -128,8 +136,12 @@ class LocationHandler
 
 		if(count($cities) > 1) {
 			$searchByName = array();
+			// checkCityNamePart() ждёт строку (делает mb_strtolower внутри) - $name здесь
+			// может остаться массивом частей многословного названия (см. is_array($name) выше),
+			// склеиваем обратно, чтобы не словить TypeError.
+			$nameForMatch = is_array($name) ? implode(' ', $name) : $name;
 			foreach ($cities as $city) {
-				if(ComparisonCities::checkCityNamePart($name,$city['name'],'name')) {
+				if(ComparisonCities::checkCityNamePart($nameForMatch,$city['name'],'name')) {
 					$searchByName[] = $city;
 				}
 			}

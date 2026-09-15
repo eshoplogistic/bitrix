@@ -424,7 +424,9 @@ class ExportFileds {
             $tariffsApi = new Tariffs();
             $tariffs = $tariffsApi->sendExport($name);
             $tariffs = $tariffs['data']??'';
-            $savedTariff = $shippingMethods['tariff'] ?? null;
+            // Тот же случай, что и для sdek/dpd выше: calculatehandler.php сохраняет выбранный
+            // тариф плоским ключом "terminal_tarrif", а не вложенным ['tariff'].
+            $savedTariff = $shippingMethods['terminal_tarrif'] ?? null;
             if ( $savedTariff ) {
                 $selectedTariffCode = $savedTariff['code'];
                 if ( isset( $tariffs[ $selectedTariffCode ] ) ) {

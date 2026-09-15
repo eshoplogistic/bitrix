@@ -441,8 +441,8 @@ echo $ID ?>"
                     <td>
                         <label class="esl-toggle">
                             <input type="checkbox" name="<?php
-                            echo $nameArr ?>[<?php
-                            echo $name ?>]" <?php echo $value ?>>
+                            echo $fieldArr ?>[<?php
+                            echo $fieldName ?>]" <?php echo $value ?>>
                             <span class="esl-toggle__track"></span>
                         </label>
                     </td>
@@ -457,8 +457,8 @@ echo $ID ?>"
                     </td>
                     <td>
                         <select name="<?php
-                        echo $nameArr ?>[<?php
-                        echo $name ?>]">
+                        echo $fieldArr ?>[<?php
+                        echo $fieldName ?>]">
                             <?php
                             foreach ($value as $k => $v): ?>
                                 <option value="<?php
@@ -666,8 +666,8 @@ echo $ID ?>"
                     <td>
                         <label class="esl-toggle">
                             <input type="checkbox" name="<?php
-                            echo $nameArr ?>[<?php
-                            echo $name ?>]" <?php echo $value ?>>
+                            echo $fieldArr ?>[<?php
+                            echo $fieldName ?>]" <?php echo $value ?>>
                             <span class="esl-toggle__track"></span>
                         </label>
                     </td>
@@ -682,8 +682,8 @@ echo $ID ?>"
                     </td>
                     <td>
                         <select name="<?php
-                        echo $nameArr ?>[<?php
-                        echo $name ?>]">
+                        echo $fieldArr ?>[<?php
+                        echo $fieldName ?>]">
                             <?php
                             foreach ($value as $k => $v): ?>
                                 <option value="<?php
@@ -713,7 +713,10 @@ echo $ID ?>"
                     foreach ($additionalFields['data'] as $key => $value): ?>
                         <div class="esl-services-group">
                             <p class="titleBox"><?php
-                                echo ($additionalFieldsRu[$key]) ?? $key ?></p>
+                                // Название группы/поля и код поля приходят из ответа внешнего API
+                                // (Additional::sendExport()) - экранируем как непроверенные данные,
+                                // как и на соседней странице настроек (settings/additionalservices.php).
+                                echo htmlspecialcharsbx(($additionalFieldsRu[$key]) ?? $key) ?></p>
                             <div class="esl-services-grid">
                                 <?php
                                 foreach ($value as $k => $v):
@@ -726,22 +729,22 @@ echo $ID ?>"
                                     $addFieldDefault = Option::get(Config::MODULE_ID, 'addfield-' . $typeMethod['name'] . '-' . $k);
                                     ?>
                                     <div class="form-field_add">
-                                        <label class="label" for="esl-field-<?php echo $k ?>"><?php
-                                            echo $v['name'] ?></label>
+                                        <label class="label" for="esl-field-<?php echo htmlspecialcharsbx($k) ?>"><?php
+                                            echo htmlspecialcharsbx($v['name']) ?></label>
                                         <?php
                                         if ($v['type'] === 'integer'): ?>
                                             <input class="form-value_add form-value_number"
-                                                   id="esl-field-<?php echo $k ?>"
-                                                   name="complement[<?php echo $k ?>]"
+                                                   id="esl-field-<?php echo htmlspecialcharsbx($k) ?>"
+                                                   name="complement[<?php echo htmlspecialcharsbx($k) ?>]"
                                                    type="number"
                                                    value="<?= htmlspecialcharsbx((string)($addFieldDefault !== '' ? $addFieldDefault : 0)) ?>"
-                                                   max="<?php echo $v['max_value'] ?>">
+                                                   max="<?php echo htmlspecialcharsbx((string)($v['max_value'] ?? '')) ?>">
                                         <?php
                                         else: ?>
-                                            <label class="esl-toggle" for="esl-field-<?php echo $k ?>">
+                                            <label class="esl-toggle" for="esl-field-<?php echo htmlspecialcharsbx($k) ?>">
                                                 <input class="form-value_add form-value_check"
-                                                       id="esl-field-<?php echo $k ?>"
-                                                       name="complement[<?php echo $k ?>]"
+                                                       id="esl-field-<?php echo htmlspecialcharsbx($k) ?>"
+                                                       name="complement[<?php echo htmlspecialcharsbx($k) ?>]"
                                                        type="checkbox" <?= ($addFieldDefault === 'Y') ? 'checked' : '' ?>>
                                                 <span class="esl-toggle__track"></span>
                                             </label>

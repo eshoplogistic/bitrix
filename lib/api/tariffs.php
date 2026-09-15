@@ -23,6 +23,7 @@ class Tariffs
     public static function sendExport($data = '')
     {
         $httpMethod = 'POST';
+        $requestData = array();
         $requestData['service'] = $data;
         $httpClient = self::getHttpClient();
         $deliveryRequest = $httpClient->request($httpMethod, $requestData);

@@ -19,4 +19,5 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT"] = "Печатные формы";
 $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_NOT_UNLOADED"] = "Заказ ещё не выгружен в ТК — печатные формы недоступны.";
 $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_ERR"] = "Не удалось получить печатную форму";
 $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_EMPTY"] = "ТК не вернула ссылку на печатную форму.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_LOCKED"] = "Выгрузка этого заказа уже выполняется, повторите позже";
 ?>

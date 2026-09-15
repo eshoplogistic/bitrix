@@ -120,6 +120,9 @@ class AjaxHandler extends Controller
 
         if($profile = $rsDelivery->fetch()) {
             $profileClass = self::getProfileClassByCode($profile['CODE']);
+        } else {
+            // Неизвестный/неактивный profileId — нет профиля, для которого искать ПВЗ.
+            return [$pvz];
         }
 
         $cacheKey = self::$cacheKey.'-'.$profileClass.'-'.$locationCode;
@@ -127,12 +130,14 @@ class AjaxHandler extends Controller
 
         if ($cache->initCache(self::$cacheTime, $cacheKey, self::$cacheDir)) {
             $vars = $cache->getVars();
-            return ($vars['pvz']);
+            return [$vars['pvz']];
         } elseif ($cache->startDataCache()) {
             $pvz = $profileClass::getPvzData($locationCode, $paymentId, (bool)$isAddressName);
 
             if ($pvz['success'] == true) {
                 $cache->endDataCache(array("pvz" => $pvz));
+            } else {
+                $cache->abortDataCache();
             }
         }
 
@@ -220,8 +225,12 @@ class AjaxHandler extends Controller
                 if ( $requestOut = self::ApiQuery( $method, $query_data, $raw ) ) {
                     if ( ! empty( $requestOut ) && $requestOut['http_status'] == 200 ) {
                         $cache->endDataCache($requestOut);
+                    } else {
+                        $cache->abortDataCache();
                     }
                     $out = $requestOut;
+                } else {
+                    $cache->abortDataCache();
                 }
             }
 

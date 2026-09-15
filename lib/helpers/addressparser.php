@@ -113,7 +113,7 @@ class AddressParser
         $pattern = '/';
         $parts = array();
         foreach (self::LABEL_GROUPS as $type => $group) {
-            $parts[] = '(?P<' . $type . '>' . $group . ')(?![\p{L}])';
+            $parts[] = '(?<![\p{L}])(?P<' . $type . '>' . $group . ')(?![\p{L}])';
         }
         $pattern .= implode('|', $parts) . '/iu';
 

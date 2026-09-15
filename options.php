@@ -171,9 +171,25 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         $status_form = json_decode($status_form, true);
     }
 
-    $counterparties = new Counterparties();
-    $counterparties = $counterparties->sendExport('delline');
-    $counterparties = $counterparties['data']??'';
+    // Без кэша это синхронный сетевой запрос к api.esplc.ru (до ~10с при недоступном
+    // API - см. Client) при КАЖДОМ открытии страницы настроек, даже если открыта вкладка
+    // другого перевозчика. Кэшируем на тот же срок, что и остальные API-вызовы модуля.
+    $counterpartiesCache = Cache::createInstance();
+    $counterpartiesCacheKey = 'options-counterparties-delline';
+    if ($counterpartiesCache->initCache(Config::CACHE_TIME, $counterpartiesCacheKey, Config::CACHE_DIR)) {
+        $counterparties = $counterpartiesCache->getVars()['counterparties'];
+    } elseif ($counterpartiesCache->startDataCache()) {
+        $counterparties = new Counterparties();
+        $counterparties = $counterparties->sendExport('delline');
+        $counterparties = $counterparties['data']??'';
+        if (isset($counterparties['counterparties'])) {
+            $counterpartiesCache->endDataCache(['counterparties' => $counterparties]);
+        } else {
+            $counterpartiesCache->abortDataCache();
+        }
+    } else {
+        $counterparties = '';
+    }
     if(isset($counterparties['counterparties'])){
         $tmpFields = array();
         foreach ($counterparties['counterparties'] as $value){

@@ -742,7 +742,7 @@ class ComponentOrder
             if(isset($requestDataEsl['unit']))
                 $unitTime = $requestDataEsl['unit'];
 
-            $deliveryResult['PERIOD_TEXT'] = $requestDataEsl['time'].' '.$unitTime;
+            $deliveryResult['PERIOD_TEXT'] = htmlspecialcharsbx($requestDataEsl['time']).' '.htmlspecialcharsbx($unitTime);
         }else{
             $deliveryResult['PERIOD_TEXT'] = '';
         }

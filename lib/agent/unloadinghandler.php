@@ -30,9 +30,11 @@ class UnloadingHandler
             return "Eshoplogistic\Delivery\Agent\UnloadingHandler::update();";
 
         $statusEnd = Option::get(Config::MODULE_ID, 'cron-status-unloading');
-        $filter = [
-            'LID' => \Bitrix\Main\Context::getCurrent()->getSite(),
-        ];
+        // Без явного LID: в cron-контексте Context::getCurrent()->getSite() не отражает
+        // реальный сайт заказа, а резолвится в сайт по умолчанию - на мультисайтовых
+        // инсталляциях заказы остальных сайтов агентом никогда не опрашивались.
+        // Настройки модуля (api_key и т.п.) общие для всех сайтов, поэтому фильтр не нужен.
+        $filter = [];
         if($statusEnd){
             $statusEnd = explode(",", $statusEnd);
             $filter['STATUS_ID'] = $statusEnd;
@@ -47,6 +49,10 @@ class UnloadingHandler
 
         $shippingHelper = new ShippingHelper();
         foreach ($orders as $order) {
+            // Один проблемный заказ (например Order::save()/getShipmentCollection() кинет
+            // исключение D7) не должен обрывать обработку всех остальных заказов в этом
+            // запуске cron - логируем и переходим к следующему.
+            try {
             $orderValues = $order->getFields()->getValues();
             $orderId = $orderValues['ID'];
 
@@ -62,7 +68,10 @@ class UnloadingHandler
                     $deliveryCode = $deliveryService->getCode();
                     $currectDeliveryEsl = $shippingHelper->getSlugMethod($deliveryCode);
                     if($currectDeliveryEsl)
-                        $checkUnloading = $shippingHelper->checkUnloadingDelivery($currectDeliveryEsl);
+                        // Накапливаем флаг по всем отправлениям заказа: иначе отправление,
+                        // требующее опроса статуса, "перекрывалось" последующим отправлением
+                        // в этом же заказе, для которого checkUnloadingDelivery() вернул false.
+                        $checkUnloading = $checkUnloading || $shippingHelper->checkUnloadingDelivery($currectDeliveryEsl);
                 }
     
             }
@@ -96,7 +105,10 @@ class UnloadingHandler
                 : \CEventLog::SEVERITY_INFO;
             $description = 'Заказ #' . $orderId . '<br>' . Logger::pretty($result);
             Logger::log('UNLOADING_CRON', $description, $severity, $orderId);
-
+            } catch (\Throwable $e) {
+                Logger::error('UNLOADING_CRON', 'Заказ #' . ($orderId ?? '?') . ': ' . $e->getMessage());
+                continue;
+            }
         }
 
         return "Eshoplogistic\Delivery\Agent\UnloadingHandler::update();";

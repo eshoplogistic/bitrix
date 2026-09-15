@@ -2,6 +2,7 @@
 
 namespace Eshoplogistic\Delivery\Event;
 
+use Bitrix\Main\Application;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Event;
 use Bitrix\Main\EventResult;
@@ -200,6 +201,19 @@ class Unloading
 
     public function params_delivery_init($data)
     {
+        // Защита от гонки при двойном клике/повторной отправке формы выгрузки: без неё
+        // два параллельных запроса на один и тот же заказ могли независимо уйти в API
+        // с 'action' => 'create' и создать у ТК два разных отправления на один заказ.
+        $orderId = (int)($data['order_id'] ?? 0);
+        $lockName = 'esl_unload_order_' . $orderId;
+        $connection = $orderId > 0 ? Application::getConnection() : null;
+
+        if ($connection && !$connection->lock($lockName, 0)) {
+            return ['errors' => ['request' => Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_ORDER_LOCKED')]];
+        }
+
+        try {
+
         $defaultParamsCreate = $this->defaultFieldApiCreate($data);
 
         $export = new Export();
@@ -272,6 +286,11 @@ class Unloading
         }
 
         return $result;
+        } finally {
+            if ($connection) {
+                $connection->unlock($lockName);
+            }
+        }
     }
 
     /** Сохраняет ответ ТК (create/get) в свойство заказа ESHOPLOGISTIC_SHIPPING_METHODS.answer
@@ -390,12 +409,12 @@ class Unloading
 
     private function defaultFieldApiCreate($data)
     {
-        if (!isset($data['delivery_id']) && !$data['delivery_id'])
+        if (empty($data['delivery_id']))
             return false;
 
         $apiKey = Option::get(Config::MODULE_ID, 'api_key');
 
-        if (!isset($apiKey) && !$apiKey)
+        if (empty($apiKey))
             return false;
 
         $deliveryId = $data['delivery_id'];

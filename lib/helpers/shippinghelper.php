@@ -21,7 +21,7 @@ class ShippingHelper
 
         $idWithoutPrefix = explode(Config::DELIVERY_CODE, $methodId)[1];
 
-        $explodeMethod = explode('_', $idWithoutPrefix)[1];
+        $explodeMethod = explode('_', $idWithoutPrefix)[1] ?? null;
 
         if($explodeMethod == 'term')
             $explodeMethod = 'terminal';
@@ -46,7 +46,7 @@ class ShippingHelper
             'current' => false,
             'adress_required' => false,
         );
-        $idWithoutPrefix = explode(Config::DELIVERY_CODE, $shipping_method)[1];
+        $idWithoutPrefix = explode(Config::DELIVERY_CODE, $shipping_method)[1] ?? '';
         $idWithoutPrefix =  explode('_', $idWithoutPrefix)[0];
         $nameCurrectDelivery = $shipping_method;
         if($idWithoutPrefix)

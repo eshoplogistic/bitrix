@@ -172,7 +172,12 @@ class CalculateHandler
                 $result->addError(new \Bitrix\Main\Error($configClass->dataError));
             }
 
-            if ($deliveryProfileData['data'][$type]['price'] === 0) {
+            // Строгое "=== 0" не ловит нулевую цену, если API прислал её как float (0.0)
+            // или числовую строку ("0.00") - тогда ниже сработала бы ложная priceError
+            // для легитимной бесплатной доставки. Вложенную форму цены (['value' => 0, ...])
+            // не трогаем - empty() на непустом массиве и так не считает её ошибкой.
+            $rawPrice = $deliveryProfileData['data'][$type]['price'] ?? null;
+            if (!is_array($rawPrice) && is_numeric($rawPrice) && (float)$rawPrice === 0.0) {
                 $deliveryProfileData['data'][$type]['price'] = 'free';
             }
 

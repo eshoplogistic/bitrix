@@ -78,8 +78,11 @@ class Client
         if($this->log == 'Y')
             $this->eslWriteLog($httpResult, $this->url, $apiParams, $querySuccess);
 
-        $result = json_decode($httpResult);
-        if ($result)
+        // json_decode() валидного, но "falsy" тела ("[]", "false", "0", "") ранее считался
+        // ошибкой из-за проверки "if ($result)" — валидный ответ API молча терялся.
+        // Ошибкой должен считаться только настоящий сбой разбора JSON.
+        json_decode($httpResult);
+        if (json_last_error() === JSON_ERROR_NONE)
             return \Bitrix\Main\Web\Json::decode($httpResult);
     }
 
