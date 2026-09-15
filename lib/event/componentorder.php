@@ -456,7 +456,9 @@ class ComponentOrder
 		$selectedElement = '';
 		$invalidEslService = false;
 		$clearField = false;
-		$widgetKey = Option::get(Config::MODULE_ID, 'widget_key');
+		// SITE_ID — Option::get сам подставит общий ключ модуля, если для текущего
+		// сайта не задан отдельный override (мультисайтовость, см. options.php).
+		$widgetKey = Option::get(Config::MODULE_ID, 'widget_key', '', Main\Context::getCurrent()->getSite());
 		if (!$widgetKey)
 			return '';
 

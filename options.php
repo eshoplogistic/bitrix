@@ -70,6 +70,35 @@ function eslDimensionPriorityField(): string
     return $html;
 }
 
+// Доп. ключи виджета ESL для сайтов, кроме основного (мультисайтовость): виджет
+// привязан к домену на стороне вендора, поэтому каждому доп. сайту нужен свой
+// data-key. Хранится штатным сайто-специфичным Option (таблица b_option_site,
+// см. Option::set(..., $siteId)) — Option::get сам подставляет общий ключ модуля,
+// если для сайта override не задан, поэтому отдельной fallback-логики не нужно.
+function eslWidgetKeySitesField(array $siteList, string $moduleId): string
+{
+    if (count($siteList) <= 1) {
+        return '';
+    }
+
+    $html = '<div class="esl-sitekeys-wrap">';
+    $html .= '<div class="esl-sitekeys-wrap__label">' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY_SITES_TITLE')) . eslHint(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY_SITES_HINT')) . '</div>';
+    $html .= '<div class="esl-sitekeys-wrap__content"><div class="esl-sitekeys">';
+    foreach ($siteList as $siteId => $siteLabel) {
+        // getRealValue (а не get) — чтобы показать именно override сайта, не
+        // "подсвеченный" общий ключ: иначе непонятно, какие сайты реально
+        // переопределены, а какие просто наследуют общий ключ.
+        $value = Option::getRealValue($moduleId, 'widget_key', $siteId);
+        $html .= '<div class="esl-sitekeys__row">'
+            . '<span class="esl-sitekeys__site">' . htmlspecialcharsbx($siteLabel) . '</span>'
+            . '<input type="text" class="esl-sitekeys__input" name="widget_key_site[' . htmlspecialcharsbx($siteId) . ']" value="' . htmlspecialcharsbx((string)$value) . '" placeholder="' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY_SITES_PLACEHOLDER')) . '">'
+            . '</div>';
+    }
+    $html .= '</div></div></div>';
+
+    return $html;
+}
+
 $request = HttpApplication::getInstance()->getContext()->getRequest();
 $module_id = htmlspecialcharsbx($request["mid"] != "" ? $request["mid"] : $request["id"]);
 $cacheDir = 'eshoplogistic';
@@ -667,6 +696,14 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
     }
     $transportOptions[] = '<span id="esl-carriers-boundary-end" style="display:none"></span>';
 
+    // Список сайтов для доп. ключей виджета (см. eslWidgetKeySitesField) — нужен и
+    // при отрисовке формы, и при сохранении (ниже).
+    $siteList = array();
+    $dbSite = \CSite::GetList('sort', 'asc', array('ACTIVE' => 'Y'));
+    while ($site = $dbSite->Fetch()) {
+        $siteList[$site['LID']] = $site['NAME'] . ' (' . $site['SERVER_NAME'] . ')';
+    }
+
     $aTabs = array(
 		array(
 			"DIV"       => "edit",
@@ -711,6 +748,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("text")
                 ),
+                // null — пропускается __AdmSettingsDrawRow без вывода строки (при
+                // одном сайте отдельные ключи ни к чему).
+                count($siteList) > 1 ? array('note' => eslWidgetKeySitesField($siteList, $module_id)) : null,
 				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_BEHAVIOR")) . '</span>',
 				array(
 					"api_log",
@@ -989,6 +1029,25 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 			// При "default" $dimensionRawConfig остаётся пустым — sanitizeConfig сам
 			// подставит для каждой оси единственное стандартное поле, как и раньше.
 			Dimensions::saveConfig($dimensionRawConfig);
+		}
+
+		// Ключи виджета для доп. сайтов (мультисайтовость, см. eslWidgetKeySitesField) —
+		// общий цикл выше их не видит: несколько полей ссылаются на одно и то же имя
+		// опции ('widget_key'), различаясь только SITE_ID, поэтому сохраняем/сбрасываем
+		// их отдельно тем же приёмом apply/default. Пустое значение — не "пустой ключ",
+		// а "override для сайта не нужен" (см. getRealValue), поэтому удаляем строку.
+		if (($request["apply"] || $request["default"]) && count($siteList) > 1) {
+			$postedSiteKeys = $request["apply"] ? $request->getPost('widget_key_site') : null;
+			foreach ($siteList as $siteId => $siteLabel) {
+				$siteKeyValue = is_array($postedSiteKeys) && isset($postedSiteKeys[$siteId])
+					? trim((string)$postedSiteKeys[$siteId])
+					: '';
+				if ($siteKeyValue !== '') {
+					Option::set($module_id, 'widget_key', $siteKeyValue, $siteId);
+				} else {
+					Option::delete($module_id, array('name' => 'widget_key', 'site_id' => $siteId));
+				}
+			}
 		}
 
 		LocalRedirect($APPLICATION->GetCurPage()."?mid=".$module_id."&lang=".LANG);

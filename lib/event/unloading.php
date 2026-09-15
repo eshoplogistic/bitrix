@@ -83,6 +83,20 @@ class Unloading
         $currectDeliveryEsl = null;
         $checkUnloading = false;
 
+        // OnAdminContextMenuShow — общее событие ядра для контекстного меню ЛЮБОГО
+        // списка в админке (сайты, каталог, пользователи и т.д.), не только заказов.
+        // Без этой проверки loadShippingMethodsAnswer() ниже вызывает Sale\Order::load()
+        // с чужим ID (или 0 на страницах без параметра ID), а тот бросает
+        // ArgumentNullException — страница вроде "Список сайтов" падает с ошибкой.
+        $isOrderPage = $_SERVER['REQUEST_METHOD'] == 'GET' && $elementId > 0
+            && in_array($GLOBALS['APPLICATION']->GetCurPage(), array(
+                '/bitrix/admin/sale_order_edit.php',
+                '/bitrix/admin/sale_order_view.php',
+            ), true);
+        if (!$isOrderPage) {
+            return;
+        }
+
         $arReports = array();
         $exportAnswer = self::loadShippingMethodsAnswer($elementId);
         $isUnloaded = !empty($exportAnswer['order']['id']);
