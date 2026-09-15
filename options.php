@@ -759,7 +759,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 					array("checkbox")
 				),
                 array(
-                    'note' => '<div style="text-align:center;"><a class="esl-toolbar-btn esl-toolbar-btn--accent" style="display:inline-block;text-decoration:none;" href="/bitrix/admin/event_log.php?find_module_id=' . urlencode(Config::MODULE_ID) . '&lang=' . LANGUAGE_ID . '" target="_blank" rel="noopener">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OPEN_EVENT_LOG")) . '</a></div>'
+                    'note' => '<div style="text-align:center;"><a class="esl-toolbar-btn esl-toolbar-btn--accent" style="display:inline-block;text-decoration:none;" href="/bitrix/admin/event_log.php?set_filter=Y&find_module_id=' . urlencode(Config::MODULE_ID) . '&lang=' . LANGUAGE_ID . '" target="_blank" rel="noopener">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_OPEN_EVENT_LOG")) . '</a></div>'
                 ),
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_LOG_DESC")
@@ -1180,6 +1180,18 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         request.then(function(response){
             BX.UI.Notification.Center.notify({
                 content: response.data
+            });
+        }, function(response){
+            // BX.ajax.runAction реджектит промис при success:false (например когда
+            // clearCacheAction() отказал из-за !$USER->IsAdmin() — эта ajax-точка публична,
+            // её дергает и виджет на витрине, поэтому проверка прав в контроллере namеренно
+            // строгая). Раньше здесь не было reject-хендлера вообще — при отказе кнопка
+            // молча ничего не показывала, и было не отличить "кэш очищен" от "запрос не прошёл".
+            var message = (response && response.errors && response.errors[0] && response.errors[0].message)
+                ? response.errors[0].message
+                : 'Не удалось очистить кэш';
+            BX.UI.Notification.Center.notify({
+                content: message
             });
         });
     }

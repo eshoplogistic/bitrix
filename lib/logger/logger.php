@@ -65,9 +65,18 @@ class Logger
      */
     public static function pretty($data): string
     {
-        $text = is_string($data)
-            ? $data
-            : json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($data)) {
+            $text = $data;
+        } else {
+            $text = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($text === false) {
+                // json_encode тихо отдаёт false на невалидном UTF-8 (например, "битый"
+                // адрес/комментарий от покупателя) — раньше это превращалось в пустую
+                // строку и часть тела запроса/ответа бесследно пропадала из лога.
+                // print_r печатает даже некорректный UTF-8 как есть, без падения.
+                $text = '[' . json_last_error_msg() . ']' . "\n" . print_r($data, true);
+            }
+        }
 
         $text = preg_replace_callback('/^ +/m', static function ($m) {
             return str_repeat("\xC2\xA0", strlen($m[0]));

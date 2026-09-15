@@ -111,9 +111,9 @@ class CalculateHandler
         if($service === 'dostavista'){
             $request = Application::getInstance()->getContext()->getRequest();
             $requestData = $request->getPost("order");
-            $fullAdressValue = trim($requestData['ESHOPLOGISTIC_FULL_ADDRESS']);
+            $fullAdressValue = trim($requestData['ESHOPLOGISTIC_FULL_ADDRESS'] ?? '');
             if($fullAdressValue)
-                $to = $fullAdressValue;
+                $orderData['address'] = $fullAdressValue;
         }
 
         // Точка доработки: позволяет обработчику события в проекте скорректировать состав

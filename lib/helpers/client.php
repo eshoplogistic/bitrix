@@ -57,6 +57,14 @@ class Client
             $apiParams = $APPLICATION->ConvertCharsetArray($apiParams, SITE_CHARSET, 'utf-8');
         }
 
+        // Пишем сам запрос ОТДЕЛЬНОЙ записью ДО обращения к api.esplc.ru — то есть до
+        // сетевого таймаута/обрыва/любой другой причины, по которой строка с ответом
+        // может не записаться целиком или вообще потеряться (на проде наблюдали случаи,
+        // когда DESCRIPTION обрывался сразу после URL — причину со стороны кода не
+        // подтвердили, но именно запрос — то, что нужнее всего для диагностики: что
+        // реально ушло в API, — не должен зависеть от судьбы записи с ответом).
+        $this->eslWriteRequestLog($apiParams);
+
         $querySuccess = $this->httpClient->query($httpMethod, $this->url, $apiParams);
         $httpResult = $this->httpClient->getResult();
 
@@ -94,13 +102,30 @@ class Client
         return $result;
     }
 
+    /** Пишет исходящий запрос отдельной, самодостаточной записью — до сетевого вызова
+     * (см. вызов из request()). Специально не зависит от ответа сервера: именно это
+     * содержимое нужнее всего при разборе "что реально ушло в API" (например, ушёл ли
+     * address для Dostavista), и оно не должно теряться вместе с записью про ответ.
+     * @param array $params
+     */
+    private function eslWriteRequestLog(array $params): void
+    {
+        if (!Logger::isEnabled() || isset($params['target'])) {
+            return;
+        }
+
+        $sanitizedParams = $params;
+        unset($sanitizedParams['key'], $sanitizedParams['partner_key']);
+
+        Logger::log('API_REQUEST', $this->url . '<br>' . 'Запрос:<br>' . Logger::pretty($sanitizedParams));
+    }
+
+    /** Пишет ответ сервера отдельной записью (см. eslWriteRequestLog() для запроса).
+     */
     public function eslWriteLog($log, $url, $params, $querySuccess = true)
     {
         if(isset($params['target']))
             return false;
-
-        $sanitizedParams = $params;
-        unset($sanitizedParams['key'], $sanitizedParams['partner_key']);
 
         if (is_array($log) || is_object($log)) {
             $response = $log;
@@ -109,15 +134,30 @@ class Client
             $response = $decoded !== null ? $decoded : $log;
         }
 
-        $description = $url . '<br>'
-            . 'Запрос:<br>' . Logger::pretty($sanitizedParams) . '<br>'
-            . 'Ответ:<br>' . Logger::pretty($response);
+        $description = $url . '<br>' . 'Ответ:<br>' . Logger::pretty(self::trimBulkyFields($response));
 
         if ($querySuccess) {
-            Logger::log('API_REQUEST', $description);
+            Logger::log('API_RESPONSE', $description);
         } else {
             Logger::error('API_ERROR', $description);
         }
+    }
+
+    /** Список ПВЗ ("terminals") в ответе delivery/calculation — тот же массив, который
+     * CalculateHandler всё равно выбрасывает сразу после получения (unset перед расчётом,
+     * см. calculatehandler.php) и не использует для цены/срока. При этом это САМАЯ
+     * объёмная часть ответа (десятки точек с полным адресом/телефонами/координатами
+     * каждая) — в лог кладём только количество, а не все точки целиком.
+     * @param mixed $response
+     * @return mixed
+     */
+    private static function trimBulkyFields($response)
+    {
+        if (is_array($response) && isset($response['data']['terminals']) && is_array($response['data']['terminals'])) {
+            $response['data']['terminals'] = '[скрыто в логе: ' . count($response['data']['terminals']) . ' шт.]';
+        }
+
+        return $response;
     }
 
 }
