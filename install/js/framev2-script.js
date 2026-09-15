@@ -151,7 +151,6 @@ function isNumeric(value) {
         },
         run: async function (reload = '') {
             if (!this.check()) {
-                console.log('ESL: Error check')
                 return false
             }
             const widget = document.getElementById(this.items.widget_id)
@@ -188,7 +187,6 @@ function isNumeric(value) {
                     }
                 }))
             } else {
-                console.log('load')
                 widget.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
                     widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                         detail: {
@@ -272,7 +270,7 @@ function isNumeric(value) {
             }
         },
         error: function (response) {
-            console.log('Esl: error', response)
+            console.error('ESL: request error', response)
         },
     }
 
@@ -414,7 +412,7 @@ function isNumeric(value) {
         const root = document.getElementById('eShopLogisticWidgetCart');
 
         if (!root) {
-            console.log('ESL: Widget key is not set. Widget will not be initialized.');
+            console.warn('ESL: Widget key is not set. Widget will not be initialized.');
             return;
         }
 
@@ -454,11 +452,8 @@ function isNumeric(value) {
         }, true)
 
         root.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
-            console.log('Событие onLoadApp', event.detail)
-
             setTimeout(function () {
                 if(servicesLoad !== true){
-                    console.log('reloadTime5sec')
                     esl.run('city')
                     servicesLoad = true
                 }
@@ -468,7 +463,6 @@ function isNumeric(value) {
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
             let data = event.detail
-            console.log('Событие onSelectedService', data)
             if (typeof data.terminal == 'object') {
                 esl.setTerminal(data.terminal)
                 esl.confirm(data)
@@ -495,7 +489,6 @@ function isNumeric(value) {
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {
-            console.log('Событие onAllServicesLoaded', event.detail)
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
 
@@ -578,41 +571,40 @@ function isNumeric(value) {
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onSelectTypeDelivery', (event) => {
-            console.log('Событие onSelectTypeDelivery', event.detail)
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
-            console.log('Неверный код населенного пункта')
+            console.error('ESL: Неверный код населенного пункта')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onInvalidName', () => {
-            console.log('Неверный name города')
+            console.error('ESL: Неверный name города')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
-            console.log('Неверный массив служб')
+            console.error('ESL: Неверный массив служб')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onInvalidPayment', () => {
-            console.log('Не передана оплата')
+            console.error('ESL: Не передана оплата')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onInvalidOffers', () => {
-            console.log('Не передан offers')
+            console.error('ESL: Не передан offers')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', (event) => {
-            console.log('Событие onNotAvailableServices', event)
+            console.error('ESL: Событие onNotAvailableServices', event.detail)
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
             eslShowWidgetError()
@@ -719,6 +711,7 @@ BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
                     BX.Sale.OrderAjaxComponent.endLoader();
                 }, this),
                 onfailure: BX.delegate(function () {
+                    console.error('ESL: sendRequest failed', action);
                     BX.Sale.OrderAjaxComponent.endLoader();
                 }, this)
             });

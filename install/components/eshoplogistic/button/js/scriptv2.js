@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         $('.esl-button_data').attr("data-price", price);
                     }
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                     return false;
                 }
             } else {
