@@ -53,7 +53,103 @@ options.php          страница настроек модуля в адми�
 
 ## Расширение через события
 
-Модуль публикует собственные события для доработки данных перед отправкой запросов во внешний API — используйте `EventManager` для подписки на них, если нужно изменить состав данных заказа без правки кода модуля.
+Модуль публикует собственные события, которые позволяют разработчику скорректировать данные заказа перед их отправкой во внешний API — без правки кода самого модуля. Подписка оформляется как на обычное событие Битрикс, через `EventManager::addEventHandler()`, обычно в `init.php` кастомного/локального модуля проекта.
+
+Идентификатор модуля и имена событий заданы константами `Eshoplogistic\Delivery\Config::MODULE_ID`, `Config::EVENT_BEFORE_CALCULATE` и `Config::EVENT_BEFORE_EXPORT`.
+
+### `onBeforeCalculate` — перед расчётом стоимости/сроков доставки
+
+Вызывается в `CalculateHandler::getDefaultCalculateDelivery()` перед обращением к API ТК за расчётом тарифа, когда состав заказа и адрес получения уже сформированы модулем.
+
+Регистрация обработчика:
+
+```php
+use Bitrix\Main\EventManager;
+use Eshoplogistic\Delivery\Config;
+
+EventManager::getInstance()->addEventHandler(
+    Config::MODULE_ID,
+    Config::EVENT_BEFORE_CALCULATE,
+    ['MyDeliveryHandlers', 'onBeforeCalculate']
+);
+```
+
+Обработчик:
+
+```php
+use Bitrix\Main\EventResult;
+
+class MyDeliveryHandlers
+{
+    public static function onBeforeCalculate(\Bitrix\Main\Event $event): EventResult
+    {
+        $params = $event->getParameters();
+        $order = $params['order'];
+        $to = $params['to'];
+        $orderData = $params['orderData'];
+
+        // Пример: если в заказе есть тяжёлый товар, скорректировать вес в запросе к ТК
+        $orderData['offers'][0]['weight'] = 25000; // граммы
+
+        return new EventResult(
+            EventResult::SUCCESS,
+            [
+                'to' => $to,               // адрес/пункт назначения расчёта
+                'orderData' => $orderData, // состав заказа, отправляемый в запрос расчёта
+            ]
+        );
+    }
+}
+```
+
+Изменить результат расчёта можно, только вернув `EventResult::SUCCESS` с параметрами `to` и/или `orderData` — именно эти два значения модуль подхватит и использует вместо своих. Любые другие ключи в результате игнорируются. Если ни один обработчик не вернул `SUCCESS`, данные уходят в API без изменений.
+
+### `onBeforeExport` — перед выгрузкой заказа в ТК
+
+Вызывается в `Unloading::prepareFields()` (`lib/event/unloading.php`) перед отправкой сформированного запроса на создание отправления — когда все поля (`places`, `receiver`, `sender`, `delivery` и т. д.) уже собраны из формы выгрузки и настроек модуля.
+
+Регистрация обработчика:
+
+```php
+use Bitrix\Main\EventManager;
+use Eshoplogistic\Delivery\Config;
+
+EventManager::getInstance()->addEventHandler(
+    Config::MODULE_ID,
+    Config::EVENT_BEFORE_EXPORT,
+    ['MyDeliveryHandlers', 'onBeforeExport']
+);
+```
+
+Обработчик:
+
+```php
+use Bitrix\Main\EventResult;
+
+class MyDeliveryHandlers
+{
+    public static function onBeforeExport(\Bitrix\Main\Event $event): EventResult
+    {
+        $params = $event->getParameters();
+        $order = $params['order'];
+        $fields = $params['fields'];
+
+        // Пример: если у ТК нет настройки комментария, взять его из заказа
+        if (empty($fields['order']['comment']) && $order) {
+            $fields['order']['comment'] = $order->getField('USER_DESCRIPTION');
+        }
+
+        return new EventResult(EventResult::SUCCESS, ['fields' => $fields]);
+    }
+}
+```
+Чтобы изменить итоговый запрос, верните `EventResult::SUCCESS` с параметром `fields`, содержащим полный (не частичный) массив данных для выгрузки — модуль полностью заменит `fields` на то, что вы вернули. Изменения полей `fields` (кроме `key`) попадают в лог модуля (**Настройки → Журнал событий** или встроенный логгер модуля) с пометкой `EVENT_BEFORE_EXPORT`, что удобно для отладки обработчика.
+
+### Общие замечания
+
+- Обработчики можно регистрировать сразу для нескольких событий и подключать через `init.php` любого модуля проекта (в т. ч. `main` через `local/php_interface/init.php`).
+- Если обработчик не должен ничего менять — просто не подписывайтесь на событие или возвращайте `EventResult::ERROR`/`EventResult::UNDEFINED`, тогда его результат будет проигнорирован модулем.
+- Оба события — синхронные, вызываются в момент запроса пользователя (расчёт доставки в корзине/оформлении заказа или выгрузка заказа администратором), поэтому не стоит выполнять в обработчиках длительные операции — это увеличит время ответа.
 
 ## Автор
 
