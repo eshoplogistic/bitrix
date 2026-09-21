@@ -111,7 +111,7 @@ class Unloading
         $arReports[] = array(
             "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"),
             "ACTION" => "(new BX.CAdminDialog({
-				'content_url': '/bitrix/admin/eshoplogistic_delivery_updatestatus.php?elementId=" . $elementId . "',
+				'content_url': '/bitrix/admin/eshoplogistic_delivery_updatestatus.php?elementId=" . $elementId . "&sessid=" . bitrix_sessid() . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 800,

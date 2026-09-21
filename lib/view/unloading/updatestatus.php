@@ -25,6 +25,13 @@ if ($ID <= 0) {
     die('Bad request');
 }
 
+// Страница меняет статус заказа (updateStatusById) — без sessid её можно было бы вызвать
+// чужой ссылкой (CSRF). sessid добавляется в content_url при построении меню
+// (Unloading::OrderDetailAdminContextMenuShow).
+if (!check_bitrix_sessid()) {
+    die('Access denied');
+}
+
 $unloading = new Unloading();
 $status = $unloading->infoOrder($ID);
 

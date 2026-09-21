@@ -267,11 +267,11 @@ function ajaxFormEsl(obForm, link) {
                     // адресным полям) список читается компактнее, чем N одинаковых плашек.
                     let html = '<div class="esl-error-box">';
                     if (title) {
-                        html += '<div class="esl-error-box__title">' + title + '</div>';
+                        html += '<div class="esl-error-box__title">' + BX.util.htmlspecialchars(String(title)) + '</div>';
                     }
                     if (errorList.length) {
                         html += '<ul class="esl-error-box__list">' + errorList.map(function (message) {
-                            return '<li>' + message + '</li>';
+                            return '<li>' + BX.util.htmlspecialchars(String(message)) + '</li>';
                         }).join('') + '</ul>';
                     } else if (!title) {
                         html += '<div class="esl-error-box__title">Ошибка при выгрузке заказа</div>';

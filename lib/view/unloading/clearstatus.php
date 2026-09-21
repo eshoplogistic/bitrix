@@ -57,7 +57,7 @@ $icons = ['success' => '&#10003;', 'error' => '&#10005;', 'warning' => '!', 'inf
 <?php else: ?>
     <div class="esl-clear-confirm">
         <div class="esl-clear-confirm__text"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM") ?></div>
-        <form method="POST" action="<?= $APPLICATION->GetCurPage() ?>?elementId=<?= $ID ?>">
+        <form method="POST" action="<?= htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?elementId=<?= (int)$ID ?>">
             <?= bitrix_sessid_post() ?>
             <input type="hidden" name="mode" value="">
             <div class="esl-clear-confirm__option">

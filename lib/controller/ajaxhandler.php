@@ -172,7 +172,9 @@ class AjaxHandler extends Controller
 
         $method = trim((string)$request->getPost('method'));
 
-        if (!empty($method) && strpos($method, 'widget/') !== 0) {
+        // Только widget/<имя>[/<имя>...]: префикса мало — "widget/../delivery/order" или
+        // "widget/x?key=..." через CURLOPT_URL (ApiQuery) ушли бы на произвольный путь API.
+        if (!empty($method) && !preg_match('#^widget(/[A-Za-z0-9_\-]+)+$#D', $method)) {
             echo Json::encode(['error' => 'Method is not allowed']);
             exit();
         }

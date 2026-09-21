@@ -79,7 +79,7 @@ $additionalFieldsRu = GetMessage("ADDITIONAL_FIELDS");
     <?php endif; ?>
 
     <?php if (isset($additionalFields['data']) && $additionalFields['data']): ?>
-        <form id="esl-addfield-form" method="POST" action="<?= $APPLICATION->GetCurPage() ?>?service=<?= urlencode($service) ?>">
+        <form id="esl-addfield-form" method="POST" action="<?= htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?service=<?= urlencode($service) ?>">
             <?= bitrix_sessid_post() ?>
             <?php foreach ($additionalFields['data'] as $groupKey => $group): ?>
                 <div class="esl-addfield-group">

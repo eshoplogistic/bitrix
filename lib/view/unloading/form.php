@@ -272,8 +272,8 @@ if ($_GET['UNLOADING_SAVED']) {
 ?>
 
 <form method="POST" id="eslUnloadngForm" action="<?php
-echo $APPLICATION->GetCurPage() ?>?elementId=<?php
-echo $ID ?>"
+echo htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?elementId=<?php
+echo (int)$ID ?>"
       ENCTYPE="multipart/form-data"
       name="unloading_form">
     <div class="error-msg"></div>

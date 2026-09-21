@@ -251,13 +251,59 @@ class ComponentOrder
 					}
 
 					if ($shipMethod && isset($propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS'])) {
-						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS']] = $shipMethod;
+						// Значение приходит от анонимного покупателя, а свойство потом считается
+						// серверным состоянием выгрузки (ключ answer/pending_confirmation) — оставляем
+						// только данные расчёта, которые сам модуль кладёт в hidden input.
+						$safeShipMethod = self::sanitizeShippingMethodsPost($shipMethod);
+						if ($safeShipMethod !== null) {
+							$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_SHIPPING_METHODS']] = $safeShipMethod;
+						}
 					}
 				}
 
 			}
 		}
 
+	}
+
+
+	/** Оставляет в значении ESHOPLOGISTIC_SHIPPING_METHODS из POST только ключи, которые
+	 * CalculateHandler кладёт в hidden input (см. $debugArr): settlement_to/region_to/
+	 * settlement_from/region_from — строки, terminal_tarrif — пустая строка либо массив code/name.
+	 * @param mixed $raw
+	 * @return string|null JSON для сохранения в свойство заказа либо null, если значение непригодно
+	 */
+	private static function sanitizeShippingMethodsPost($raw)
+	{
+		$decoded = is_string($raw) ? json_decode($raw, true) : null;
+		if (!is_array($decoded)) {
+			return null;
+		}
+
+		$safe = array();
+		foreach (array('settlement_to', 'region_to', 'settlement_from', 'region_from') as $key) {
+			if (isset($decoded[$key]) && is_scalar($decoded[$key])) {
+				$safe[$key] = mb_substr((string)$decoded[$key], 0, 255);
+			}
+		}
+
+		if (isset($decoded['terminal_tarrif'])) {
+			$tariff = $decoded['terminal_tarrif'];
+			if (is_array($tariff)) {
+				$safeTariff = array();
+				foreach (array('code', 'name') as $key) {
+					if (isset($tariff[$key]) && is_scalar($tariff[$key])) {
+						$safeTariff[$key] = mb_substr((string)$tariff[$key], 0, 255);
+					}
+				}
+				// Без code тариф бесполезен (exportfileds.php обращается к ['code'] напрямую)
+				$safe['terminal_tarrif'] = isset($safeTariff['code']) ? $safeTariff : '';
+			} else {
+				$safe['terminal_tarrif'] = '';
+			}
+		}
+
+		return json_encode($safe, JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -275,7 +321,7 @@ class ComponentOrder
 		}
 
 		if ($propertyPvz)
-			$arFields["ESHOPLOGISTIC_PVZ"] = 'EShopLogistic : ' . $propertyPvz;
+			$arFields["ESHOPLOGISTIC_PVZ"] = 'EShopLogistic : ' . htmlspecialcharsbx($propertyPvz);
 
 	}
 

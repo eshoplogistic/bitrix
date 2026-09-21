@@ -1077,7 +1077,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 
 	$tabControl->Begin();
 	?>
-	<form action="<? echo($APPLICATION->GetCurPage()); ?>?mid=<? echo($module_id); ?>&lang=<? echo(LANG); ?>" method="post">
+	<form action="<? echo(htmlspecialcharsbx($APPLICATION->GetCurPage())); ?>?mid=<? echo($module_id); ?>&lang=<? echo(htmlspecialcharsbx(LANG)); ?>" method="post">
 		<?
 		foreach($aTabs as $aTab){
 			if($aTab["DIV"] == 'edit') {

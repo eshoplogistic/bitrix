@@ -50,6 +50,39 @@ class Logger
         self::log($auditType, $description, \CEventLog::SEVERITY_ERROR, $itemId);
     }
 
+    /** Маскирует в логируемых данных контакты покупателя (телефон, e-mail, имя получателя/
+     * отправителя/продавца) — журнал событий читают не только те, кому нужны ПДн. Адрес не
+     * трогаем намеренно: он нужен для диагностики "что реально ушло в API".
+     * @param mixed $data
+     * @param string $parentKey
+     * @return mixed
+     */
+    public static function maskPersonalData($data, string $parentKey = '')
+    {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        foreach ($data as $key => $value) {
+            $key = (string)$key;
+            if (is_array($value)) {
+                $data[$key] = self::maskPersonalData($value, $key);
+            } elseif (is_scalar($value) && (string)$value !== '') {
+                $value = (string)$value;
+                if ($key === 'phone') {
+                    $data[$key] = '***' . mb_substr($value, -4);
+                } elseif ($key === 'email') {
+                    $at = mb_strpos($value, '@');
+                    $data[$key] = $at === false ? '***' : '***' . mb_substr($value, $at);
+                } elseif ($key === 'name' && in_array($parentKey, array('receiver', 'sender', 'seller'), true)) {
+                    $data[$key] = '***';
+                }
+            }
+        }
+
+        return $data;
+    }
+
     /** Форматирует данные для читаемого отображения в списке "Журнал событий".
      * Массивы/объекты выводятся как JSON с отступами.
      *
@@ -68,6 +101,7 @@ class Logger
         if (is_string($data)) {
             $text = $data;
         } else {
+            $data = self::maskPersonalData($data);
             $text = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             if ($text === false) {
                 // json_encode тихо отдаёт false на невалидном UTF-8 (например, "битый"
