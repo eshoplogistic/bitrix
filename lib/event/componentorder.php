@@ -823,12 +823,20 @@ class ComponentOrder
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
         $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey);
+        // sessid в самом URL, а не в теле запроса: виджет — сторонний скрипт api.esplc.ru,
+        // его POST-тело мы не формируем и не контролируем, но URL data-controller задаём сами,
+        // так что это единственный способ дать ActionFilter\Csrf на widgetData (см.
+        // ajaxhandler.php::configureActions) валидный токен без Authentication (виджет вызывают
+        // анонимные посетители витрины). check_bitrix_sessid() ищет sessid в GET+POST вместе
+        // (Bitrix мержит их в Request), поэтому GET-параметр из этого URL достаточен независимо
+        // от того, что именно виджет положит в тело POST.
+        $sessidAttr = htmlspecialcharsbx(bitrix_sessid());
         // Логика обнаружения зависшего/сломанного виджета и весь связанный с ней JS
         // живут в install/js/framev2-script.js (см. #eslCalcErrorMsg ниже) — здесь только
         // разметка. #eShopLogisticWidgetCart лежит в #invisibleBlockEsl (display:none, см.
         // framev2-style.css) до открытия попапа, поэтому сообщение об ошибке нельзя
         // вставлять внутрь него — оно будет не видно пользователю.
-        $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData' data-v-app></div></div>";
+        $html = "<div id='invisibleBlockEsl'><div id='eShopLogisticWidgetCart' data-key='" . $widgetKeyAttr . "' style='display: block;' data-lazy-load='false' data-controller='/bitrix/services/main/ajax.php?action=eshoplogistic:delivery.api.ajaxhandler.widgetData&sessid=" . $sessidAttr . "' data-v-app></div></div>";
         $html .= "<script src='https://api.esplc.ru/widgets/cart/app.js'></script>";
 
         // Габариты берём тем же резолвером, что и обычный чекаут (Dimensions::resolveForProducts,

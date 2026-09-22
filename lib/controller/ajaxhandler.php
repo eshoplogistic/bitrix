@@ -49,7 +49,15 @@ class AjaxHandler extends Controller
                 'prefilters' => []
             ],
             'widgetData' => [
-                'prefilters' => [],
+                // Анонимный прокси (см. isSameOriginRequest/checkWidgetRateLimit ниже) —
+                // Authentication невозможен (виджет вызывается неавторизованными посетителями
+                // витрины), но CSRF-токен добавлен: componentorder.php кладёт bitrix_sessid()
+                // прямо в URL data-controller (?sessid=...), который виджет использует как есть
+                // для своих запросов, поэтому запрос всегда несёт валидный токен текущей сессии.
+                'prefilters' => [
+                    new Csrf(),
+                    new HttpMethod([HttpMethod::METHOD_POST]),
+                ],
             ],
             'unloadingForm' => [
                 'prefilters' => [
@@ -267,8 +275,10 @@ class AjaxHandler extends Controller
     private const WIDGET_CALC_TTL = 300;
 
     /** widget/send creates a real order via the proxied API, so — since it can't be gated behind
-     * Bitrix Authentication/Csrf (the widget is used by anonymous storefront visitors, see
-     * isSameOriginRequest() below) — it's instead gated behind a prior widget/calculation having
+     * Bitrix Authentication (the widget is used by anonymous storefront visitors, see
+     * isSameOriginRequest() below; Csrf alone is not enough — a sessid is only proof of an
+     * anonymous session, not of any particular prior action in it) — it's instead gated behind
+     * a prior widget/calculation having
      * completed in the same session. A blind/direct POST to widget/send (curl, forged Origin) has
      * no session with that marker and is rejected; the real widget always calculates before sending.
      *
@@ -297,11 +307,15 @@ class AjaxHandler extends Controller
         return $value === self::WIDGET_CALC_MARKER;
     }
 
-    /** widgetData has no Authentication/Csrf filters by design — it's called anonymously by the
-     * api.esplc.ru widget script embedded on storefront pages, which doesn't carry a bitrix_sessid.
-     * Origin/Referer is the only available defense against direct cross-site calls to this proxy.
-     * Requests without either header (e.g. forged via curl) are rejected rather than allowed through,
-     * since a real browser call to this same-origin endpoint always carries at least one of them.
+    /** widgetData has no Authentication filter (it's called anonymously by the api.esplc.ru
+     * widget script embedded on storefront pages) but does have Csrf (see configureActions() —
+     * componentorder.php embeds bitrix_sessid() as a query param in the data-controller URL the
+     * widget is given, so check_bitrix_sessid() finds it merged into the request regardless of
+     * what the vendor script's own POST body contains). Origin/Referer below is additional
+     * defense against direct cross-site calls to this proxy from a page carrying a stolen/replayed
+     * sessid. Requests without either header (e.g. forged via curl) are rejected rather than
+     * allowed through, since a real browser call to this same-origin endpoint always carries at
+     * least one of them.
      * @param Request $request
      * @return bool
      */
