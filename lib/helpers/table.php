@@ -28,6 +28,18 @@ class Table
         );
     }
 
+    /** Единицы измерения колонок — выводятся в заголовке после названия (", руб", ", см"). */
+    function get_column_units()
+    {
+        return array(
+            'price' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_UNIT_RUB"),
+            'weight' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_UNIT_KG"),
+            'width' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_UNIT_CM"),
+            'length' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_UNIT_CM"),
+            'height' => Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_TABLE_UNIT_CM"),
+        );
+    }
+
     function prepare_items($items = array())
     {
         $this->items = $items;
@@ -47,6 +59,7 @@ class Table
     {
         $records = $this->items;
         $columns = $this->get_columns();
+        $units = $this->get_column_units();
         ?>
         <div class="esl-places__main">
             <button id="buttonModalUnloadAdd" type="button" class="esl-places__add"><?php
@@ -60,8 +73,11 @@ class Table
                     </colgroup>
                     <thead>
                     <tr>
-                        <?php foreach ($columns as $columnLabel): ?>
-                            <th><?php echo htmlspecialcharsbx((string)$columnLabel) ?></th>
+                        <?php foreach ($columns as $columnKey => $columnLabel): ?>
+                            <th><?php echo htmlspecialcharsbx((string)$columnLabel);
+                                if (!empty($units[$columnKey])): ?><span class="esl-places-table__unit">, <?php
+                                    echo htmlspecialcharsbx((string)$units[$columnKey]) ?></span><?php
+                                endif ?></th>
                         <?php endforeach; ?>
                     </tr>
                     </thead>
