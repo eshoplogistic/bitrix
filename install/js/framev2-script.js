@@ -12,6 +12,46 @@ let eslAddressChanged = false
 // доставки пересчитывался бы N раз на одно и то же AJAX-обновление чекаута.
 let eslRunAjaxSuccessBound = false
 let widgetWatchdogTimer = null
+let eslWidgetButtonBound = false
+
+// Скрипт работает внутри чужого чекаута: наши обработчики вызываются из BX.ajax
+// (onAjaxSuccess), из патча XMLHttpRequest/fetch, из колбэков sale.order.ajax. Исключение,
+// вылетевшее из них, ломает не только калькулятор, но и сам чекаут клиента (обработка
+// AJAX-ответа обрывается, лоадер не снимается и т.п.). Поэтому каждая точка входа
+// оборачивается в eslSafe: ошибка пишется в консоль и дальше не пробрасывается.
+function eslLogError(e) {
+    try { console.error('ESL:', e) } catch (_) {}
+}
+
+function eslSafe(fn) {
+    return function () {
+        try {
+            let result = fn.apply(this, arguments)
+            if (result && typeof result.then === 'function') {
+                result.then(null, eslLogError)
+            }
+            return result
+        } catch (e) {
+            eslLogError(e)
+        }
+    }
+}
+
+function eslOn(target, name, fn) {
+    if (target && target.addEventListener) {
+        target.addEventListener(name, eslSafe(fn))
+    }
+}
+
+function eslOnCustom(target, name, fn) {
+    if (window.BX && BX.addCustomEvent) {
+        BX.addCustomEvent(target, name, eslSafe(fn))
+    }
+}
+
+function eslMessage(code) {
+    return (window.BX && BX.message) ? BX.message(code) : ''
+}
 
 // Виджет (api.esplc.ru) при неверном "Ключе widget" ничего не бросает как JS-ошибку и
 // не диспатчит ни одно из своих кастомных событий — просто вечно висит в состоянии
@@ -21,7 +61,7 @@ let widgetWatchdogTimer = null
 function eslShowWidgetError() {
     let box = document.getElementById('eslCalcErrorMsg')
     if (!box) return
-    box.textContent = BX.message('ESHOP_LOGISTIC_WIDGET_CALC_ERROR')
+    box.textContent = eslMessage('ESHOP_LOGISTIC_WIDGET_CALC_ERROR')
     box.style.display = 'block'
 }
 
@@ -43,7 +83,7 @@ function eslStartWidgetWatchdog() {
         // сдаваться, дожидаемся его появления повторными попытками в течение ~5 секунд.
         if (!box) {
             if (retriesLeft > 0) {
-                widgetWatchdogTimer = setTimeout(function () { fire(retriesLeft - 1) }, 500)
+                widgetWatchdogTimer = setTimeout(eslSafe(function () { fire(retriesLeft - 1) }), 500)
             }
             return
         }
@@ -54,7 +94,7 @@ function eslStartWidgetWatchdog() {
         }
     }
 
-    widgetWatchdogTimer = setTimeout(function () { fire(10) }, 30000)
+    widgetWatchdogTimer = setTimeout(eslSafe(function () { fire(10) }), 30000)
 }
 
 // Не полагаемся на 'DOMContentLoaded' ниже по файлу: если этот скрипт подгружается уже
@@ -119,6 +159,13 @@ function isNumeric(value) {
                 check = false
             } else {
                 this.current.payment_id = current_payment.value
+            }
+            // Контейнер виджета и эти поля выводятся только при первой загрузке страницы
+            // (см. printFrameHtmlField в componentorder.php) — без них prepare()/run() упадут.
+            if (!document.getElementById(this.items.widget_id)
+                || !document.getElementById(this.items.esldata_offers_id)
+                || !document.getElementById(this.items.esldata_payments_id)) {
+                check = false
             }
             global_check = check
 
@@ -187,7 +234,7 @@ function isNumeric(value) {
                     }
                 }))
             } else {
-                widget.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
+                eslOn(widget, 'eShopLogisticWidgetCart:onLoadApp', (event) => {
                     widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                         detail: {
                             settlement: settlement,
@@ -251,7 +298,7 @@ function isNumeric(value) {
 
             terminal.value = response.code + ', ' + response.address
             if (info) {
-                info.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_PVZ')+': ' + response.address
+                info.innerHTML = eslMessage('ESHOP_LOGISTIC_FRAME_PVZ')+': ' + response.address
             }
 
             let addressRequar = document.getElementById('eslogic-address-requar');
@@ -274,6 +321,14 @@ function isNumeric(value) {
         },
     }
 
+    esl.run = eslSafe(esl.run)
+    esl.confirm = eslSafe(esl.confirm)
+    esl.setTerminal = eslSafe(esl.setTerminal)
+    eslRun = eslSafe(eslRun)
+    eslBindAddressChange = eslSafe(eslBindAddressChange)
+    initWidgetPopup = eslSafe(initWidgetPopup)
+    validate = eslSafe(validate)
+
     function eslBindAddressChange() {
         var addressRequar = document.getElementById('eslogic-address-requar');
         if (!addressRequar || !addressRequar.value || addressRequar.value === '0') return;
@@ -287,7 +342,7 @@ function isNumeric(value) {
             var field = document.querySelector('[name="ORDER_PROP_' + id + '"]');
             if (field && !field.dataset.eslChangeBound) {
                 field.dataset.eslChangeBound = '1';
-                field.addEventListener('change', function() {
+                eslOn(field, 'change', function() {
                     eslAddressChanged = true;
                     BX.Sale.OrderAjaxComponent.sendRequest();
                 });
@@ -304,7 +359,7 @@ function isNumeric(value) {
         const delivery = document.querySelector('input[name=DELIVERY_ID]')
         esl.run()
 
-        BX.addCustomEvent(window, 'onAjaxSuccess', function (e, t) {
+        eslOnCustom(window, 'onAjaxSuccess', function (e, t) {
             // t.url обычно содержит query-параметры поиска (?q=...), поэтому строгое
             // сравнение с путём компонента никогда не совпадает — ищем подстроку.
             if (typeof t.url === 'string' && t.url.indexOf('/sale.location.selector.search/get.php') !== -1){
@@ -342,7 +397,7 @@ function isNumeric(value) {
                 closeIcon: {right: "20px", top: "10px"},
                 titleBar: {
                     content: BX.create("span", {
-                        html: '<b>'+BX.message('ESHOP_LOGISTIC_FRAME_POPUP_TITLE')+'</b>',
+                        html: '<b>'+eslMessage('ESHOP_LOGISTIC_FRAME_POPUP_TITLE')+'</b>',
                         'props': {'className': 'access-title-bar'}
                     })
                 },
@@ -358,7 +413,7 @@ function isNumeric(value) {
                 draggable: {restrict: false},
                 buttons: [
                     new BX.PopupWindowButton({
-                        text: BX.message('ESHOP_LOGISTIC_FRAME_SELECT'),
+                        text: eslMessage('ESHOP_LOGISTIC_FRAME_SELECT'),
                         className: "webform-button-link-cancel",
                         events: {
                             click: function () {
@@ -369,22 +424,27 @@ function isNumeric(value) {
                 ]
             });
         }
-        // Делегируем на document с namespace вместо прямого $(...).click(): блок доставки
-        // пересобирается на каждый AJAX-рефреш чекаута (см. комментарий у eslStartWidgetWatchdog),
-        // а initWidgetPopup() вызывается на каждый onAjaxSuccess — прямой bind на сам узел кнопки
-        // накапливал бы по новому обработчику на каждый такой вызов.
-        $(document).off('click.eslWidgetButton').on('click.eslWidgetButton', '.container_widget_esl_button', function () {
-            first_load = true
-            add_frame_esl.show();
-        });
+        // Делегируем на document вместо прямого bind на кнопку: блок доставки пересобирается
+        // на каждый AJAX-рефреш чекаута (см. комментарий у eslStartWidgetWatchdog), а
+        // initWidgetPopup() вызывается на каждый onAjaxSuccess — прямой bind на сам узел кнопки
+        // накапливал бы по новому обработчику на каждый такой вызов. Навешиваем один раз и
+        // без jQuery — на сайте клиента его может не быть.
+        if (!eslWidgetButtonBound) {
+            eslWidgetButtonBound = true
+            eslOn(document, 'click', function (event) {
+                if (!event.target || !event.target.closest || !event.target.closest('.container_widget_esl_button')) return
+                first_load = true
+                if (add_frame_esl) add_frame_esl.show()
+            })
+        }
     }
 
-    window.addEventListener('load', function (event) {
+    eslOn(window, 'load', function (event) {
         eslRun()
         eslBindAddressChange()
     });
 
-    BX.addCustomEvent(window, 'onAjaxSuccess', function (e, t) {
+    eslOnCustom(window, 'onAjaxSuccess', function (e, t) {
         if(!global_check){
             eslRun()
         }
@@ -406,7 +466,7 @@ function isNumeric(value) {
         }
     })
 
-    document.addEventListener('DOMContentLoaded', () => {
+    eslOn(document, 'DOMContentLoaded', () => {
 
 
         const root = document.getElementById('eShopLogisticWidgetCart');
@@ -428,30 +488,34 @@ function isNumeric(value) {
             eslStartWidgetWatchdog()
         }
 
-        let origOpen = XMLHttpRequest.prototype.open
-        XMLHttpRequest.prototype.open = function (method, url) {
+        // Патчим глобальные XMLHttpRequest/fetch всего сайта — наш код внутри обязан быть
+        // безопасным, иначе любая ошибка в нём сломает вообще все запросы страницы.
+        let onWidgetRequestSafe = eslSafe(function (url) {
             if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
                 onWidgetRequest()
             }
+        })
+
+        let origOpen = XMLHttpRequest.prototype.open
+        XMLHttpRequest.prototype.open = function (method, url) {
+            onWidgetRequestSafe(url)
             return origOpen.apply(this, arguments)
         }
 
         if (window.fetch) {
             let origFetch = window.fetch
             window.fetch = function (url) {
-                if (typeof url === 'string' && url.indexOf('widgetData') !== -1) {
-                    onWidgetRequest()
-                }
+                onWidgetRequestSafe(url)
                 return origFetch.apply(this, arguments)
             }
         }
 
-        window.addEventListener('error', function (e) {
+        window.addEventListener('error', eslSafe(function (e) {
             if (!e.filename || e.filename.indexOf('api.esplc.ru') === -1) return
             eslShowWidgetError()
-        }, true)
+        }), true)
 
-        root.addEventListener('eShopLogisticWidgetCart:onLoadApp', (event) => {
+        eslOn(root, 'eShopLogisticWidgetCart:onLoadApp', (event) => {
             setTimeout(function () {
                 if(servicesLoad !== true){
                     esl.run('city')
@@ -461,7 +525,7 @@ function isNumeric(value) {
 
         });
 
-        root.addEventListener('eShopLogisticWidgetCart:onSelectedService', (event) => {
+        eslOn(root, 'eShopLogisticWidgetCart:onSelectedService', (event) => {
             let data = event.detail
             if (typeof data.terminal == 'object') {
                 esl.setTerminal(data.terminal)
@@ -488,7 +552,7 @@ function isNumeric(value) {
             }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {
+        eslOn(root, 'eShopLogisticWidgetCart:onAllServicesLoaded', (event) => {
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
 
@@ -527,14 +591,14 @@ function isNumeric(value) {
                     }
                 }
 
-                let descriptionTerminal = BX.message("ESHOP_LOGISTIC_TERMINAL_DESC_1")
+                let descriptionTerminal = eslMessage("ESHOP_LOGISTIC_TERMINAL_DESC_1")
                 descriptionTerminal += ' '+countDelivery
                 if (countDelivery == 1) {
-                    descriptionTerminal += ' '+BX.message("ESHOP_LOGISTIC_TERMINAL_DESC_2")
+                    descriptionTerminal += ' '+eslMessage("ESHOP_LOGISTIC_TERMINAL_DESC_2")
                 }else if(countDelivery > 1 && countDelivery < 5){
-                    descriptionTerminal += ' '+BX.message("ESHOP_LOGISTIC_TERMINAL_DESC_5")
+                    descriptionTerminal += ' '+eslMessage("ESHOP_LOGISTIC_TERMINAL_DESC_5")
                 }else{
-                    descriptionTerminal += ' '+BX.message("ESHOP_LOGISTIC_TERMINAL_DESC_3")
+                    descriptionTerminal += ' '+eslMessage("ESHOP_LOGISTIC_TERMINAL_DESC_3")
                 }
                 descriptionTerminal += '<br>'+nameDelivery
 
@@ -570,40 +634,40 @@ function isNumeric(value) {
 
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onSelectTypeDelivery', (event) => {
+        eslOn(root, 'eShopLogisticWidgetCart:onSelectTypeDelivery', (event) => {
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
+        eslOn(root, 'eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
             console.error('ESL: Неверный код населенного пункта')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidName', () => {
+        eslOn(root, 'eShopLogisticWidgetCart:onInvalidName', () => {
             console.error('ESL: Неверный name города')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidServices', () => {
+        eslOn(root, 'eShopLogisticWidgetCart:onInvalidServices', () => {
             console.error('ESL: Неверный массив служб')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidPayment', () => {
+        eslOn(root, 'eShopLogisticWidgetCart:onInvalidPayment', () => {
             console.error('ESL: Не передана оплата')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onInvalidOffers', () => {
+        eslOn(root, 'eShopLogisticWidgetCart:onInvalidOffers', () => {
             console.error('ESL: Не передан offers')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
-        root.addEventListener('eShopLogisticWidgetCart:onNotAvailableServices', (event) => {
+        eslOn(root, 'eShopLogisticWidgetCart:onNotAvailableServices', (event) => {
             console.error('ESL: Событие onNotAvailableServices', event.detail)
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
@@ -619,7 +683,7 @@ function isNumeric(value) {
             if (!fieldTerminal.value && !cityNotFound) {
                 let element = document.createElement('div')
                 element.id = nameErrorDiv
-                element.innerHTML = BX.message('ESHOP_LOGISTIC_FRAME_ERROR_PVZ')
+                element.innerHTML = eslMessage('ESHOP_LOGISTIC_FRAME_ERROR_PVZ')
                 if(!document.getElementById(nameErrorDiv))
                     fieldTerminal.parentNode.insertBefore(element, fieldTerminal)
             }else {
@@ -653,67 +717,101 @@ function isNumeric(value) {
 })();
 
 
-BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
-
+// Вне IIFE выше: при включённом объединении JS Bitrix склеивает скрипты в один файл,
+// и исключение на верхнем уровне (например, BX ещё не загружен) оборвало бы весь бандл.
 (function () {
     'use strict';
+
+    if (!window.BX || !BX.namespace) {
+        return;
+    }
+
+    BX.namespace('BX.EShopLogistic.OrderAjaxComponent');
+
+    function formatPriceWithSpace(price) {
+        price = parseInt(price, 10);
+        if (isNaN(price)) return price;
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    function endLoader() {
+        try {
+            BX.Sale.OrderAjaxComponent.endLoader();
+        } catch (e) {
+            eslLogError(e);
+        }
+    }
 
     BX.EShopLogistic.OrderAjaxComponent = {
 
         sendRequest: function (action, actionData) {
-            if (!BX.Sale.OrderAjaxComponent.startLoader())
+            if (!BX.Sale || !BX.Sale.OrderAjaxComponent || !BX.Sale.OrderAjaxComponent.startLoader())
                 return;
 
-            BX.Sale.OrderAjaxComponent.firstLoad = false;
+            // Лоадер чекаута уже показан — любая ошибка ниже без endLoader() оставила бы
+            // покупателя с вечно крутящимся чекаутом.
+            try {
+                BX.Sale.OrderAjaxComponent.firstLoad = false;
 
-            action = BX.type.isNotEmptyString(action) ? action : 'refreshOrderAjax';
+                action = BX.type.isNotEmptyString(action) ? action : 'refreshOrderAjax';
 
-            var eventArgs = {
-                action: action,
-                cancel: false,
-                actionData: ''
-            };
-            BX.Event.EventEmitter.emit('BX.Sale.OrderAjaxComponent:onBeforeSendRequest', eventArgs);
-            if (eventArgs.cancel) {
-                BX.Sale.OrderAjaxComponent.endLoader();
+                var eventArgs = {
+                    action: action,
+                    cancel: false,
+                    actionData: ''
+                };
+                BX.Event.EventEmitter.emit('BX.Sale.OrderAjaxComponent:onBeforeSendRequest', eventArgs);
+                if (eventArgs.cancel) {
+                    endLoader();
+                    return;
+                }
+                var data = BX.Sale.OrderAjaxComponent.getData(eventArgs.action, eventArgs.actionData);
+                var resultEsl = JSON.parse(actionData);
+                data['eslData'] = actionData;
+                data['location'] = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc
+                init_esl = true;
+            } catch (e) {
+                eslLogError(e);
+                endLoader();
                 return;
             }
-            var data = BX.Sale.OrderAjaxComponent.getData(eventArgs.action, eventArgs.actionData);
-            var resultEsl = JSON.parse(actionData);
-            data['eslData'] = actionData;
-            data['location'] = BX.Sale.OrderAjaxComponent.deliveryLocationInfo.loc
-            init_esl = true;
 
             BX.ajax({
                 method: 'POST',
                 dataType: 'json',
                 url: BX.Sale.OrderAjaxComponent.ajaxUrl,
                 data: data,
-                onsuccess: BX.delegate(function (result) {
-                    result.order.TOTAL.DELIVERY_PRICE_FORMATED = resultEsl.price + ' &#8381;';
-                    result.order.TOTAL.DELIVERY_PRICE = resultEsl.price;
-                    result.order.TOTAL.ORDER_TOTAL_PRICE_FORMATED = formatPriceWithSpace(result.order.TOTAL.ORDER_PRICE + resultEsl.price) +" &#8381;"
-                    // Форматирование цены с пробелом между тысячами
-                    function formatPriceWithSpace(price) {
-                        price = parseInt(price, 10);
-                        if (isNaN(price)) return price;
-                        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                onsuccess: function (result) {
+                    // Подмена цены — наша «надстройка»: если она не удалась, чекаут всё равно
+                    // должен обновиться штатным ответом сервера.
+                    try {
+                        result.order.TOTAL.DELIVERY_PRICE_FORMATED = resultEsl.price + ' &#8381;';
+                        result.order.TOTAL.DELIVERY_PRICE = resultEsl.price;
+                        result.order.TOTAL.ORDER_TOTAL_PRICE_FORMATED = formatPriceWithSpace(result.order.TOTAL.ORDER_PRICE + resultEsl.price) + " &#8381;"
+                    } catch (e) {
+                        eslLogError(e);
                     }
-                    if (result.redirect && result.redirect.length)
-                        document.location.href = result.redirect;
 
-                    switch (eventArgs.action) {
-                        case 'refreshOrderAjax':
-                            BX.Sale.OrderAjaxComponent.refreshOrder(result);
-                            break;
+                    try {
+                        if (result && result.redirect && result.redirect.length)
+                            document.location.href = result.redirect;
+
+                        switch (eventArgs.action) {
+                            case 'refreshOrderAjax':
+                                BX.Sale.OrderAjaxComponent.refreshOrder(result);
+                                break;
+                        }
+                        BX.cleanNode(BX.Sale.OrderAjaxComponent.savedFilesBlockNode);
+                    } catch (e) {
+                        eslLogError(e);
+                    } finally {
+                        endLoader();
                     }
-                    BX.cleanNode(BX.Sale.OrderAjaxComponent.savedFilesBlockNode);
-                    BX.Sale.OrderAjaxComponent.endLoader();
-                }, this),
-                onfailure: BX.delegate(function () {
+                },
+                onfailure: function () {
                     console.error('ESL: sendRequest failed', action);
-                    BX.Sale.OrderAjaxComponent.endLoader();
-                }, this)
+                    endLoader();
+                }
             });
         },
 

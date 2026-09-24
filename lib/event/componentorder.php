@@ -620,8 +620,10 @@ class ComponentOrder
                     $deliveryResult['OWN_NAME'] = $selectedElement['OWN_NAME'];
 			}
 		}
-        if(!$deliveryResult)
+        if(!$deliveryResult) {
+            self::printFrameHtmlField($widgetKey, $arUserResult, $arResult);
             return $arResult['DELIVERY'];
+        }
 
         $addressRequarOption = Option::get(Config::MODULE_ID, 'api_address_requar');
         $addressRequarIds = $addressRequarOption ? array_filter(array_map('trim', explode(',', $addressRequarOption))) : [];
@@ -690,6 +692,7 @@ class ComponentOrder
             // всё равно оставался в списке выбранным, с виджетом-заглушкой и ценой по умолчанию
             // 0 -> "бесплатно", что вводит покупателя в заблуждение. Вместо этого просто не
             // показываем метод доставки в чекауте, пока город не определится.
+            self::printFrameHtmlField($widgetKey, $arUserResult, $arResult);
             return $arResult['DELIVERY'];
         }
 
@@ -810,8 +813,29 @@ class ComponentOrder
         $arResult['DELIVERY'][$deliveryResult['ID']] = $deliveryResult;
 
 
-		echo self::frameHtmlField($widgetKey, $arUserResult, $arResult);
+		self::printFrameHtmlField($widgetKey, $arUserResult, $arResult);
 		return $arResult['DELIVERY'];
+	}
+
+	private static $frameHtmlPrinted = false;
+
+	// Контейнер виджета и скрытые #widgetOffersEsl/#widgetPaymentEsl выводятся через echo,
+	// а echo доходит до страницы только при обычной загрузке: AJAX-ответ sale.order.ajax
+	// (showAjaxAnswer) делает RestartBuffer и отдаёт JSON. Поэтому выводим их при первой
+	// загрузке всегда, даже если метод ESL сейчас недоступен (например, скрыт ограничением
+	// по выбранной оплате) — иначе после переключения оплаты метод появится по AJAX, а
+	// framev2-script.js упадёт на отсутствующих полях и неинициализированном виджете.
+	private static function printFrameHtmlField($widgetKey, $arUserResult, $arResult)
+	{
+		if (self::$frameHtmlPrinted)
+			return;
+
+		$request = Main\Application::getInstance()->getContext()->getRequest();
+		if ($request->isPost() && $request->get('via_ajax') === 'Y')
+			return;
+
+		self::$frameHtmlPrinted = true;
+		echo self::frameHtmlField($widgetKey, $arUserResult, $arResult);
 	}
 
 	private static function frameHtmlField($widgetKey, $arUserResult, $arResult)
