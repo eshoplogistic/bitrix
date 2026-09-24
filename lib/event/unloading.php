@@ -261,6 +261,14 @@ class Unloading
                 // Поведение sdek оставлено как было: при отсутствии номера/ошибке возвращаем
                 // именно ответ get-запроса с ошибкой, ответ create() в свойстве уже сохранён.
                 if ($hasError || !$hasNumber) {
+                    if ($hasError) {
+                        // СДЭК принимает create() сразу ("accepted"), а валидирует заказ
+                        // асинхронно: ошибка в get-ответе (например "выбранный тариф
+                        // недоступен", http 422) означает, что ТК заказ отклонила и в ЛК его
+                        // нет. Сохранённый выше ответ create() откатываем — иначе меню заказа
+                        // считает его выгруженным и не даёт выгрузить заново после исправления.
+                        $this->saveShippingMethodsAnswer($orderId, null);
+                    }
                     if (!empty($resultGet['data']['state']['errors'])) {
                         $resultGet['errors'] = $resultGet['data']['state']['errors'];
                     } elseif (!isset($resultGet['errors'])) {
