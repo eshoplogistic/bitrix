@@ -271,14 +271,14 @@ function isNumeric(value) {
                 deliveryMethods = response.service.responseData
             }
 
-            if (esldata.key === 'postrf') {
-                esldata.price = deliveryMethods.terminal.price.value
-                esldata.time = deliveryMethods.terminal.time.value
-                esldata.unit = deliveryMethods.terminal.time.unit
-            } else {
-                esldata.price = deliveryMethods[esldata.mode].price.value
-                esldata.time = deliveryMethods[esldata.mode].time.value
-                esldata.unit = deliveryMethods[esldata.mode].time.unit
+            let methodData = (esldata.key === 'postrf') ? deliveryMethods.terminal : deliveryMethods[esldata.mode]
+            esldata.price = methodData.price.value
+            esldata.time = methodData.time.value
+            esldata.unit = methodData.time.unit
+            // Тариф, выбранный покупателем в виджете ({code, name}) — сервер сохранит его
+            // в ESHOPLOGISTIC_SHIPPING_METHODS.terminal_tarrif для формы выгрузки заказа
+            if (methodData.tariff && methodData.tariff.code !== undefined) {
+                esldata.tariff = {code: methodData.tariff.code, name: methodData.tariff.name || ''}
             }
 
             if (response[esldata.mode]) {

@@ -217,6 +217,21 @@ class ComponentOrder
 				$choseFrame = $request->getPost('ESHOPLOGISTIC_CHOSE_FRAME');
 				$shipMethod = $request->getPost('ESHOPLOGISTIC_SHIPPING_METHODS');
 
+				// Режим виджета: скрытое поле с тарифом есть в форме только после обновления
+				// чекаута с eslData — любое следующее обновление без eslData его теряет.
+				// Поэтому тариф, выбранный в виджете, дополнительно берём из самих данных виджета.
+				$widgetTariff = self::getWidgetTariff($request, $delivery['CODE']);
+				if ($widgetTariff) {
+					$decodedShipMethod = is_string($shipMethod) ? json_decode($shipMethod, true) : null;
+					if (!is_array($decodedShipMethod)) {
+						$decodedShipMethod = array();
+					}
+					if (empty($decodedShipMethod['terminal_tarrif']['code'])) {
+						$decodedShipMethod['terminal_tarrif'] = $widgetTariff;
+						$shipMethod = json_encode($decodedShipMethod, JSON_UNESCAPED_UNICODE);
+					}
+				}
+
 				$neededCodes = array();
 				if ($isDeliveryHasPvz) $neededCodes[] = "ESHOPLOGISTIC_PVZ";
 				if ($choseFrame) $neededCodes[] = "ESHOPLOGISTIC_CHOSE_FRAME";
@@ -264,6 +279,42 @@ class ComponentOrder
 			}
 		}
 
+	}
+
+
+	/** Тариф ({code, name}), выбранный покупателем в виджете (framev2-script.js кладёт его в
+	 * eslData.tariff; orderDeliveryBuildListFrame сохраняет eslData в сессию как dataEsl).
+	 * Возвращается только если данные виджета относятся к той же службе и режиму, что и
+	 * выбранный профиль доставки — иначе это остатки прежнего выбора.
+	 * @param object $request
+	 * @param string $deliveryCode CODE профиля доставки, например eslogistic:sdek_term
+	 * @return array|null
+	 */
+	private static function getWidgetTariff($request, $deliveryCode)
+	{
+		if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
+			return null;
+		}
+
+		$raw = $request->getPost('eslData');
+		if (!$raw) {
+			$session = Main\Application::getInstance()->getSession();
+			$raw = $session->has('dataEsl') ? $session->get('dataEsl') : null;
+		}
+		$data = is_string($raw) ? json_decode($raw, true) : null;
+		if (!is_array($data) || !isset($data['tariff']['code']) || !is_scalar($data['tariff']['code'])
+			|| !isset($data['key'], $data['mode']) || !is_string($data['key']) || !is_string($data['mode'])) {
+			return null;
+		}
+
+		if (!self::findDeliveryByName(array(array('CODE' => $deliveryCode)), $data['key'], $data['mode'])) {
+			return null;
+		}
+
+		return array(
+			'code' => (string)$data['tariff']['code'],
+			'name' => isset($data['tariff']['name']) && is_scalar($data['tariff']['name']) ? (string)$data['tariff']['name'] : '',
+		);
 	}
 
 
@@ -759,7 +810,21 @@ class ComponentOrder
                         >';
         }
 
-		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl' value='" . htmlspecialcharsbx($jsonValueCity) . "' type='hidden'>";
+		// В режиме виджета скрытое поле ESHOPLOGISTIC_SHIPPING_METHODS из CalculateHandler
+		// не выводится (результат серверного расчёта отбрасывается), поэтому тариф, выбранный
+		// покупателем в виджете, передаём сами — иначе свойство заказа остаётся пустым и в
+		// форме выгрузки селект тарифа откатывается на первый пункт списка.
+		if (isset($requestDataEsl['tariff']['code']) && is_scalar($requestDataEsl['tariff']['code'])) {
+			$shippingMethodsValue = \Bitrix\Main\Web\Json::encode(array(
+				'terminal_tarrif' => array(
+					'code' => (string)$requestDataEsl['tariff']['code'],
+					'name' => (string)($requestDataEsl['tariff']['name'] ?? ''),
+				),
+			));
+			$deliveryResult['DESCRIPTION'] .= '<input name="ESHOPLOGISTIC_SHIPPING_METHODS" type="hidden" value="' . htmlspecialcharsbx($shippingMethodsValue) . '">';
+		}
+
+		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl'value='" . htmlspecialcharsbx($jsonValueCity) . "' type='hidden'>";
 
 		if ($check)
 			$deliveryResult['CHECKED'] = 'Y';

@@ -208,7 +208,7 @@ class CalculateHandler
                     'region_to' => $debugAnswer['shipping_route']['to']['region']??'',
                     'settlement_from' => $debugAnswer['shipping_route']['from']['settlement']??'',
                     'region_from' => $debugAnswer['shipping_route']['from']['region']??'',
-                    'terminal_tarrif' => $deliveryProfileData['data']['terminal']['tariff']??'',
+                    'terminal_tarrif' => $deliveryProfileData['data'][$type]['tariff']??'',
                 );
                 $result->setDescription('<input name="ESHOPLOGISTIC_SHIPPING_METHODS" type="hidden" value="'.htmlspecialchars(json_encode( $debugArr )).'"/>');
             }
