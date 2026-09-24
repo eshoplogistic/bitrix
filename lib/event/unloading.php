@@ -81,6 +81,9 @@ class Unloading
     {
         $moduleId = Config::MODULE_ID;
         $elementId = (int)$_REQUEST['ID'];
+        // ?esl_debug=1 на странице заказа — показывает в диалоге сброса выгрузки тестовую
+        // кнопку "Сбросить локально" (без отмены заказа у ТК), см. clearstatus.php.
+        $debugParam = (($_GET['esl_debug'] ?? '') === '1') ? '&esl_debug=1' : '';
         $currectDeliveryEsl = null;
         $checkUnloading = false;
 
@@ -143,7 +146,7 @@ class Unloading
             $arReports[] = array(
                 "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR"),
                 "ACTION" => "(new BX.CAdminDialog({
-				'content_url': '/bitrix/admin/eshoplogistic_delivery_clearstatus.php?elementId=" . $elementId . "',
+				'content_url': '/bitrix/admin/eshoplogistic_delivery_clearstatus.php?elementId=" . $elementId . $debugParam . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 600,

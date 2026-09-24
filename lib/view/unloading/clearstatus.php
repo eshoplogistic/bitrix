@@ -25,6 +25,10 @@ if ($ID <= 0) {
     die('Bad request');
 }
 
+// Тестовый режим: локальный сброс без отмены заказа у ТК доступен только при ?esl_debug=1
+// (прокидывается со страницы заказа, см. Unloading::OrderDetailAdminContextMenuShow).
+$debug = $request->getQuery('esl_debug') === '1';
+
 $unloading = new Unloading();
 $type = null;
 $message = null;
@@ -35,9 +39,12 @@ if ($request->isPost()) {
     }
 
     $mode = $request->getPost('mode');
-    $result = ($mode === 'carrier')
-        ? $unloading->deleteUnloadingAtCarrier($ID)
-        : $unloading->clearUnloading($ID);
+    if ($mode === 'local' && !$debug) {
+        die('Access denied');
+    }
+    $result = ($mode === 'local')
+        ? $unloading->clearUnloading($ID)
+        : $unloading->deleteUnloadingAtCarrier($ID);
     $type = $result['type'];
     $message = $result['message'];
 }
@@ -56,23 +63,23 @@ $icons = ['success' => '&#10003;', 'error' => '&#10005;', 'warning' => '!', 'inf
     </div>
 <?php else: ?>
     <div class="esl-clear-confirm">
-        <div class="esl-clear-confirm__text"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM") ?></div>
-        <form method="POST" action="<?= htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?elementId=<?= (int)$ID ?>">
+        <form method="POST" action="<?= htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?elementId=<?= (int)$ID ?><?= $debug ? '&amp;esl_debug=1' : '' ?>">
             <?= bitrix_sessid_post() ?>
             <input type="hidden" name="mode" value="">
             <div class="esl-clear-confirm__option">
-                <button type="button" class="esl-clear-btn" onclick="eslClearSubmit(this, 'local')"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM_BUTTON") ?></button>
-                <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM_NOTE") ?></div>
-            </div>
-            <div class="esl-clear-confirm__option">
                 <?php if ($deleteSupported): ?>
+                    <div class="esl-clear-confirm__text"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_CONFIRM") ?></div>
                     <button type="button" class="esl-clear-btn esl-clear-btn--danger" onclick="eslClearSubmit(this, 'carrier')"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_CONFIRM_BUTTON") ?></button>
-                    <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_CONFIRM_NOTE") ?></div>
                 <?php else: ?>
-                    <button type="button" class="esl-clear-btn" disabled><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_CONFIRM_BUTTON") ?></button>
-                    <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_UNSUPPORTED_NOTE") ?></div>
+                    <div class="esl-clear-confirm__text"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_UNSUPPORTED_NOTE") ?></div>
                 <?php endif; ?>
             </div>
+            <?php if ($debug): ?>
+                <div class="esl-clear-confirm__option esl-clear-confirm__option--debug">
+                    <button type="button" class="esl-clear-btn" onclick="eslClearSubmit(this, 'local')"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM_BUTTON") ?></button>
+                    <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR_CONFIRM_NOTE") ?></div>
+                </div>
+            <?php endif; ?>
         </form>
     </div>
 <?php endif; ?>

@@ -266,3 +266,10 @@
     border-color: var(--esl-border);
     color: var(--esl-text-muted);
 }
+.esl-clear-confirm__option .esl-clear-confirm__text:last-child {
+    margin-bottom: 0;
+}
+.esl-clear-confirm__option--debug {
+    border-style: dashed;
+    box-shadow: none;
+}
