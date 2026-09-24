@@ -107,47 +107,50 @@ class Unloading
                 "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER"),
                 "LINK" => "/bitrix/admin/eshoplogistic_delivery_form.php?elementId=" . $elementId . "",
             );
-        }
-        $arReports[] = array(
-            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"),
-            "ACTION" => "(new BX.CAdminDialog({
+        } else {
+            // Обновление/проверка статуса, печать и удаление работают только с заказом,
+            // уже созданным у ТК (нужен order.id из ответа), — до выгрузки их не показываем.
+            $arReports[] = array(
+                "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_ORDER_UPDATE"),
+                "ACTION" => "(new BX.CAdminDialog({
 				'content_url': '/bitrix/admin/eshoplogistic_delivery_updatestatus.php?elementId=" . $elementId . "&sessid=" . bitrix_sessid() . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 800,
 				'height' : 400
 			})).Show();",
-        );
-        $arReports[] = array(
-            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CHECK_STATUS"),
-            "ACTION" => "(new BX.CAdminDialog({
+            );
+            $arReports[] = array(
+                "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CHECK_STATUS"),
+                "ACTION" => "(new BX.CAdminDialog({
 				'content_url': '/bitrix/admin/eshoplogistic_delivery_checkstatus.php?elementId=" . $elementId . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 1200,
 				'height' : 400
 			})).Show();",
-        );
-        $arReports[] = array(
-            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT"),
-            "ACTION" => "(new BX.CAdminDialog({
+            );
+            $arReports[] = array(
+                "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT"),
+                "ACTION" => "(new BX.CAdminDialog({
 				'content_url': '/bitrix/admin/eshoplogistic_delivery_print.php?elementId=" . $elementId . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 700,
 				'height' : 500
 			})).Show();",
-        );
-        $arReports[] = array(
-            "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR"),
-            "ACTION" => "(new BX.CAdminDialog({
+            );
+            $arReports[] = array(
+                "TEXT" => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_CLEAR"),
+                "ACTION" => "(new BX.CAdminDialog({
 				'content_url': '/bitrix/admin/eshoplogistic_delivery_clearstatus.php?elementId=" . $elementId . "',
 				'draggable': true,
 				'resizable': true,
 				'width' : 600,
 				'height' : 260
-			})).Show();",
-        );
+    			})).Show();",
+            );
+        }
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_edit.php' && $_REQUEST['ID'] > 0
             || $_SERVER['REQUEST_METHOD'] == 'GET' && $GLOBALS['APPLICATION']->GetCurPage() == '/bitrix/admin/sale_order_view.php' && $_REQUEST['ID'] > 0) {
