@@ -873,7 +873,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_DISPLAY")) . '</span>',
                 array(
                     "api_address_requar",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR"),
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR") . eslHint(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_ADDRESS_REQUAR_HINT")),
                     '',
                     ['multiselectbox', $fieldsFeatures]
                 ),
