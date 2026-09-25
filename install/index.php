@@ -320,6 +320,7 @@ Class eshoplogistic_delivery extends CModule
 		DeleteDirFilesEx("/bitrix/js/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/css/".$this->MODULE_ID);
 		DeleteDirFilesEx("/bitrix/components/".$this->MODULE_SHORT_ID."/button");
+		DeleteDirFilesEx("/bitrix/components/".$this->MODULE_SHORT_ID."/widget_easy");
 		DeleteDirFilesEx("/bitrix/components/button");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_form.php");
 		@unlink($_SERVER['DOCUMENT_ROOT']."/bitrix/admin/eshoplogistic_delivery_checkstatus.php");
