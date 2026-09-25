@@ -109,7 +109,7 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_ORDER"] = "Настройка статус�
 $MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_SENDER"] = "Данные отправителя";
 $MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_CARRIERS"] = "Настройки служб доставки";
 $MESS["ESHOP_LOGISTIC_OPTIONS_ADD_FIELD"] = "Дополнительные услуги";
-$MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"] = "Планировщик выгрузки заказов";
+$MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_UNLOADING"] = "Планировщик обновления статусов заказов";
 $MESS["ESHOP_LOGISTIC_OPTIONS_CRON_UNLOADING_STATUS"] = "Статусы заказов для работы агента";
 $MESS["ESHOP_LOGISTIC_OPTIONS_CRON_URL_UNLOADING"] = "Название модуля агента - eshoplogistic.delivery. Функция агента - Eshoplogistic\Delivery\Agent\UnloadingHandler::update();<br><a href='/bitrix/admin/agent_list.php' target='_blank'>Список агентов</a>";
 $MESS["ESHOP_LOGISTIC_OPTIONS_STATUS_TRANSLATE"] = [
