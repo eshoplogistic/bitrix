@@ -931,6 +931,8 @@ class ComponentOrder
         // (Bitrix мержит их в Request), поэтому GET-параметр из этого URL достаточен независимо
         // от того, что именно виджет положит в тело POST.
         $sessidAttr = htmlspecialcharsbx(bitrix_sessid());
+        // widgetData проксирует запросы только с ключом, выданным этой сессии
+        \Eshoplogistic\Delivery\Controller\AjaxHandler::rememberIssuedWidgetKey((string)$widgetKey);
         // Логика обнаружения зависшего/сломанного виджета и весь связанный с ней JS
         // живут в install/js/framev2-script.js (см. #eslCalcErrorMsg ниже) — здесь только
         // разметка. #eShopLogisticWidgetCart лежит в #invisibleBlockEsl (display:none, см.

@@ -49,7 +49,8 @@ class AjaxHandler extends Controller
                 'prefilters' => []
             ],
             'widgetData' => [
-                // Анонимный прокси (см. isSameOriginRequest/checkWidgetRateLimit ниже) —
+                // Анонимный read-only прокси: только методы из WIDGET_ALLOWED_METHODS (без
+                // widget/send) и только с ключом, выданным сессии (isIssuedWidgetKey) —
                 // Authentication невозможен (виджет вызывается неавторизованными посетителями
                 // витрины), но CSRF-токен добавлен: componentorder.php кладёт bitrix_sessid()
                 // прямо в URL data-controller (?sessid=...), который виджет использует как есть
@@ -173,6 +174,21 @@ class AjaxHandler extends Controller
         ];
     }
 
+    /** Методы api.esplc.ru, которые виджет корзины (widgets/cart, см. componentorder.php::frameHtmlField)
+     * реально запрашивает через data-controller. widget/send (создание заявки у перевозчика) сюда
+     * сознательно не входит: заказ в режиме виджета оформляет Bitrix, виджет корзины submitOrder
+     * не вызывает, а анонимный прокси для создания заявок от имени сайта — это обход аутентификации
+     * (любые проверки Origin/сессии тут подконтрольны самому вызывающему).
+     */
+    private const WIDGET_ALLOWED_METHODS = [
+        'widget/client',
+        'widget/search',
+        'widget/calculation',
+        'widget/geo',
+        'widget/terminals',
+        'widget/distance',
+    ];
+
     public static function widgetDataAction()
     {
         $out    = [];
@@ -180,9 +196,17 @@ class AjaxHandler extends Controller
 
         $method = trim((string)$request->getPost('method'));
 
-        // Только widget/<имя>[/<имя>...]: префикса мало — "widget/../delivery/order" или
-        // "widget/x?key=..." через CURLOPT_URL (ApiQuery) ушли бы на произвольный путь API.
-        if (!empty($method) && !preg_match('#^widget(/[A-Za-z0-9_\-]+)+$#D', $method)) {
+        // Точный allowlist вместо шаблона widget/*: через CURLOPT_URL (ApiQuery) уходит только
+        // заранее известный путь API.
+        if (!empty($method) && !in_array($method, self::WIDGET_ALLOWED_METHODS, true)) {
+            \CEventLog::Add([
+                'SEVERITY' => \CEventLog::SEVERITY_SECURITY,
+                'AUDIT_TYPE_ID' => 'ESHOPLOGISTIC_WIDGET_METHOD_BLOCKED',
+                'MODULE_ID' => Config::MODULE_ID,
+                'ITEM_ID' => $request->getRemoteAddress() ?: 'unknown',
+                'DESCRIPTION' => 'widgetData blocked: method ' . mb_substr($method, 0, 100) . ' is not allowed',
+            ]);
+            http_response_code(403);
             echo Json::encode(['error' => 'Method is not allowed']);
             exit();
         }
@@ -193,30 +217,22 @@ class AjaxHandler extends Controller
             exit();
         }
 
-        if (!self::checkWidgetRateLimit($request)) {
-            http_response_code(429);
-            echo Json::encode(['error' => 'Too many requests']);
-            exit();
-        }
-
-        // widget/send places a real order, unlike the read-only methods sharing the general
-        // limit above, so it gets its own much tighter per-IP cap.
-        if ($method === 'widget/send' && !self::checkWidgetRateLimit($request, 10, 60, 'send')) {
-            http_response_code(429);
-            echo Json::encode(['error' => 'Too many requests']);
-            exit();
-        }
-
-        if ($method === 'widget/send' && !self::hasRecentWidgetCalculation()) {
+        if (!self::isIssuedWidgetKey($request)) {
             \CEventLog::Add([
                 'SEVERITY' => \CEventLog::SEVERITY_SECURITY,
-                'AUDIT_TYPE_ID' => 'ESHOPLOGISTIC_WIDGET_SEND_BLOCKED',
+                'AUDIT_TYPE_ID' => 'ESHOPLOGISTIC_WIDGET_KEY_BLOCKED',
                 'MODULE_ID' => Config::MODULE_ID,
                 'ITEM_ID' => $request->getRemoteAddress() ?: 'unknown',
-                'DESCRIPTION' => 'widget/send blocked: no valid widget/calculation marker in session',
+                'DESCRIPTION' => 'widgetData blocked: key does not match the widget key issued to this session',
             ]);
             http_response_code(403);
             echo Json::encode(['error' => 'Forbidden']);
+            exit();
+        }
+
+        if (!self::checkWidgetRateLimit($request)) {
+            http_response_code(429);
+            echo Json::encode(['error' => 'Too many requests']);
             exit();
         }
 
@@ -230,9 +246,7 @@ class AjaxHandler extends Controller
             if ( ! empty( $cache_data ) ) {
                 $out = $cache->getVars();
             } elseif($cache->startDataCache()) {
-                $raw = ( $method == 'widget/send' ) ? $request->getPost( 'raw' ) : '';
-
-                if ( $requestOut = self::ApiQuery( $method, $query_data, $raw ) ) {
+                if ( $requestOut = self::ApiQuery( $method, $query_data ) ) {
                     if ( ! empty( $requestOut ) && $requestOut['http_status'] == 200 ) {
                         $cache->endDataCache($requestOut);
                     } else {
@@ -243,10 +257,6 @@ class AjaxHandler extends Controller
                     $cache->abortDataCache();
                 }
             }
-
-            if ($method === 'widget/calculation' && !empty($out)) {
-                self::markWidgetCalculationDone();
-            }
         }
 
         $json = Json::encode( $out );
@@ -255,56 +265,39 @@ class AjaxHandler extends Controller
 
     }
 
-    /** Marks in the visitor's session that a widget/calculation call has completed, so that
-     * widget/send (which places a real delivery order) can require it — see hasRecentWidgetCalculation().
-     * Signed with Bitrix's own site key (TimeSigner) rather than a plain flag, so the marker
-     * can't be forged/extended by tampering with the stored session value directly, and expiry
-     * is enforced by the signature itself rather than a manually compared timestamp.
+    private const WIDGET_KEY_SESSION = 'esl_widget_key';
+
+    /** Запоминает в сессии ключ виджета, который сервер сам отдал в разметку чекаута
+     * (componentorder.php::frameHtmlField). widgetData проксирует только запросы с этим ключом —
+     * прокси нельзя использовать с произвольным чужим key.
+     * @param string $widgetKey
      */
-    private static function markWidgetCalculationDone(): void
+    public static function rememberIssuedWidgetKey(string $widgetKey): void
     {
-        $session = Application::getInstance()->getSession();
-        $signed = (new \Bitrix\Main\Security\Sign\TimeSigner())->sign(self::WIDGET_CALC_MARKER, '+' . self::WIDGET_CALC_TTL . ' seconds');
-        $session->set('esl_widget_calc_token', $signed);
+        Application::getInstance()->getSession()->set(self::WIDGET_KEY_SESSION, $widgetKey);
     }
 
-    private const WIDGET_CALC_MARKER = 'esl_widget_calc_ok';
-    // Real users calculate a price and send within the same short checkout flow; keeping this
-    // tight shrinks the window in which a self-issued marker (see hasRecentWidgetCalculation())
-    // stays usable.
-    private const WIDGET_CALC_TTL = 300;
-
-    /** widget/send creates a real order via the proxied API, so — since it can't be gated behind
-     * Bitrix Authentication (the widget is used by anonymous storefront visitors, see
-     * isSameOriginRequest() below; Csrf alone is not enough — a sessid is only proof of an
-     * anonymous session, not of any particular prior action in it) — it's instead gated behind
-     * a prior widget/calculation having
-     * completed in the same session. A blind/direct POST to widget/send (curl, forged Origin) has
-     * no session with that marker and is rejected; the real widget always calculates before sending.
-     *
-     * This does NOT stop an anonymous scripted attacker who calls widget/calculation themselves
-     * first (a legitimately public, read-only method) to mint their own valid marker, then calls
-     * widget/send with it — that's not closable without either requiring login (breaks anonymous
-     * storefront checkout) or adding user-facing friction (CAPTCHA/challenge), neither of which is
-     * a pure server-side fix. This raises the bar against blind/single-request abuse and — combined
-     * with the tight per-IP rate limit on widget/send and the logging below — makes sustained abuse
-     * both harder to automate and visible in the event log; it is not a complete authentication.
+    /** Ключ из запроса (для widget/calculation виджет шлёт его как "<key>:<суффикс>") совпадает
+     * с ключом, выданным этой сессии. Запрос без key пропускается — API без ключа ничего не отдаст.
+     * @param Request $request
      * @return bool
      */
-    private static function hasRecentWidgetCalculation(): bool
+    private static function isIssuedWidgetKey($request): bool
     {
-        $session = Application::getInstance()->getSession();
-        if (!$session->has('esl_widget_calc_token')) {
+        $key = $request->getPost('key');
+        if ($key === null || $key === '') {
+            return true;
+        }
+        if (!is_string($key)) {
             return false;
         }
 
-        try {
-            $value = (new \Bitrix\Main\Security\Sign\TimeSigner())->unsign((string)$session->get('esl_widget_calc_token'));
-        } catch (\Bitrix\Main\Security\Sign\BadSignatureException $e) {
+        $issued = (string)Application::getInstance()->getSession()->get(self::WIDGET_KEY_SESSION);
+        if ($issued === '') {
             return false;
         }
 
-        return $value === self::WIDGET_CALC_MARKER;
+        return hash_equals($issued, explode(':', $key)[0]);
     }
 
     /** widgetData has no Authentication filter (it's called anonymously by the api.esplc.ru
