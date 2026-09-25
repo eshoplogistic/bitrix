@@ -354,7 +354,7 @@ class Unloading
                         // вызывающий код (и UI) отличает наличие ошибки только по isset(), поэтому
                         // без реального сообщения ошибка есть, а показать нечего (и http_status_message
                         // от get-запроса в этом случае — "OK", т.к. HTTP-статус запроса не про это).
-                        $resultGet['errors'] = ['request' => 'Трек-номер не подтверждён ТК в отведённое время'];
+                        $resultGet['errors'] = ['request' => Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_TRACK_NOT_CONFIRMED')];
                     }
                     return $resultGet;
                 }
@@ -770,9 +770,9 @@ class Unloading
 
             Logger::log(
                 'EVENT_BEFORE_EXPORT',
-                'Заказ #' . ($data['order_id'] ?? '') . ', ТК: ' . ($data['delivery_id'] ?? '') . '<br>'
-                . 'До:<br>' . Logger::pretty($sanitizedBefore) . '<br>'
-                . 'После:<br>' . Logger::pretty($sanitizedAfter),
+                Logger::msg('ORDER_CARRIER', ['#ORDER_ID#' => $data['order_id'] ?? '', '#CARRIER#' => $data['delivery_id'] ?? '']) . '<br>'
+                . Logger::msg('BEFORE') . '<br>' . Logger::pretty($sanitizedBefore) . '<br>'
+                . Logger::msg('AFTER') . '<br>' . Logger::pretty($sanitizedAfter),
                 \CEventLog::SEVERITY_INFO,
                 $data['order_id'] ?? false
             );

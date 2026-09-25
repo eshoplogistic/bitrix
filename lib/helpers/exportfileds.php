@@ -33,6 +33,33 @@ class ExportFileds {
         return Option::get(Config::MODULE_ID, $optionKey) == 'Y';
     }
 
+    /**
+     * Организационно-правовые формы контрагента Деловых линий (uid => подпись).
+     * Общий список для options.php и формы выгрузки; подписи в lang-файле, а не
+     * литералами — пакет модуля в cp1251, и вне lang/ Маркетплейс его не перекодирует.
+     * @return array
+     */
+    public static function dellineCounteragentForms()
+    {
+        $codes = [
+            '0x92ee03691f25a9fe4be9910cd87ca9ca' => 'OOO',
+            '0xaa9042fea4fa169d4d021c6941f2090f' => 'IP',
+            '0x8390b2048d37e0154b845fb22793e865' => 'OAO',
+            '0xae7b742e5861514f4f5729fa97b77a42' => 'ZAO',
+            '0x81318eb6f150096b494a15ff66c37823' => 'MU',
+            '0x80958580c73df96f4c677eefef87422c' => 'GK',
+            '0x81ab99926ac959594af2f6f0a77b7353' => 'OF',
+            '0x83180c1320f58a344588220de53696e7' => 'TOO',
+            'xaba390e912918cea417d5be67b8d492a' => 'AO',
+        ];
+        $values = [];
+        foreach ($codes as $uid => $code) {
+            $values[$uid] = Loc::GetMessage("ESHOP_LOGISTIC_HELPERS_EXPORT_DELLINE_FORM_" . $code);
+        }
+
+        return $values;
+    }
+
     /** @param bool $withThird
      * @return array
      */
@@ -358,17 +385,7 @@ class ExportFileds {
                     'counterparty||text' => (Option::get(Config::MODULE_ID, 'sender-counter-delline'))??'',
                 ),
                 'sender[counteragent]' => array(
-                    'form||select' => self::moveToFront([
-                        '0x92ee03691f25a9fe4be9910cd87ca9ca' => 'ООО',
-                        '0xaa9042fea4fa169d4d021c6941f2090f' => 'ИП',
-                        '0x8390b2048d37e0154b845fb22793e865' => 'ОАО',
-                        '0xae7b742e5861514f4f5729fa97b77a42' => 'ЗАО',
-                        '0x81318eb6f150096b494a15ff66c37823' => 'МУ',
-                        '0x80958580c73df96f4c677eefef87422c' => 'ГК',
-                        '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
-                        '0x83180c1320f58a344588220de53696e7' => 'ТОО',
-                        'xaba390e912918cea417d5be67b8d492a' => 'АО',
-                    ], Option::get(Config::MODULE_ID, 'sender-counteragent-from-delline')),
+                    'form||select' => self::moveToFront(self::dellineCounteragentForms(), Option::get(Config::MODULE_ID, 'sender-counteragent-from-delline')),
                     'name||text||' . Loc::GetMessage("ADDFIELDS_NAME_DELLINE") => Option::get(Config::MODULE_ID, 'sender-counteragent-name-delline') ?? '',
                     'inn||text||' . Loc::GetMessage("ADDFIELDS_INN_DELLINE") => Option::get(Config::MODULE_ID, 'sender-counteragent-inn-delline') ?? '',
                 ),

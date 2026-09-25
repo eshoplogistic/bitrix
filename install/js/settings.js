@@ -561,7 +561,7 @@ function buildCarrierTabs(table) {
 
         var badge = document.createElement('span');
         badge.className = 'esl-carrier-tab-badge';
-        badge.textContent = g.label.replace(/[^0-9A-Za-zА-Яа-яЁё]/g, '').slice(0, 2).toUpperCase() || '?';
+        badge.textContent = g.label.replace(/[^0-9A-Za-z\u0410-\u044F\u0401\u0451]/g, '').slice(0, 2).toUpperCase() || '?';
         btn.appendChild(badge);
 
         var text = document.createElement('span');
@@ -779,7 +779,7 @@ function eslDimRenderAxis(axis) {
         remove.type = 'button';
         remove.className = 'esl-dimpriority__row-remove';
         remove.title = BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_REMOVE_TITLE');
-        remove.textContent = '×';
+        remove.textContent = '\u00d7';
         remove.addEventListener('click', function () {
             var current = eslDimGetList(axis);
             current.splice(index, 1);

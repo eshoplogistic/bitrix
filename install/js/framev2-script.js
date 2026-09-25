@@ -638,37 +638,37 @@ function isNumeric(value) {
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onInvalidSettlementCode', () => {
-            console.error('ESL: Неверный код населенного пункта')
+            console.error('ESL: invalid settlement code')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onInvalidName', () => {
-            console.error('ESL: Неверный name города')
+            console.error('ESL: invalid city name')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onInvalidServices', () => {
-            console.error('ESL: Неверный массив служб')
+            console.error('ESL: invalid services array')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onInvalidPayment', () => {
-            console.error('ESL: Не передана оплата')
+            console.error('ESL: payment not passed')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onInvalidOffers', () => {
-            console.error('ESL: Не передан offers')
+            console.error('ESL: offers not passed')
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
         })
 
         eslOn(root, 'eShopLogisticWidgetCart:onNotAvailableServices', (event) => {
-            console.error('ESL: Событие onNotAvailableServices', event.detail)
+            console.error('ESL: onNotAvailableServices event', event.detail)
             servicesLoad = true
             if (widgetWatchdogTimer) { clearTimeout(widgetWatchdogTimer); widgetWatchdogTimer = null }
             eslShowWidgetError()

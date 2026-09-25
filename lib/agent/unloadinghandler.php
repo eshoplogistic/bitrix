@@ -103,10 +103,10 @@ class UnloadingHandler
             $severity = (isset($status['http_status']) && $status['http_status'] === 422)
                 ? \CEventLog::SEVERITY_ERROR
                 : \CEventLog::SEVERITY_INFO;
-            $description = 'Заказ #' . $orderId . '<br>' . Logger::pretty($result);
+            $description = Logger::msg('ORDER', ['#ORDER_ID#' => $orderId]) . '<br>' . Logger::pretty($result);
             Logger::log('UNLOADING_CRON', $description, $severity, $orderId);
             } catch (\Throwable $e) {
-                Logger::error('UNLOADING_CRON', 'Заказ #' . ($orderId ?? '?') . ': ' . $e->getMessage());
+                Logger::error('UNLOADING_CRON', Logger::msg('ORDER', ['#ORDER_ID#' => $orderId ?? '?']) . ': ' . $e->getMessage());
                 continue;
             }
         }

@@ -150,9 +150,9 @@ class CalculateHandler
         if ($to !== $originalTo || $orderData !== $originalOrderData) {
             Logger::log(
                 'EVENT_BEFORE_CALCULATE',
-                'Заказ #' . $order->getId() . ', служба: ' . $service . '<br>'
-                . 'До:<br>' . Logger::pretty(array('to' => $originalTo, 'orderData' => $originalOrderData)) . '<br>'
-                . 'После:<br>' . Logger::pretty(array('to' => $to, 'orderData' => $orderData)),
+                Logger::msg('ORDER_SERVICE', ['#ORDER_ID#' => $order->getId(), '#SERVICE#' => $service]) . '<br>'
+                . Logger::msg('BEFORE') . '<br>' . Logger::pretty(array('to' => $originalTo, 'orderData' => $originalOrderData)) . '<br>'
+                . Logger::msg('AFTER') . '<br>' . Logger::pretty(array('to' => $to, 'orderData' => $orderData)),
                 \CEventLog::SEVERITY_INFO,
                 $order->getId() ?: false
             );

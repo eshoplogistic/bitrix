@@ -120,7 +120,7 @@ class Client
         $sanitizedParams = $params;
         unset($sanitizedParams['key'], $sanitizedParams['partner_key']);
 
-        Logger::log('API_REQUEST', $this->url . '<br>' . 'Запрос:<br>' . Logger::pretty($sanitizedParams));
+        Logger::log('API_REQUEST', $this->url . '<br>' . Logger::msg('REQUEST') . '<br>' . Logger::pretty($sanitizedParams));
     }
 
     /** Пишет ответ сервера отдельной записью (см. eslWriteRequestLog() для запроса).
@@ -137,7 +137,7 @@ class Client
             $response = $decoded !== null ? $decoded : $log;
         }
 
-        $description = $url . '<br>' . 'Ответ:<br>' . Logger::pretty(self::trimBulkyFields($response));
+        $description = $url . '<br>' . Logger::msg('RESPONSE') . '<br>' . Logger::pretty(self::trimBulkyFields($response));
 
         if ($querySuccess) {
             Logger::log('API_RESPONSE', $description);
@@ -157,7 +157,7 @@ class Client
     private static function trimBulkyFields($response)
     {
         if (is_array($response) && isset($response['data']['terminals']) && is_array($response['data']['terminals'])) {
-            $response['data']['terminals'] = '[скрыто в логе: ' . count($response['data']['terminals']) . ' шт.]';
+            $response['data']['terminals'] = Logger::msg('TERMINALS_HIDDEN', ['#COUNT#' => count($response['data']['terminals'])]);
         }
 
         return $response;

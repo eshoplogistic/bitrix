@@ -74,8 +74,8 @@ $settingsCssVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $settingsCssPath) ?: '1
         // а не через обычную отправку формы — иначе диалог пробивается на голую страницу.
         $searchJs = "var f=this.closest('form'),root=document.getElementById('esl-terminal-root'),x=new XMLHttpRequest();"
             . "x.open('POST'," . json_encode($actionUrl) . ",true);"
-            . "x.onload=function(){if(x.status===200){root.outerHTML=x.responseText;}else{alert('Ошибка '+x.status+' при поиске');}};"
-            . "x.onerror=function(){alert('Запрос не удался');};"
+            . "x.onload=function(){if(x.status===200){root.outerHTML=x.responseText;}else{alert(" . json_encode(GetMessage("ESHOP_LOGISTIC_SETTINGS_TERMINAL_SEARCH_HTTP_ERROR")) . ".replace('#STATUS#',x.status));}};"
+            . "x.onerror=function(){alert(" . json_encode(GetMessage("ESHOP_LOGISTIC_SETTINGS_TERMINAL_SEARCH_REQUEST_FAILED")) . ");};"
             . "x.send(new FormData(f));";
         ?>
         <button type="button" class="esl-terminal-search__submit" onclick="<?= htmlspecialchars($searchJs) ?>">
@@ -102,7 +102,7 @@ $settingsCssVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $settingsCssPath) ?: '1
                         <svg class="esl-terminal-search__item-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 15s5-4.6 5-8.5A5 5 0 0 0 3 6.5C3 10.4 8 15 8 15Z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="6.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
                         <span>
                             <span class="esl-terminal-search__item-name"><?= htmlspecialchars((string)($terminal['name'] ?? $code)) ?></span>
-                            <span class="esl-terminal-search__item-desc"> — <?= htmlspecialchars((string)($terminal['settlement'] ?? '')) ?>, <?= htmlspecialchars((string)($terminal['address'] ?? '')) ?></span>
+                            <span class="esl-terminal-search__item-desc"> &mdash; <?= htmlspecialchars((string)($terminal['settlement'] ?? '')) ?>, <?= htmlspecialchars((string)($terminal['address'] ?? '')) ?></span>
                         </span>
                     </div>
                 <?php endforeach; ?>

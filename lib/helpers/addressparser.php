@@ -2,6 +2,8 @@
 
 namespace Eshoplogistic\Delivery\Helpers;
 
+use Bitrix\Main\Localization\Loc;
+
 /**
  * Разбор произвольных строк адреса (поле "Адрес" заказа Bitrix) на улицу/дом/квартиру/район.
  * Покупатели пишут туда что угодно, в любом порядке, с запятыми или без, поэтому парсер работает
@@ -10,22 +12,23 @@ namespace Eshoplogistic\Delivery\Helpers;
  */
 class AddressParser
 {
-    // "д." - частая аббревиатура и для "дом", и для "деревня", поэтому проверяется
-    // только как отдельное слово (с границей \p{L} после), а не как часть другого слова.
-    private const LABEL_GROUPS = array(
-        'district' => '(?:р-?н\.?|район)',
-        'room'     => '(?:кв\.?|квартира|оф\.?|офис|пом\.?|помещение|apt\.?|apartment)',
-        'extra'    => '(?:корп\.?|корпус|стр\.?|строение|литер|лит\.?)',
-        'building' => '(?:д\.?|дом|building)',
-        'street'   => '(?:ул\.?|улица|пр-?кт\.?|пр-?т\.?|проспект|пер\.?|переулок|ш\.?|шоссе|б-?р\.?|бульвар|наб\.?|набережная|пр-?д\.?|проезд|пл\.?|площадь|аллея|туп\.?|тупик|тракт|кв-?л\.?|квартал|линия)',
-    );
+    // Словари шаблонов (улица/дом/квартира/район, префиксы населённых пунктов, номер дома)
+    // лежат в lang/ru/lib/helpers/addressparser.php, а не константами здесь: пакет модуля
+    // в cp1251, и Маркетплейс перекодирует под UTF-8 только языковые файлы — кириллица
+    // в регулярке вне lang/ на UTF-8 сайте ломает preg_* с модификатором /u (null).
+    // Язык фиксирован 'ru': разбираются российские адреса при любом языке админки.
+    private const LABEL_TYPES = array('district', 'room', 'extra', 'building', 'street');
 
-    // Административные/населённо-пунктовые пометки, иногда попадающие в поле "Адрес"
-    // целиком вместе с городом ("г. Тверь") или указывающие на микрорайон, а не на саму
-    // улицу ("мкр. Северный, ул. Мира, 1"). Такие куски пропускаем, а не угадываем в них улицу.
-    private const LOCATION_PREFIX = '(?:г\.?|город|обл\.?|область|респ\.?|республика|край|пос\.?|посёлок|поселок|рп\.?|дер\.?|деревня|село|ст-ца|станица|аул|нп\.?|мкр\.?|микрорайон)';
+    private static $patterns = array();
 
-    private const HOUSE_NUMBER = '\d+[a-zа-яё]?(?:[\/\-]\d+[a-zа-яё]?)?(?:\s*(?:к|корп\.?|с|стр\.?)\s*\d+)?';
+    private static function pattern(string $name): string
+    {
+        if (!isset(self::$patterns[$name])) {
+            self::$patterns[$name] = (string)Loc::getMessage('ESHOP_LOGISTIC_ADDRESS_PARSER_' . strtoupper($name), null, 'ru');
+        }
+
+        return self::$patterns[$name];
+    }
 
     public static function parse(string $address1, string $address2 = '', string $knownCity = '', string $knownRegion = ''): array
     {
@@ -112,8 +115,8 @@ class AddressParser
     {
         $pattern = '/';
         $parts = array();
-        foreach (self::LABEL_GROUPS as $type => $group) {
-            $parts[] = '(?<![\p{L}])(?P<' . $type . '>' . $group . ')(?![\p{L}])';
+        foreach (self::LABEL_TYPES as $type) {
+            $parts[] = '(?<![\p{L}])(?P<' . $type . '>' . self::pattern($type) . ')(?![\p{L}])';
         }
         $pattern .= implode('|', $parts) . '/iu';
 
@@ -123,7 +126,7 @@ class AddressParser
 
         $result = array();
         foreach ($matches as $matchSet) {
-            foreach (array_keys(self::LABEL_GROUPS) as $type) {
+            foreach (self::LABEL_TYPES as $type) {
                 if (isset($matchSet[$type]) && $matchSet[$type][1] !== -1) {
                     $result[] = array(
                         'type' => $type,
@@ -159,7 +162,7 @@ class AddressParser
             return;
         }
 
-        if (preg_match('/^' . self::LOCATION_PREFIX . '(?![\p{L}])\s*\S/iu', $segment)) {
+        if (preg_match('/^' . self::pattern('location_prefix') . '(?![\p{L}])\s*\S/iu', $segment)) {
             return;
         }
 
@@ -175,7 +178,7 @@ class AddressParser
             return;
         }
 
-        if (preg_match('/^' . self::HOUSE_NUMBER . '$/iu', $segment)) {
+        if (preg_match('/^' . self::pattern('house_number') . '$/iu', $segment)) {
             if ($result['street'] !== '' && $result['building'] === '') {
                 $result['building'] = $segment;
             }
@@ -229,7 +232,7 @@ class AddressParser
 
     private static function normalizeLocation(string $value): string
     {
-        $value = preg_replace('/^' . self::LOCATION_PREFIX . '(?![\p{L}])\s*/iu', '', trim($value));
+        $value = preg_replace('/^' . self::pattern('location_prefix') . '(?![\p{L}])\s*/iu', '', trim($value));
 
         return mb_strtolower(trim((string) $value));
     }
@@ -238,7 +241,7 @@ class AddressParser
     {
         $text = trim($text);
 
-        if (!preg_match('/^(.+?)\s+(' . self::HOUSE_NUMBER . ')$/iu', $text, $matches)) {
+        if (!preg_match('/^(.+?)\s+(' . self::pattern('house_number') . ')$/iu', $text, $matches)) {
             return array($text, null);
         }
 

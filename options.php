@@ -9,6 +9,7 @@ use Bitrix\Sale\OrderStatus;
 use Eshoplogistic\Delivery\Api\Counterparties;
 use Eshoplogistic\Delivery\Config;
 use Eshoplogistic\Delivery\Helpers\Dimensions;
+use Eshoplogistic\Delivery\Helpers\ExportFileds;
 
 global $APPLICATION;
 
@@ -240,7 +241,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         if ($item['CODE'] !== '')
             $label .= ' [' . $item['CODE'] . ']';
         if (isset($personTypeNames[$item['PERSON_TYPE_ID']]))
-            $label .= ' — ' . $personTypeNames[$item['PERSON_TYPE_ID']];
+            $label .= ' - ' . $personTypeNames[$item['PERSON_TYPE_ID']];
         $fieldsFeatures[$item['ID']] = $label;
     }
 
@@ -370,17 +371,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 "sender-counteragent-from-delline",
                 Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_TKD_COUNTERAGENT_FORM"),
                 "0x92ee03691f25a9fe4be9910cd87ca9ca",
-                array('selectbox', array(
-                    '0x92ee03691f25a9fe4be9910cd87ca9ca' => 'ООО',
-                    '0xaa9042fea4fa169d4d021c6941f2090f' => 'ИП',
-                    '0x8390b2048d37e0154b845fb22793e865' => 'ОАО',
-                    '0xae7b742e5861514f4f5729fa97b77a42' => 'ЗАО',
-                    '0x81318eb6f150096b494a15ff66c37823' => 'МУ',
-                    '0x80958580c73df96f4c677eefef87422c' => 'ГК',
-                    '0x81ab99926ac959594af2f6f0a77b7353' => 'ОФ',
-                    '0x83180c1320f58a344588220de53696e7' => 'ТОО',
-                    'xaba390e912918cea417d5be67b8d492a' => 'АО',
-                ))
+                array('selectbox', ExportFileds::dellineCounteragentForms())
             ),
             array(
                 "sender-counteragent-name-delline",
@@ -910,7 +901,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 				array(
 					"api_payment_card",
 					Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_PAYMENT_CARD"),
-                    'Не выбрано',
+                    '',
 					['multiselectbox', $paySystemList]
 				),
 				array(
@@ -1167,6 +1158,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                                                         <?php echo htmlspecialcharsbx((string)$name) ?>
                                                     </div>
                                                     <ul class="js-inner-connected sortable" name="<?php echo htmlspecialcharsbx((string)$key) ?>"
+                                                        data-empty-text="<?php echo htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_STATUS_DROP_HERE")) ?>"
                                                         aria-dropeffect="move">
                                                         <?php if(isset($status_form[$key]) && $status_form[$key]): ?>
                                                             <?php foreach ( $status_form[$key] as $item ): ?>
@@ -1174,7 +1166,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                                                                     data-desc="<?php echo htmlspecialcharsbx((string)$item['desc']) ?>" class="esl-status__wp"
                                                                     role="option" aria-grabbed="false">
                                                                     <span class="" draggable="true"><?php echo htmlspecialcharsbx((string)$item['desc']) ?></span>
-                                                                    <span class="sortable-delete" onclick="sortableDelete(this)">х</span>
+                                                                    <span class="sortable-delete" onclick="sortableDelete(this)">&times;</span>
                                                                 </li>
                                                             <?php endforeach; ?>
                                                         <?php endif;?>
@@ -1239,7 +1231,7 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
             // молча ничего не показывала, и было не отличить "кэш очищен" от "запрос не прошёл".
             var message = (response && response.errors && response.errors[0] && response.errors[0].message)
                 ? response.errors[0].message
-                : 'Не удалось очистить кэш';
+                : '<?= CUtil::JSEscape(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_CACHE_CLEAR_ERROR")) ?>';
             BX.UI.Notification.Center.notify({
                 content: message
             });

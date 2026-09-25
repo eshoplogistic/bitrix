@@ -26,4 +26,5 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_TITLE"] = "Выгрузка в ТК:";
 $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_NOT_UNLOADED"] = "не выгружен";
 $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_UNLOADED"] = "выгружен, № #ID#";
 $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_PENDING"] = "ожидает подтверждения ТК";
+$MESS["ESHOP_LOGISTIC_UNLOADING_TRACK_NOT_CONFIRMED"] = "Трек-номер не подтверждён ТК в отведённое время";
 ?>

@@ -50,6 +50,7 @@ $arJsConfig = array(
     'dialog_lib' => array(
         'js' => '/bitrix/js/'.$moduleId.'/unloading-dialog.js',
         'css' => '/bitrix/css/'.$moduleId.'/unloading-dialog.css',
+        'lang' => '/bitrix/modules/'.$moduleId.'/lang/'.LANGUAGE_ID.'/js/unloading-dialog.js.php',
     ),
     'html5sortable' => array(
         'js' => '/bitrix/js/'.$moduleId.'/html5sortable.js',

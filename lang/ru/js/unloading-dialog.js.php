@@ -1,0 +1,4 @@
+<?php
+$MESS["ESHOP_LOGISTIC_DIALOG_JS_HTTP_ERROR"] = "Ошибка #STATUS#";
+$MESS["ESHOP_LOGISTIC_DIALOG_JS_SAVE_ERROR"] = "Ошибка #STATUS# при сохранении";
+$MESS["ESHOP_LOGISTIC_DIALOG_JS_REQUEST_FAILED"] = "Запрос не удался";

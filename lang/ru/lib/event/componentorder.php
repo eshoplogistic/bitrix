@@ -15,4 +15,5 @@ $MESS["ESHOP_LOGISTIC_CITY_NOT_FOUND"] = "Город не найден. Пров
 $MESS["ESHOP_LOGISTIC_SERVICE_NOT_CONFIGURED"] = "Выбранный способ доставки недоступен. Пожалуйста, выберите другой.";
 $MESS["ESHOP_LOGISTIC_PER_DAY"] = "день";
 $MESS["ESHOP_LOGISTIC_WIDGET_CALC_ERROR"] = "Ошибка при расчёте стоимости доставки. Пожалуйста, попробуйте изменить адрес.";
+$MESS["ESHOP_LOGISTIC_ADDRESS_FULL_BUTTON"] = "ОК";
 ?>

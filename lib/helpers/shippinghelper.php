@@ -64,30 +64,15 @@ class ShippingHelper
 
     public function checkUnloadingDelivery($name)
     {
-        $nameList = array(
-            'СберЛогистика'   => 'sberlogistics',
-            '5POST'           => 'fivepost',
-            'Boxberry'        => 'boxberry',
-            'Яндекс.Доставка' => 'yandex',
-            'СДЭК'            => 'sdek',
-            'Деловые линии'   => 'delline',
-            'Халва'           => 'halva',
-            'Kit'             => 'kit',
-            'Почта России'    => 'postrf',
-            'ПЭК'             => 'pecom',
-            'Магнит Пост'     => 'magnit',
-            'Байкал Сервис'   => 'baikal',
-            'DPD'             => 'dpd',
-            'Фулфилмент-оператор «Почтальон»'   => 'pochtalion',
+        // Коды служб, для которых доступна выгрузка заказа. Раньше это был массив
+        // "Название => код", но сравнивались только коды, а кириллические ключи ломались
+        // на UTF-8 сайтах (пакет в cp1251, вне lang/ Маркетплейс его не перекодирует).
+        $codes = array(
+            'sberlogistics', 'fivepost', 'boxberry', 'yandex', 'sdek', 'delline', 'halva',
+            'kit', 'postrf', 'pecom', 'magnit', 'baikal', 'dpd', 'pochtalion',
         );
 
-        foreach ( $nameList as $key => $value ) {
-            if (mb_strtolower($name) == mb_strtolower($value)) {
-                return true;
-            }
-        }
-
-        return  false;
+        return in_array(mb_strtolower((string)$name), $codes, true);
     }
 
 }

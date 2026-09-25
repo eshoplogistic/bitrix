@@ -22,11 +22,11 @@ function eslClearSubmit(btn, mode) {
         if (x.status === 200) {
             document.getElementById('esl-clear-root').outerHTML = x.responseText;
         } else {
-            alert('Ошибка ' + x.status);
+            alert(BX.message('ESHOP_LOGISTIC_DIALOG_JS_HTTP_ERROR').replace('#STATUS#', x.status));
         }
     };
     x.onerror = function () {
-        alert('Запрос не удался');
+        alert(BX.message('ESHOP_LOGISTIC_DIALOG_JS_REQUEST_FAILED'));
     };
     x.send(new FormData(f));
 }
@@ -54,11 +54,11 @@ function eslPrintSubmit(btn) {
         if (x.status === 200) {
             resultEl.innerHTML = x.responseText;
         } else {
-            resultEl.innerHTML = '<div class="esl-print-result esl-print-result--error">Ошибка ' + x.status + '</div>';
+            resultEl.innerHTML = '<div class="esl-print-result esl-print-result--error">' + BX.util.htmlspecialchars(BX.message('ESHOP_LOGISTIC_DIALOG_JS_HTTP_ERROR').replace('#STATUS#', x.status)) + '</div>';
         }
     };
     x.onerror = function () {
-        resultEl.innerHTML = '<div class="esl-print-result esl-print-result--error">Запрос не удался</div>';
+        resultEl.innerHTML = '<div class="esl-print-result esl-print-result--error">' + BX.util.htmlspecialchars(BX.message('ESHOP_LOGISTIC_DIALOG_JS_REQUEST_FAILED')) + '</div>';
     };
     x.send(fd);
 }
@@ -71,11 +71,11 @@ function eslAddFieldSubmit(btn) {
         if (x.status === 200) {
             document.getElementById('esl-addfield-root').outerHTML = x.responseText;
         } else {
-            alert('Ошибка ' + x.status + ' при сохранении');
+            alert(BX.message('ESHOP_LOGISTIC_DIALOG_JS_SAVE_ERROR').replace('#STATUS#', x.status));
         }
     };
     x.onerror = function () {
-        alert('Запрос не удался');
+        alert(BX.message('ESHOP_LOGISTIC_DIALOG_JS_REQUEST_FAILED'));
     };
     x.send(new FormData(f));
 }

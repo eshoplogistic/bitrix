@@ -208,7 +208,9 @@ class LocationHandler
             $delimiter = mb_strpos($text, ',') !== false ? ',' : '.';
             $parts = explode($delimiter, $text);
             $cityPart = trim($parts[0]);
-            $cityPart = preg_replace('/^(г\.?|город)\s+/ui', '', $cityPart);
+            // "г." / "город" кодами символов: кириллица вне lang/ в пакете cp1251 не
+            // перекодируется Маркетплейсом, и с /u такая регулярка возвращала бы null.
+            $cityPart = preg_replace('/^(\x{0433}\.?|\x{0433}\x{043E}\x{0440}\x{043E}\x{0434})\s+/ui', '', $cityPart);
             $cityPart = trim($cityPart);
             if ($cityPart && $cityPart !== $text) {
                 $cityList2 = Search::getCity($cityPart);

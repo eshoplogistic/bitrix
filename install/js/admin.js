@@ -172,7 +172,7 @@ function eslBuildPlaceRow() {
             // так работает, даже если словарь ESHOP_LOGISTIC_HELPERS_TABLE_DELETE когда-нибудь
             // изменится.
             let existingButton = document.querySelector('.esl-delete_table_elem');
-            button.title = existingButton ? existingButton.title : 'Удалить';
+            button.title = existingButton ? existingButton.title : BX.message('ESHOP_LOGISTIC_UNLOADING_JS_DELETE');
             button.innerHTML = '&times;';
             td.appendChild(button);
         } else if (column.key === 'number') {
@@ -248,7 +248,7 @@ function ajaxFormEsl(obForm, link) {
 
         xhr.onload = function() {
             if (xhr.status !== 200) {
-                alert(`Ошибка ${xhr.status}: ${xhr.statusText}`);
+                alert(BX.message('ESHOP_LOGISTIC_UNLOADING_JS_HTTP_ERROR').replace('#STATUS#', xhr.status).replace('#TEXT#', xhr.statusText));
             } else {
                 const json = JSON.parse(xhr.responseText);
                 // Bitrix оборачивает ЛЮБОЙ return экшна в {status:"success", data:<результат>},
@@ -283,7 +283,7 @@ function ajaxFormEsl(obForm, link) {
                             return '<li>' + BX.util.htmlspecialchars(String(message)) + '</li>';
                         }).join('') + '</ul>';
                     } else if (!title) {
-                        html += '<div class="esl-error-box__title">Ошибка при выгрузке заказа</div>';
+                        html += '<div class="esl-error-box__title">' + BX.util.htmlspecialchars(BX.message('ESHOP_LOGISTIC_UNLOADING_JS_EXPORT_ERROR')) + '</div>';
                     }
                     html += '</div>';
 
@@ -296,7 +296,7 @@ function ajaxFormEsl(obForm, link) {
         };
 
         xhr.onerror = function() {
-            alert("Запрос не удался");
+            alert(BX.message('ESHOP_LOGISTIC_UNLOADING_JS_REQUEST_FAILED'));
         };
 
         xhr.send(new FormData(obForm));
@@ -313,8 +313,12 @@ function ajaxFormEsl(obForm, link) {
 // OrderDetailAdminContextMenuShow, unloading.php). На других страницах, где подключён
 // этот файл (например, форма выгрузки), совпадающих <td> нет - вызов безопасен.
 BX.ready(function () {
+    var propName = BX.message('ESHOP_LOGISTIC_UNLOADING_JS_METHODS_PROP_NAME');
+    if (!propName) {
+        return;
+    }
     document.querySelectorAll('td').forEach(function (td) {
-        if (td.childElementCount === 0 && td.textContent.trim().indexOf('EShopLogistic данные для выгрузки') === 0) {
+        if (td.childElementCount === 0 && td.textContent.trim().indexOf(propName) === 0) {
             var row = td.closest('tr');
             if (row) {
                 row.style.display = 'none';

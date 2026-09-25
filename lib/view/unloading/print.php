@@ -94,7 +94,7 @@ $sessid = bitrix_sessid();
                         data-mode="<?= htmlspecialcharsbx($button['mode']) ?>"
                         data-type="<?= htmlspecialcharsbx($button['type'] ?? '') ?>"
                         onclick="eslPrintSubmit(this)">
-                    <?= htmlspecialcharsbx($button['label']) ?>
+                    <?= htmlspecialcharsbx(GetMessage('ESHOP_LOGISTIC_UNLOADING_PRINT_FORM_' . $button['label'])) ?>
                 </button>
             <?php endforeach; ?>
         </div>

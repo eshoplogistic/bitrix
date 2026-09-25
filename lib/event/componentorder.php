@@ -181,7 +181,7 @@ class ComponentOrder
                             if($profile['CODE'] === 'eslogistic:dostavista_door'){
                                 $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] .=
                                     '<input id="eslogic-address-full" name="ESHOPLOGISTIC_FULL_ADDRESS" type="text" value="'.$fullAdressValue.'" placeholder="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL").'"/>' .
-                                    '<input  type="button" value="ОК" onclick="BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress()" class="eslogic-address-full_but"/>';
+                                    '<input  type="button" value="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL_BUTTON").'" onclick="BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress()" class="eslogic-address-full_but"/>';
                             }
 						}
 
@@ -402,7 +402,7 @@ class ComponentOrder
 		if (!$calcResult->isSuccess()) {
 			Logger::log(
 				'DELIVERY_RECALC_FAILED',
-				'Заказ #' . $order->getId() . ': ' . implode('; ', array_map(
+				Logger::msg('ORDER', ['#ORDER_ID#' => $order->getId()]) . ': ' . implode('; ', array_map(
 					function ($e) { return $e->getCode() . ':' . $e->getMessage(); },
 					$calcResult->getErrors()
 				)),

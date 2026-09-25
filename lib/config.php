@@ -239,42 +239,44 @@ class Config
 	// 'mode'/'type' — значения, передаваемые в API (action=print); 'danger' — форма, которую
 	// МС визуально выделяет как отдельную от "обычных" (Акт приёма-передачи), у нас — тем же
 	// принципом, что и опасное действие "Удалить у ТК" в clearstatus.php.
+	// 'label' — суффикс языковой фразы ESHOP_LOGISTIC_UNLOADING_PRINT_FORM_* (lang-файл
+	// print.php), а не сам текст: вне lang/ Маркетплейс кириллицу не перекодирует.
 	const PRINT_FORM_BUTTONS = array(
 		'delline' => array(
-			array('mode' => 'bill', 'label' => 'Печать счёта'),
-			array('mode' => 'order', 'label' => 'Печать ТТН'),
-			array('mode' => 'invoice', 'label' => 'Печать счёт-фактуры'),
-			array('mode' => 'label', 'label' => 'Печать этикеток'),
+			array('mode' => 'bill', 'label' => 'BILL'),
+			array('mode' => 'order', 'label' => 'TTN'),
+			array('mode' => 'invoice', 'label' => 'INVOICE'),
+			array('mode' => 'label', 'label' => 'TAGS'),
 		),
 		'sdek' => array(
-			array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
-			array('mode' => 'order', 'label' => 'Печать накладных'),
+			array('mode' => 'barcodes', 'label' => 'BARCODES'),
+			array('mode' => 'order', 'label' => 'WAYBILLS'),
 		),
 		'dpd' => array(
-			array('mode' => 'label', 'label' => 'Печать наклеек'),
-			array('mode' => 'order', 'label' => 'Печать накладной'),
+			array('mode' => 'label', 'label' => 'STICKERS'),
+			array('mode' => 'order', 'label' => 'WAYBILL'),
 		),
 		'pecom' => array(
-			array('mode' => 'label', 'label' => 'Печать наклеек'),
-			array('mode' => 'order', 'label' => 'Печать накладной'),
+			array('mode' => 'label', 'label' => 'STICKERS'),
+			array('mode' => 'order', 'label' => 'WAYBILL'),
 		),
 		'integral' => array(
-			array('mode' => 'order', 'label' => 'Печать накладной'),
-			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
-			array('mode' => 'label', 'label' => 'Наклейки Zebra'),
-			array('mode' => 'label_A4', 'label' => 'Наклейки А4'),
+			array('mode' => 'order', 'label' => 'WAYBILL'),
+			array('mode' => 'act', 'label' => 'ACT', 'danger' => true),
+			array('mode' => 'label', 'label' => 'STICKERS_ZEBRA'),
+			array('mode' => 'label_A4', 'label' => 'STICKERS_A4'),
 		),
 		'yandex' => array(
-			array('mode' => 'barcodes', 'type' => 'one', 'label' => 'Печать наклеек: одна на страницу'),
-			array('mode' => 'barcodes', 'type' => 'many', 'label' => 'Печать наклеек: максимум на страницу'),
-			array('mode' => 'act', 'label' => 'Акт приёма-передачи', 'danger' => true),
+			array('mode' => 'barcodes', 'type' => 'one', 'label' => 'STICKERS_ONE'),
+			array('mode' => 'barcodes', 'type' => 'many', 'label' => 'STICKERS_MANY'),
+			array('mode' => 'act', 'label' => 'ACT', 'danger' => true),
 		),
 	);
 
 	// Служба доставки, для которой нет отдельного набора выше, получает один универсальный
 	// пункт (как у МойСклад: ветка else в unloadingprint.html.php).
 	const PRINT_FORM_BUTTONS_DEFAULT = array(
-		array('mode' => 'barcodes', 'label' => 'Печать штрихкодов'),
+		array('mode' => 'barcodes', 'label' => 'BARCODES'),
 	);
 
 	// Выбор формата бумаги — не все ТК его используют (см. typePaperPrint в UnloadingPrint.php МС).

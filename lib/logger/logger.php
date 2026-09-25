@@ -2,6 +2,7 @@
 namespace Eshoplogistic\Delivery\Logger;
 
 use Bitrix\Main\Config\Option;
+use Bitrix\Main\Localization\Loc;
 use Eshoplogistic\Delivery\Config;
 
 /** Логирование модуля поверх стандартного журнала событий Bitrix (b_event_log).
@@ -14,6 +15,17 @@ use Eshoplogistic\Delivery\Config;
  */
 class Logger
 {
+    /** Фраза для текста записи журнала (lang/ru/lib/logger/logger.php). Кириллица
+     * в коде вне lang/ на UTF-8 сайтах ломается: пакет модуля в cp1251, а Маркетплейс
+     * перекодирует только языковые файлы.
+     * @param string $code суффикс фразы ESHOP_LOGISTIC_LOG_*
+     * @param array $replace например ['#ORDER_ID#' => 15]
+     */
+    public static function msg(string $code, array $replace = []): string
+    {
+        return (string)Loc::getMessage('ESHOP_LOGISTIC_LOG_' . $code, $replace);
+    }
+
     public static function isEnabled(): bool
     {
         return Option::get(Config::MODULE_ID, 'api_log') === 'Y';

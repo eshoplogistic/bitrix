@@ -651,7 +651,9 @@ body.esl-status-dragging .esl-section_drag .js-inner-connected {
 }
 
 .esl-section_drag .js-inner-connected.esl-drop-zone-ready:empty::before {
-    content: 'Перетащите статус сюда';
+    /* Текст из data-атрибута (options.php, lang-фраза): кириллица в CSS пакета
+       в cp1251 на UTF-8 сайте не перекодируется. */
+    content: attr(data-empty-text);
     position: absolute;
     left: 50%;
     top: 50%;
