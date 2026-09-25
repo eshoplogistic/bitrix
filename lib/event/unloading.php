@@ -1048,6 +1048,12 @@ class Unloading
             return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_NOT_UNLOADED")];
         }
 
+        // В API уходят только те mode/type/формат бумаги, что предлагает сама форма для этой ТК
+        // (Config::PRINT_FORM_BUTTONS / PRINT_FORM_PAPER_TYPES), а не произвольные значения из POST.
+        if (!self::isAllowedPrintForm($deliveryId, $mode, $paper, $type)) {
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_BAD_FORM")];
+        }
+
         $data = [
             'key' => Option::get(Config::MODULE_ID, 'api_key'),
             'action' => 'print',
@@ -1090,7 +1096,59 @@ class Unloading
             return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_EMPTY")];
         }
 
+        // Ссылка уходит в href админки — пропускаем только абсолютный http(s)-URL, чтобы
+        // javascript:/data:/vbscript: или //host из ответа API не исполнился по клику.
+        if (!self::isSafePrintUrl($url)) {
+            Logger::log(
+                'UNLOADING_PRINT_BAD_URL',
+                Logger::msg('ORDER', ['#ORDER_ID#' => $orderId]) . ': ' . htmlspecialcharsbx(mb_substr((string)$url, 0, 200)),
+                \CEventLog::SEVERITY_SECURITY,
+                $orderId
+            );
+            return ['type' => 'error', 'message' => Loc::GetMessage("ESHOP_LOGISTIC_UNLOADING_PRINT_BAD_URL")];
+        }
+
         return ['type' => 'success', 'url' => $url];
+    }
+
+    /** mode/type — пара из набора кнопок ТК, формат бумаги — из списка форматов ТК (или пустой)
+     * @param string $deliveryId
+     * @param string $mode
+     * @param string $paper
+     * @param string $type
+     * @return bool
+     */
+    private static function isAllowedPrintForm($deliveryId, $mode, $paper, $type)
+    {
+        if ($paper !== '' && !in_array($paper, Config::PRINT_FORM_PAPER_TYPES[$deliveryId] ?? [], true)) {
+            return false;
+        }
+
+        foreach (Config::getPrintFormButtons($deliveryId) as $button) {
+            if ($button['mode'] === $mode && (string)($button['type'] ?? '') === $type) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Абсолютный http/https URL с хостом
+     * @param mixed $url
+     * @return bool
+     */
+    private static function isSafePrintUrl($url)
+    {
+        if (!is_string($url) || preg_match('/[\x00-\x20]/', $url)) {
+            return false;
+        }
+
+        $parts = parse_url($url);
+        if (!is_array($parts) || empty($parts['host'])) {
+            return false;
+        }
+
+        return in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true);
     }
 
     /** Публичная обёртка над resolveDeliveryId() — нужна view-слою (print.php), чтобы
