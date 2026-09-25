@@ -76,8 +76,8 @@ Class eshoplogistic_delivery extends CModule
 			),
 			array(
 				'CODE'  => "ESHOPLOGISTIC_CHOSE_FRAME",
-				'NAME'  => GetMessage('ESHOP_LOGISTIC_ORDER_PROPERTY_NAME'),
-				'DESCR' => GetMessage('ESHOP_LOGISTIC_ORDER_PROPERTY_DESC')
+				'NAME'  => GetMessage('ESHOP_LOGISTIC_CHOSE_FRAME_ORDER_PROPERTY_NAME'),
+				'DESCR' => GetMessage('ESHOP_LOGISTIC_CHOSE_FRAME_ORDER_PROPERTY_DESC')
 			)
 		);
 		foreach($arProps as $prop) {

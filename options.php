@@ -202,14 +202,46 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
         $counterFields = array('text');
     }
 
+    // Список свойств заказа для "api_address_requar". Свойства в Bitrix заводятся
+    // отдельно на каждый тип плательщика (физ./юр. лицо), поэтому одноимённые поля
+    // различаем подписью "Название [КОД] — Тип плательщика". Служебные (UTIL) свойства,
+    // в т.ч. созданные самим модулем, на чекауте не выводятся — адрес ПВЗ в них не
+    // подставить, поэтому их не показываем (кроме уже выбранных ранее, чтобы
+    // пересохранение настроек не сбросило значение молча).
+    $personTypeNames = array();
+    $personTypeSites = array();
+    $dbPersonTypes = CSalePersonType::GetList(array("SORT" => "ASC"), array());
+    while ($personType = $dbPersonTypes->Fetch())
+    {
+        $personTypeNames[$personType['ID']] = $personType['NAME'];
+        $personTypeSites[$personType['ID']] = implode(', ', (array)$personType['LIDS']);
+    }
+    // Несколько сайтов — у каждого свои типы плательщиков с одинаковыми названиями
+    if (count(array_unique($personTypeSites)) > 1) {
+        foreach ($personTypeNames as $id => $name) {
+            $personTypeNames[$id] = $name . ' (' . $personTypeSites[$id] . ')';
+        }
+    }
+    $addressRequarSelected = array_filter(array_map('trim', explode(',', (string)Option::get($module_id, 'api_address_requar'))));
+
+    $fieldsFeatures = array();
     $dbRes = CSaleOrderProps::GetList(
         array(
+            "PERSON_TYPE_ID" => "ASC",
             "SORT" => "ASC",
         )
     );
     while ($item = $dbRes->fetch())
     {
-        $fieldsFeatures[$item['ID']] = $item['NAME'];
+        if ($item['UTIL'] === 'Y' && !in_array((string)$item['ID'], $addressRequarSelected, true))
+            continue;
+
+        $label = $item['NAME'];
+        if ($item['CODE'] !== '')
+            $label .= ' [' . $item['CODE'] . ']';
+        if (isset($personTypeNames[$item['PERSON_TYPE_ID']]))
+            $label .= ' — ' . $personTypeNames[$item['PERSON_TYPE_ID']];
+        $fieldsFeatures[$item['ID']] = $label;
     }
 
     // Настройки по умолчанию для выгрузки заказов по каждой службе доставки (ТК).

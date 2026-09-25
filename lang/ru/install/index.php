@@ -11,4 +11,6 @@ $MESS["ESHOP_LOGISTIC_ADDRESS_ORDER_PROPERTY_NAME"] = "EShopLogistic адрес"
 $MESS["ESHOP_LOGISTIC_ADDRESS_ORDER_PROPERTY_DESC"] = "Выбранный покупателем полный адрес";
 $MESS["ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_NAME"] = "EShopLogistic данные для выгрузки";
 $MESS["ESHOP_LOGISTIC_METHODS_ORDER_PROPERTY_DESC"] = "";
+$MESS["ESHOP_LOGISTIC_CHOSE_FRAME_ORDER_PROPERTY_NAME"] = "EShopLogistic выбор в виджете";
+$MESS["ESHOP_LOGISTIC_CHOSE_FRAME_ORDER_PROPERTY_DESC"] = "Служебное: способ доставки, выбранный покупателем в виджете";
 ?>
