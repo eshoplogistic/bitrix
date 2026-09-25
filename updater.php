@@ -31,4 +31,15 @@ if (IsModuleInstalled('eshoplogistic.delivery')) {
 	DeleteDirFilesEx('/bitrix/modules/eshoplogistic.delivery/install/components/button');
 	DeleteDirFilesEx('/bitrix/components/button');
 	@unlink($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/eshoplogistic.delivery/lib/options.php');
+
+	// Строка "Выгрузка в ТК" в верхнем блоке заказа (Unloading::orderInfoBlockShow) —
+	// InstallEvents() на обновлениях не вызывается, регистрируем здесь (INSERT IGNORE,
+	// повторный запуск безопасен).
+	\Bitrix\Main\EventManager::getInstance()->registerEventHandler(
+		'sale',
+		'onSaleAdminOrderInfoBlockShow',
+		'eshoplogistic.delivery',
+		'Eshoplogistic\Delivery\Event\Unloading',
+		'orderInfoBlockShow'
+	);
 }

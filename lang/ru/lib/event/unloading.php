@@ -20,4 +20,10 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_NOT_UNLOADED"] = "Заказ ещё не �
 $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_ERR"] = "Не удалось получить печатную форму";
 $MESS["ESHOP_LOGISTIC_UNLOADING_PRINT_EMPTY"] = "ТК не вернула ссылку на печатную форму.";
 $MESS["ESHOP_LOGISTIC_UNLOADING_ORDER_LOCKED"] = "Выгрузка этого заказа уже выполняется, повторите позже";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SAVE_FAILED"] = "Заказ создан в ТК (№ #ID#), но сохранить в заказе отметку о выгрузке не удалось: #ERROR#. Не выгружайте заказ повторно — проверьте его в личном кабинете ТК.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_PROPERTY_MISSING"] = "у заказа нет свойства ESHOPLOGISTIC_SHIPPING_METHODS (переустановите модуль или создайте свойство для этого типа плательщика)";
+$MESS["ESHOP_LOGISTIC_UNLOADING_INFO_TITLE"] = "Выгрузка в ТК:";
+$MESS["ESHOP_LOGISTIC_UNLOADING_INFO_NOT_UNLOADED"] = "не выгружен";
+$MESS["ESHOP_LOGISTIC_UNLOADING_INFO_UNLOADED"] = "выгружен, № #ID#";
+$MESS["ESHOP_LOGISTIC_UNLOADING_INFO_PENDING"] = "ожидает подтверждения ТК";
 ?>

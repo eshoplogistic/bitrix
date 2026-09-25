@@ -72,6 +72,8 @@ Class eshoplogistic_delivery extends CModule
 				// Хранит JSON-ответ ТК (create/get). Без явного MAXLENGTH Bitrix
 				// принудительно ограничивает свойства типа STRING 500 символами
 				// (Bitrix\Sale\EntityProperty::checkValue), а ответ ТК столько не влезает.
+				// Но ORM (Sale\Internals\OrderPropsTable::validateValue) всё равно режет значение
+				// до 500 символов — поэтому ответ ТК хранится в сжатом виде, см. Unloading::compactAnswer().
 				'SETTINGS' => array('MAXLENGTH' => 20000),
 			),
 			array(
@@ -195,6 +197,14 @@ Class eshoplogistic_delivery extends CModule
 			'OrderDetailAdminContextMenuShow'
 		);
 
+		$eventManager->registerEventHandler(
+			'sale',
+			'onSaleAdminOrderInfoBlockShow',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\Unloading',
+			'orderInfoBlockShow'
+		);
+
 		return true;
 	}
 
@@ -247,6 +257,14 @@ Class eshoplogistic_delivery extends CModule
 			$this->MODULE_ID,
 			'Eshoplogistic\Delivery\Event\Unloading',
 			'OrderDetailAdminContextMenuShow'
+		);
+
+		$eventManager->unRegisterEventHandler(
+			'sale',
+			'onSaleAdminOrderInfoBlockShow',
+			$this->MODULE_ID,
+			'Eshoplogistic\Delivery\Event\Unloading',
+			'orderInfoBlockShow'
 		);
 
 		return true;

@@ -394,7 +394,11 @@ class ComponentOrder
 		// пересчёт здесь: OnSaleOrderBeforeSaved срабатывает один раз, ровно перед реальным
 		// сохранением заказа, и action=saveOrderAjax на этот момент гарантированно виден
 		// CalculateHandler'у — реальный запрос к api.esplc.ru уйдёт ровно один раз.
-		$calcResult = $order->getShipmentCollection()->calculateDelivery();
+		// Только для нового заказа (оформление): это же событие срабатывает и на каждом
+		// последующем save() уже существующего заказа — сохранение ответа ТК после выгрузки
+		// (AJAX-контроллер, ADMIN_SECTION не определён), обновление статуса агентом и т.д.
+		// Там skipRealCalculation() возвращает true, и пересчёт обнулял бы цену доставки.
+		$calcResult = $order->isNew() ? $order->getShipmentCollection()->calculateDelivery() : new Main\Result();
 		if (!$calcResult->isSuccess()) {
 			Logger::log(
 				'DELIVERY_RECALC_FAILED',

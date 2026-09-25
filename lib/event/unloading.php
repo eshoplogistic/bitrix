@@ -22,6 +22,8 @@ class Unloading
 
     private $deliveryEsl = false;
     private $shippingMethods = [];
+    /** Текст ошибки последнего saveShippingMethodsAnswer(), null — сохранено успешно */
+    private $lastSaveError = null;
 
     public $defaultFields = array(
         'key' => '', //Ключ доступа
@@ -194,6 +196,70 @@ class Unloading
         }
     }
 
+    /** sale:onSaleAdminOrderInfoBlockShow — строка "Выгрузка в ТК" в верхнем блоке
+     * просмотра/редактирования заказа (под Ф.И.О./E-Mail/Телефон): без неё по странице
+     * заказа не видно, выгружен ли он, — только по составу пунктов меню "Выгрузка заказов".
+     * @param \Bitrix\Main\Event $event
+     * @return EventResult|null
+     */
+    public static function orderInfoBlockShow(Event $event)
+    {
+        /** @var Sale\Order $order */
+        $order = $event->getParameter('ORDER');
+        if (!$order instanceof Sale\Order || !$order->getId()) {
+            return null;
+        }
+
+        $shippingHelper = new ShippingHelper();
+        $isEslUnloadingDelivery = false;
+        foreach ($order->getDeliverySystemId() as $deliveryId) {
+            $deliveryService = Manager::getObjectById($deliveryId);
+            $slug = $deliveryService ? $shippingHelper->getSlugMethod($deliveryService->getCode()) : null;
+            if ($slug && $shippingHelper->checkUnloadingDelivery($slug)) {
+                $isEslUnloadingDelivery = true;
+            }
+        }
+
+        $shippingMethods = array();
+        foreach ($order->getPropertyCollection() as $propertyItem) {
+            if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS' && $propertyItem->getValue()) {
+                $shippingMethods = json_decode($propertyItem->getValue(), true) ?: array();
+            }
+        }
+        $answer = $shippingMethods['answer'] ?? array();
+        $carrierOrderId = $answer['order']['id'] ?? '';
+
+        if ($carrierOrderId === '' && !$isEslUnloadingDelivery) {
+            return null;
+        }
+
+        if ($carrierOrderId === '') {
+            $value = '<span style="color:#9a9a9a">' . Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_INFO_NOT_UNLOADED') . '</span>';
+        } else {
+            // Номер ТК (state.number) — тот, что видит менеджер в ЛК перевозчика; order.id
+            // у части служб (СДЭК) — внутренний uuid, показываем его, только пока номера нет.
+            $trackNumber = (string)($answer['state']['number'] ?? '');
+            $parts = array(Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_INFO_UNLOADED', array(
+                '#ID#' => htmlspecialcharsbx($trackNumber !== '' ? $trackNumber : (string)$carrierOrderId),
+            )));
+            if (!empty($answer['state']['status']['description'])) {
+                $parts[] = htmlspecialcharsbx((string)$answer['state']['status']['description']);
+            }
+            if (!empty($shippingMethods['pending_confirmation'])) {
+                $parts[] = Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_INFO_PENDING');
+            }
+            $value = '<span style="color:#3f8f1f;font-weight:bold">' . implode(', ', $parts) . '</span>';
+        }
+
+        return new EventResult(EventResult::SUCCESS, array(
+            array(
+                'TITLE' => Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_INFO_TITLE'),
+                'VALUE' => $value,
+                'ID' => 'esl_unloading_info',
+            ),
+        ), 'sale');
+    }
+
     /** Службы, у которых номер/трек-код приходят не сразу при создании заказа, а с задержкой,
      * поэтому после создания их нужно опрашивать повторно (action=get).
      * attempts   — сколько раз запрашивать статус
@@ -249,6 +315,15 @@ class Unloading
             $deliveryId = $data['delivery_id'];
             $shippingMethods = $this->saveShippingMethodsAnswer($orderId, $result['data'] ?? null);
 
+            if ($this->lastSaveError !== null) {
+                // Заказ у ТК уже создан — сообщаем об этом явно, иначе пользователь
+                // увидит в заказе "Выгрузить заказ" и выгрузит его в ТК второй раз.
+                return ['errors' => ['save' => Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_SAVE_FAILED', array(
+                    '#ID#' => $result['data']['order']['id'] ?? '-',
+                    '#ERROR#' => $this->lastSaveError,
+                ))]];
+            }
+
             if (!isset($this->pollAfterCreate[$deliveryId]) || !isset($shippingMethods['answer']['order']['id'])) {
                 return $result;
             }
@@ -284,6 +359,11 @@ class Unloading
                     return $resultGet;
                 }
 
+                // Ответ create() содержит только внутренний uuid, номер СДЭК (по которому
+                // заказ ищут в ЛК) приходит в get — сохраняем и его. Не удалось — не страшно:
+                // uuid из create() уже записан, выгрузка при этом успешна.
+                $this->saveShippingMethodsAnswer($orderId, $resultGet['data']);
+
                 return $result;
             }
 
@@ -314,23 +394,88 @@ class Unloading
      */
     private function saveShippingMethodsAnswer($orderId, $answerData)
     {
-        $order = Sale\Order::load($orderId);
+        // Ядро (Sale\Internals\OrderPropsTable::validateValue) жёстко ограничивает значение
+        // любого свойства заказа 500 символами, независимо от MAXLENGTH в настройках, и
+        // сообщает об этом лишь warning'ом: save() "успешен", а значение не записано.
+        // Полный ответ create() (у СДЭК — точно) длиннее, поэтому заказ у ТК создавался,
+        // а в админке выглядел невыгруженным — без печати/удаления и с кнопкой "Выгрузить
+        // заказ" для повторной (дублирующей) выгрузки. Храним только нужные поля и
+        // сверяем записанное с БД.
+        $this->lastSaveError = null;
         $shippingMethods = array();
+        $isPropertyFound = false;
 
-        $propertyCollection = $order->getPropertyCollection();
-        foreach ($propertyCollection as $propertyItem) {
-            if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS') {
-                $propertyCodeValue = $propertyItem->getValue();
-                if ($propertyCodeValue) {
-                    $shippingMethods = json_decode($propertyCodeValue, true) ?: array();
+        $order = Sale\Order::load($orderId);
+        if (!$order) {
+            $this->lastSaveError = 'Order #' . $orderId . ' not found';
+        } else {
+            $propertyCollection = $order->getPropertyCollection();
+            foreach ($propertyCollection as $propertyItem) {
+                if ($propertyItem->getField("CODE") == 'ESHOPLOGISTIC_SHIPPING_METHODS') {
+                    $isPropertyFound = true;
+                    $propertyCodeValue = $propertyItem->getValue();
+                    if ($propertyCodeValue) {
+                        $shippingMethods = json_decode($propertyCodeValue, true) ?: array();
+                    }
+                    $answer = self::compactAnswer($answerData);
+                    // Ответ get (опрос после create, см. pollAfterCreate) может не содержать
+                    // order.id — не теряем номер заказа у ТК, сохранённый из ответа create.
+                    if (is_array($answer) && !isset($answer['order']['id']) && isset($shippingMethods['answer']['order']['id'])) {
+                        $answer['order']['id'] = $shippingMethods['answer']['order']['id'];
+                    }
+                    $shippingMethods['answer'] = $answer;
+                    $newValue = json_encode($shippingMethods, JSON_UNESCAPED_UNICODE);
+                    $propertyItem->setValue($newValue);
+                    $saveResult = $order->save();
+
+                    $savedRow = Sale\Internals\OrderPropsValueTable::getList(array(
+                        'filter' => array('=ORDER_ID' => $orderId, '=CODE' => 'ESHOPLOGISTIC_SHIPPING_METHODS'),
+                        'select' => array('VALUE'),
+                    ))->fetch();
+                    if (!$saveResult->isSuccess() || !$savedRow || (string)$savedRow['VALUE'] !== $newValue) {
+                        $messages = array_merge($saveResult->getErrorMessages(), $saveResult->getWarningMessages());
+                        $this->lastSaveError = $messages ? implode('; ', $messages) : 'order property was not saved';
+                    }
                 }
-                $shippingMethods['answer'] = $answerData;
-                $propertyItem->setValue(json_encode($shippingMethods, JSON_UNESCAPED_UNICODE));
-                $order->save();
+            }
+            if (!$isPropertyFound) {
+                $this->lastSaveError = Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_PROPERTY_MISSING');
             }
         }
 
+        if ($this->lastSaveError !== null) {
+            Logger::log('UNLOADING_SAVE_FAILED', $this->lastSaveError, \CEventLog::SEVERITY_ERROR, $orderId);
+        }
+
         return $shippingMethods;
+    }
+
+    /** Оставляет из ответа ТК только поля, которые модуль читает потом из свойства заказа
+     * (номер заказа у ТК, трек, статус) — см. лимит 500 символов в saveShippingMethodsAnswer().
+     * @param mixed $answerData
+     * @return mixed
+     */
+    private static function compactAnswer($answerData)
+    {
+        if (!is_array($answerData)) {
+            return $answerData;
+        }
+
+        $compact = array();
+        if (isset($answerData['order']['id'])) {
+            $compact['order']['id'] = $answerData['order']['id'];
+        }
+        if (isset($answerData['state']['number'])) {
+            $compact['state']['number'] = $answerData['state']['number'];
+        }
+        if (isset($answerData['state']['status']['code'])) {
+            $compact['state']['status']['code'] = $answerData['state']['status']['code'];
+        }
+        if (isset($answerData['state']['status']['description'])) {
+            $compact['state']['status']['description'] = mb_substr((string)$answerData['state']['status']['description'], 0, 100);
+        }
+
+        return $compact ?: null;
     }
 
     /** Ставит/снимает флаг "ожидает подтверждения от ТК" в том же свойстве заказа.
