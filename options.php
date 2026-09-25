@@ -790,15 +790,6 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 array(
                     'note' => Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_API_YAMAP_KEY_DESC")
                 ),
-                array(
-                    "widget_key",
-                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"),
-                    "",
-                    array("text")
-                ),
-                // null — пропускается __AdmSettingsDrawRow без вывода строки (при
-                // одном сайте отдельные ключи ни к чему).
-                count($siteList) > 1 ? array('note' => eslWidgetKeySitesField($siteList, $module_id)) : null,
 				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_BEHAVIOR")) . '</span>',
 				array(
 					"api_log",
@@ -824,6 +815,17 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                     "",
                     array("checkbox")
                 ),
+                // Ключи виджета показываются только при включённом корзинном виджете
+                // (правило 'frame_lib' в ESL_VISIBILITY_RULES, install/js/settings.js).
+                array(
+                    "widget_key",
+                    Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"),
+                    "",
+                    array("text")
+                ),
+                // null — пропускается __AdmSettingsDrawRow без вывода строки (при
+                // одном сайте отдельные ключи ни к чему).
+                count($siteList) > 1 ? array('note' => eslWidgetKeySitesField($siteList, $module_id)) : null,
                 array(
                     "requary_pvz_address",
                     Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_REQUARY_PVZ_ADDRESS"),

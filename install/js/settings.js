@@ -381,7 +381,11 @@ var ESL_VISIBILITY_RULES = [
     // Байкал Сервис: юрлицо -> реквизиты организации, физлицо -> серия/номер
     // документа (см. Iframe.php:1871-1945, группы sender-org-baikal / sender-identity-baikal).
     { controller: 'sender-type-baikal', values: ['1'], targets: ['sender-org-form-baikal', 'sender-company-baikal', 'sender-inn-baikal', 'sender-kpp-baikal'] },
-    { controller: 'sender-type-baikal', values: ['2'], targets: ['sender-identity-series-baikal', 'sender-identity-number-baikal'] }
+    { controller: 'sender-type-baikal', values: ['2'], targets: ['sender-identity-series-baikal', 'sender-identity-number-baikal'] },
+    // Ключ widget (и ключи для доп. сайтов) нужен только корзинному виджету.
+    // Блок доп. сайтов — 'note' без единого name (widget_key_site[<SITE_ID>]),
+    // поэтому адресуется классом обёртки (см. eslWidgetKeySitesField в options.php).
+    { controller: 'frame_lib', values: ['1'], targets: ['widget_key', '.esl-sitekeys-wrap'] }
 ];
 
 function eslControllerValue(el) {
@@ -432,7 +436,8 @@ function eslApplyVisibilityRules(table, groups, activeGroup) {
         }
         var match = rule.values.indexOf(eslControllerValue(controller)) !== -1;
         rule.targets.forEach(function (targetName) {
-            var target = table.querySelector('[name="' + targetName + '"]');
+            // Цель — name поля, либо CSS-класс (с точки) для блоков без собственного name.
+            var target = table.querySelector(targetName.charAt(0) === '.' ? targetName : '[name="' + targetName + '"]');
             var row = target && target.closest('tr');
             if (!row) {
                 return;
