@@ -167,11 +167,11 @@ class ComponentOrder
                                 '<input 
                             id="eslogic-address-requar" 
                             name="ESHOPLOGISTIC_ADDRESS_REQUAR"
-                            type="hidden" value="' . $addressRequar . '"
+                            type="hidden" value="' . htmlspecialcharsbx((string)$addressRequar, ENT_QUOTES) . '"
                         >' .
                                 '<input 
                             id="eslogic-location-fields"
-                            type="hidden" value="' . $locationTypeIdsClassicStr . '"
+                            type="hidden" value="' . htmlspecialcharsbx($locationTypeIdsClassicStr, ENT_QUOTES) . '"
                         >';
 						} else {
 							$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
@@ -741,7 +741,7 @@ class ComponentOrder
 		}
 
 		$selectPvz = (string)($requestDataEsl['selectPvz'] ?? '');
-		$selectPvzHtml = htmlspecialcharsbx($selectPvz);
+		$selectPvzHtml = htmlspecialcharsbx($selectPvz, ENT_QUOTES);
 		$descUser = $selectPvzHtml !== ''
 			? Loc::getMessage("ESHOP_LOGISTIC_TERMINAL_PVZ_TERMIN") . ' ' . $selectPvzHtml
 			: '';
@@ -832,10 +832,10 @@ class ComponentOrder
 					'name' => (string)($requestDataEsl['tariff']['name'] ?? ''),
 				),
 			));
-			$deliveryResult['DESCRIPTION'] .= '<input name="ESHOPLOGISTIC_SHIPPING_METHODS" type="hidden" value="' . htmlspecialcharsbx($shippingMethodsValue) . '">';
+			$deliveryResult['DESCRIPTION'] .= '<input name="ESHOPLOGISTIC_SHIPPING_METHODS" type="hidden" value="' . htmlspecialcharsbx($shippingMethodsValue, ENT_QUOTES) . '">';
 		}
 
-		$deliveryResult['DESCRIPTION'] .= "<input id='widgetCityEsl'value='" . htmlspecialcharsbx($jsonValueCity) . "' type='hidden'>";
+		$deliveryResult['DESCRIPTION'] .= '<input id="widgetCityEsl" value="' . htmlspecialcharsbx($jsonValueCity, ENT_QUOTES) . '" type="hidden">';
 
 		if ($check)
 			$deliveryResult['CHECKED'] = 'Y';
@@ -872,9 +872,9 @@ class ComponentOrder
             $deliveryResult['PERIOD_TEXT'] = '';
         }
         $addressRequar = Option::get(Config::MODULE_ID, 'api_address_requar');
-        $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-address-requar' value='$addressRequar' type='hidden'>";
+        $deliveryResult['DESCRIPTION'] .= '<input id="eslogic-address-requar" value="' . htmlspecialcharsbx((string)$addressRequar, ENT_QUOTES) . '" type="hidden">';
         $locationTypeIdsStr = implode(',', $locationTypeIds);
-        $deliveryResult['DESCRIPTION'] .= "<input id='eslogic-location-fields' value='$locationTypeIdsStr' type='hidden'>";
+        $deliveryResult['DESCRIPTION'] .= '<input id="eslogic-location-fields" value="' . htmlspecialcharsbx($locationTypeIdsStr, ENT_QUOTES) . '" type="hidden">';
 
         $priceEmpty = Option::get(Config::MODULE_ID, 'price_empty');
         if($priceEmpty && $deliveryResult['PRICE'] == 0.0){
@@ -922,7 +922,7 @@ class ComponentOrder
         $length = (int)Option::get(Config::MODULE_ID, 'length_default', 0);
         $weightDefault = (int)Option::get(Config::MODULE_ID, 'weight_default', 1);
 
-        $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey);
+        $widgetKeyAttr = htmlspecialcharsbx((string)$widgetKey, ENT_QUOTES);
         // sessid в самом URL, а не в теле запроса: виджет — сторонний скрипт api.esplc.ru,
         // его POST-тело мы не формируем и не контролируем, но URL data-controller задаём сами,
         // так что это единственный способ дать ActionFilter\Csrf на widgetData (см.
@@ -930,7 +930,7 @@ class ComponentOrder
         // анонимные посетители витрины). check_bitrix_sessid() ищет sessid в GET+POST вместе
         // (Bitrix мержит их в Request), поэтому GET-параметр из этого URL достаточен независимо
         // от того, что именно виджет положит в тело POST.
-        $sessidAttr = htmlspecialcharsbx(bitrix_sessid());
+        $sessidAttr = htmlspecialcharsbx(bitrix_sessid(), ENT_QUOTES);
         // widgetData проксирует запросы только с ключом, выданным этой сессии
         \Eshoplogistic\Delivery\Controller\AjaxHandler::rememberIssuedWidgetKey((string)$widgetKey);
         // Логика обнаружения зависшего/сломанного виджета и весь связанный с ней JS
@@ -967,8 +967,8 @@ class ComponentOrder
                 "dimensions" => $itemWidth."*".$itemHeight."*".$itemLength
 			);
 		}
-		$jsonValueOffers = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($offers));
-		$html .= "<input id='widgetOffersEsl' value='" . $jsonValueOffers . "' type='hidden'>";
+		$jsonValueOffers = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($offers), ENT_QUOTES);
+		$html .= '<input id="widgetOffersEsl" value="' . $jsonValueOffers . '" type="hidden">';
 
 		$configClass = new Config();
 		$paymentTypesList = $configClass->getPaymentTypes();
@@ -981,8 +981,8 @@ class ComponentOrder
             $paymentResult[$paymentType] = $payment;
         }
 
-		$jsonValuePayment = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($paymentResult));
-		$html .= "<input id='widgetPaymentEsl' value='" . $jsonValuePayment . "' type='hidden'>";
+		$jsonValuePayment = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($paymentResult), ENT_QUOTES);
+		$html .= '<input id="widgetPaymentEsl" value="' . $jsonValuePayment . '" type="hidden">';
 
 		return $html;
 	}
