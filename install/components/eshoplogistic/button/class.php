@@ -392,7 +392,10 @@ class EslButtonComponent extends \CBitrixComponent
             //if($addressProp = self::getPropertyByCode($propertyCollection, 'ADDRESS'))
             //$addressProp->setValue($addressForDelivery);
 
-            $calculationResult = $shipment->calculateDelivery();
+            // Реальный расчёт, а не нулевая заглушка режима виджета (frame_lib)
+            $calculationResult = \Eshoplogistic\Delivery\Helpers\CalculateHandler::withRealCalculation(function () use ($shipment) {
+                return $shipment->calculateDelivery();
+            });
             if (!$calculationResult->isSuccess()) {
                 return array(
                     'success' => false,

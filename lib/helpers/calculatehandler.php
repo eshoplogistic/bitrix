@@ -25,7 +25,27 @@ use Eshoplogistic\Delivery\Logger\Logger;
  */
 class CalculateHandler
 {
+    /** Счётчик вложенных вызовов withRealCalculation(): пока > 0, skipRealCalculation()
+     * всегда возвращает false. Выставляется только серверным кодом перед сохранением заказа.
+     * @var int
+     */
+    private static $forceRealCalculation = 0;
 
+    /** Выполняет $callback с гарантированно реальным расчётом доставки (без нулевой заглушки
+     * режима виджета). Используется на всех точках сохранения заказа — признак "это финальное
+     * сохранение" определяется сервером, а не клиентским параметром запроса.
+     * @param callable $callback
+     * @return mixed результат $callback
+     */
+    public static function withRealCalculation(callable $callback)
+    {
+        self::$forceRealCalculation++;
+        try {
+            return $callback();
+        } finally {
+            self::$forceRealCalculation--;
+        }
+    }
 
     /** Calculating deliveries
      * @param Sale\Shipment $shipmentx
@@ -35,7 +55,7 @@ class CalculateHandler
      */
     public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type)
     {
-        if (self::skipRealCalculation()) {
+        if (self::skipRealCalculation($shipment)) {
             $result = new Sale\Delivery\CalculationResult();
             $result->setDeliveryPrice(0);
             return $result;
@@ -250,15 +270,31 @@ class CalculateHandler
      * поэтому реальный расчёт не выполнялся никогда и в заказ уходила нулевая цена — см. class.php
      * sale.order.ajax: $this->action === 'saveOrderAjax' (а не confirmorder) — тот же признак,
      * которым сам Bitrix определяет подтверждение заказа.
+     * БЕЗОПАСНОСТЬ: action=saveOrderAjax — клиентский параметр, поэтому он не может быть
+     * единственной защитой от сохранения заказа с нулевой ценой. Любое сохранение нового
+     * заказа (sale.order.ajax, "заказ в один клик", не-AJAX submit, кастомные формы) проходит
+     * через ComponentOrder::saleOrderBeforeSaved(), который пересчитывает доставку внутри
+     * withRealCalculation() — там заглушка отключена. Уже сохранённые заказы заглушку не
+     * получают никогда (пересчёт Bitrix при их изменении должен давать реальную цену).
+     * @param Sale\Shipment $shipment
      * @return bool
      */
-    private static function skipRealCalculation()
+    private static function skipRealCalculation(Sale\Shipment $shipment)
     {
         if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
             return false;
         }
 
+        if (self::$forceRealCalculation > 0) {
+            return false;
+        }
+
         if (defined('ADMIN_SECTION') && ADMIN_SECTION === true) {
+            return false;
+        }
+
+        $order = $shipment->getCollection() ? $shipment->getCollection()->getOrder() : null;
+        if (!$order || !$order->isNew()) {
             return false;
         }
 

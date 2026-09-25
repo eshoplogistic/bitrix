@@ -398,7 +398,14 @@ class ComponentOrder
 		// последующем save() уже существующего заказа — сохранение ответа ТК после выгрузки
 		// (AJAX-контроллер, ADMIN_SECTION не определён), обновление статуса агентом и т.д.
 		// Там skipRealCalculation() возвращает true, и пересчёт обнулял бы цену доставки.
-		$calcResult = $order->isNew() ? $order->getShipmentCollection()->calculateDelivery() : new Main\Result();
+		// Пересчёт идёт внутри withRealCalculation(): заглушка с нулевой ценой отключена
+		// независимо от параметров запроса — иначе путь сохранения без action=saveOrderAjax
+		// ("заказ в один клик", не-AJAX submit, кастомная форма) сохранил бы доставку за 0.
+		$calcResult = $order->isNew()
+			? \Eshoplogistic\Delivery\Helpers\CalculateHandler::withRealCalculation(function () use ($order) {
+				return $order->getShipmentCollection()->calculateDelivery();
+			})
+			: new Main\Result();
 		if (!$calcResult->isSuccess()) {
 			Logger::log(
 				'DELIVERY_RECALC_FAILED',
