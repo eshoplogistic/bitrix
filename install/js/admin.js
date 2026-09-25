@@ -118,7 +118,16 @@ function eslPlacesRenumber(table) {
         return;
     }
 
-    table.querySelectorAll('tbody tr').forEach(function (tr, index) {
+    // Только строки собственного tbody: селектор 'tbody tr' в table.querySelectorAll
+    // сопоставляется со всем документом, и строка заголовка из <thead> тоже подходит под него
+    // (её предок — tbody внешней table.adm-detail-content-table), из-за чего нумерация
+    // мест после добавления строки съезжала на +1.
+    let tbody = table.tBodies[0];
+    if (!tbody) {
+        return;
+    }
+
+    Array.prototype.forEach.call(tbody.rows, function (tr, index) {
         tr.setAttribute('data-number', index);
         tr.querySelectorAll('td input[data-field]').forEach(function (input) {
             input.name = 'products[' + index + '][' + input.getAttribute('data-field') + ']';
