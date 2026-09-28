@@ -31,6 +31,11 @@ class CalculateHandler
      */
     private static $forceRealCalculation = 0;
 
+    /** Ошибки расчёта служб модуля, случившиеся внутри последнего withRealCalculation()
+     * @var \Bitrix\Main\Error[]
+     */
+    private static $realCalculationErrors = [];
+
     /** Выполняет $callback с гарантированно реальным расчётом доставки (без нулевой заглушки
      * режима виджета). Используется на всех точках сохранения заказа — признак "это финальное
      * сохранение" определяется сервером, а не клиентским параметром запроса.
@@ -39,6 +44,9 @@ class CalculateHandler
      */
     public static function withRealCalculation(callable $callback)
     {
+        if (self::$forceRealCalculation === 0) {
+            self::$realCalculationErrors = [];
+        }
         self::$forceRealCalculation++;
         try {
             return $callback();
@@ -53,7 +61,29 @@ class CalculateHandler
      * @param string $type
      * @return Sale\Delivery\CalculationResult $result
      */
+    /** Ошибки расчёта служб доставки модуля за последний withRealCalculation(). Нужны, чтобы
+     * отличить отказ НАШЕГО расчёта от ошибок служб доставки других модулей в общем
+     * результате ShipmentCollection::calculateDelivery().
+     * @return \Bitrix\Main\Error[]
+     */
+    public static function getRealCalculationErrors()
+    {
+        return self::$realCalculationErrors;
+    }
+
     public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type)
+    {
+        $result = self::calculateShipment($shipment, $service, $type);
+        if (self::$forceRealCalculation > 0 && !$result->isSuccess()) {
+            foreach ($result->getErrors() as $error) {
+                self::$realCalculationErrors[] = $error;
+            }
+        }
+
+        return $result;
+    }
+
+    private static function calculateShipment(Sale\Shipment $shipment, $service, $type)
     {
         if (self::skipRealCalculation($shipment)) {
             $result = new Sale\Delivery\CalculationResult();

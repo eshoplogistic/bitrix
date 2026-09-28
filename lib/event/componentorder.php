@@ -418,6 +418,22 @@ class ComponentOrder
 			);
 		}
 
+		// Реальный расчёт службы модуля не удался — не сохраняем новый заказ: в Shipment осталась
+		// цена с последнего отображения чекаута (0 от заглушки skipRealCalculation), а не
+		// проверенная стоимость. Ошибки служб доставки других модулей сюда не попадают.
+		$eslCalcErrors = $order->isNew() ? \Eshoplogistic\Delivery\Helpers\CalculateHandler::getRealCalculationErrors() : [];
+		if ($eslCalcErrors) {
+			$message = trim((string)$eslCalcErrors[0]->getMessage());
+			if ($message === '') {
+				$message = (new Config())->priceError;
+			}
+			return new Main\EventResult(
+				Main\EventResult::ERROR,
+				new Sale\ResultError($message, 'ESHOP_LOGISTIC_DELIVERY_CALC_FAILED'),
+				'sale'
+			);
+		}
+
 		$deliveryIds = $order->getDeliverySystemId();
 		foreach ($deliveryIds as $deliveryId) {
 			$rsDelivery = Delivery\Services\Table::getList(array(
