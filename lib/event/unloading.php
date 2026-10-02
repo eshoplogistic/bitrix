@@ -16,6 +16,7 @@ use Bitrix\Sale;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Helpers\ShippingHelper;
 use Eshoplogistic\Delivery\Logger\Logger;
+use Eshoplogistic\Delivery\Agent\UnloadingHandler;
 
 class Unloading
 {
@@ -251,13 +252,41 @@ class Unloading
             $value = '<span style="color:#3f8f1f;font-weight:bold">' . implode(', ', $parts) . '</span>';
         }
 
-        return new EventResult(EventResult::SUCCESS, array(
+        $rows = array(
             array(
                 'TITLE' => Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_INFO_TITLE'),
                 'VALUE' => $value,
                 'ID' => 'esl_unloading_info',
             ),
-        ), 'sale');
+        );
+
+        // Агент перестал опрашивать статус заказа (см. UnloadingHandler::MAX_FAILED_POLLS) —
+        // пункта "Выгрузить заказ" у выгруженного заказа нет, поэтому без этой строки менеджер
+        // не узнает, что статус больше не обновляется, и не сможет выгрузить заказ заново.
+        $pollingBan = $carrierOrderId !== '' ? UnloadingHandler::getPollingBan($order->getId()) : null;
+        if ($pollingBan !== null) {
+            $dialogTitle = Loc::getMessage('ESHOP_LOGISTIC_UNLOADING_SYNC_TITLE');
+            $onclick = "(new BX.CAdminDialog({"
+                . "'title': '" . \CUtil::JSEscape($dialogTitle) . "',"
+                . "'content_url': '/bitrix/admin/eshoplogistic_delivery_clearstatus.php?elementId=" . (int)$order->getId() . "',"
+                . "'draggable': true, 'resizable': true, 'width': 600, 'height': 300"
+                . "})).Show(); return false;";
+            $rows[] = array(
+                'TITLE' => $dialogTitle . ':',
+                'VALUE' => '<span style="color:#c0392b">'
+                    . Loc::getMessage($pollingBan['credentials']
+                        ? 'ESHOP_LOGISTIC_UNLOADING_SYNC_DISABLED_CREDENTIALS'
+                        : 'ESHOP_LOGISTIC_UNLOADING_SYNC_DISABLED_NOT_FOUND')
+                    . '</span><br><a href="#" onclick="' . htmlspecialcharsbx($onclick) . '">'
+                    . Loc::getMessage($pollingBan['credentials']
+                        ? 'ESHOP_LOGISTIC_UNLOADING_SYNC_RESUME'
+                        : 'ESHOP_LOGISTIC_UNLOADING_SYNC_RESET')
+                    . '</a>',
+                'ID' => 'esl_sync_info',
+            );
+        }
+
+        return new EventResult(EventResult::SUCCESS, $rows, 'sale');
     }
 
     /** Службы, у которых номер/трек-код приходят не сразу при создании заказа, а с задержкой,

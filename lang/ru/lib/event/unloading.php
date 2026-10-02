@@ -29,4 +29,9 @@ $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_NOT_UNLOADED"] = "не выгружен";
 $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_UNLOADED"] = "выгружен, № #ID#";
 $MESS["ESHOP_LOGISTIC_UNLOADING_INFO_PENDING"] = "ожидает подтверждения ТК";
 $MESS["ESHOP_LOGISTIC_UNLOADING_TRACK_NOT_CONFIRMED"] = "Трек-номер не подтверждён ТК в отведённое время";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SYNC_TITLE"] = "Синхронизация статусов";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SYNC_DISABLED_NOT_FOUND"] = "Синхронизация статусов для данного заказа отключена, т.к. выгруженный ранее заказ не найден в кабинете ТК. При необходимости сбросьте данные выгрузки заказа и выгрузите заказ в кабинет ТК повторно.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SYNC_DISABLED_CREDENTIALS"] = "Синхронизация статусов для данного заказа отключена, т.к. ТК отклонила авторизацию. Проверьте логин и пароль службы доставки в личном кабинете eShopLogistic и возобновите синхронизацию.";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SYNC_RESET"] = "Сбросить данные выгрузки заказа";
+$MESS["ESHOP_LOGISTIC_UNLOADING_SYNC_RESUME"] = "Возобновить синхронизацию";
 ?>

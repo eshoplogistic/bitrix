@@ -4,6 +4,7 @@ use Bitrix\Main,
     Bitrix\Sale,
     Bitrix\Main\Loader,
     Eshoplogistic\Delivery\Event\Unloading,
+    Eshoplogistic\Delivery\Agent\UnloadingHandler,
     Eshoplogistic\Delivery\Config;
 use Bitrix\Main\Localization\Loc;
 
@@ -32,6 +33,10 @@ $debug = $request->getQuery('esl_debug') === '1';
 $unloading = new Unloading();
 $type = null;
 $message = null;
+// Агент отключил опрос статуса заказа (см. UnloadingHandler::MAX_FAILED_POLLS): тогда
+// локальный сброс доступен и без режима отладки — заказ, который ТК не находит, иначе
+// навсегда остаётся "выгруженным" без возможности выгрузить его заново.
+$pollingBan = UnloadingHandler::getPollingBan($ID);
 
 if ($request->isPost()) {
     if (!check_bitrix_sessid()) {
@@ -42,9 +47,26 @@ if ($request->isPost()) {
     if ($mode === 'local' && !$debug) {
         die('Access denied');
     }
-    $result = ($mode === 'local')
-        ? $unloading->clearUnloading($ID)
-        : $unloading->deleteUnloadingAtCarrier($ID);
+    // Ошибка авторизации службы — не признак того, что заказа нет у ТК: сброс тут дал бы
+    // дубль при повторной выгрузке, поэтому для неё доступно только возобновление опроса.
+    if ($mode === 'sync_reset' && ($pollingBan === null || $pollingBan['credentials'])) {
+        die('Access denied');
+    }
+    if ($mode === 'sync_resume' && $pollingBan === null) {
+        die('Access denied');
+    }
+
+    if ($mode === 'sync_resume') {
+        UnloadingHandler::liftPollingBan($ID);
+        $result = ['type' => 'success', 'message' => GetMessage('ESHOP_LOGISTIC_UNLOADING_SYNC_RESUMED')];
+    } elseif ($mode === 'local' || $mode === 'sync_reset') {
+        $result = $unloading->clearUnloading($ID);
+        if ($result['type'] === 'success') {
+            UnloadingHandler::liftPollingBan($ID);
+        }
+    } else {
+        $result = $unloading->deleteUnloadingAtCarrier($ID);
+    }
     $type = $result['type'];
     $message = $result['message'];
 }
@@ -66,6 +88,23 @@ $icons = ['success' => '&#10003;', 'error' => '&#10005;', 'warning' => '!', 'inf
         <form method="POST" action="<?= htmlspecialcharsbx($APPLICATION->GetCurPage()) ?>?elementId=<?= (int)$ID ?><?= $debug ? '&amp;esl_debug=1' : '' ?>">
             <?= bitrix_sessid_post() ?>
             <input type="hidden" name="mode" value="">
+            <?php if ($pollingBan !== null): ?>
+                <div class="esl-clear-confirm__option">
+                    <div class="esl-clear-confirm__text"><?= GetMessage($pollingBan['credentials'] ? "ESHOP_LOGISTIC_UNLOADING_SYNC_CREDENTIALS" : "ESHOP_LOGISTIC_UNLOADING_SYNC_NOT_FOUND") ?></div>
+                    <?php if ($pollingBan['error'] !== ''): ?>
+                        <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_SYNC_LAST_ERROR") ?> <?= htmlspecialcharsbx($pollingBan['error']) ?></div>
+                    <?php endif; ?>
+                    <div class="esl-clear-confirm__note">
+                        <?php if (!$pollingBan['credentials']): ?>
+                            <button type="button" class="esl-clear-btn esl-clear-btn--danger" onclick="eslClearSubmit(this, 'sync_reset')"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_SYNC_RESET_BUTTON") ?></button>
+                        <?php endif; ?>
+                        <button type="button" class="esl-clear-btn" onclick="eslClearSubmit(this, 'sync_resume')"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_SYNC_RESUME_BUTTON") ?></button>
+                    </div>
+                    <?php if (!$pollingBan['credentials']): ?>
+                        <div class="esl-clear-confirm__note"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_SYNC_RESET_NOTE") ?></div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
             <div class="esl-clear-confirm__option">
                 <?php if ($deleteSupported): ?>
                     <div class="esl-clear-confirm__text"><?= GetMessage("ESHOP_LOGISTIC_UNLOADING_DELETE_CONFIRM") ?></div>
