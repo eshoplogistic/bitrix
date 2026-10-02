@@ -45,5 +45,5 @@ $MESS["ESHOP_LOGISTIC_PROFILELIST_MAGNIT_TERMINAL"] = "Магнит Пост: д
 
 $MESS["ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR"] = "Ошибка расчета стоимости доставки.";
 $MESS["ESHOP_LOGISTIC_DELIVERY_LOCATION_ERROR"] = "В данном населенном пункте отсутствует возможность доставки.";
-$MESS["ESHOP_LOGISTIC_DELIVERY_DATA_ERROR"] = "ВОшибка получения данных доставки.";
+$MESS["ESHOP_LOGISTIC_DELIVERY_DATA_ERROR"] = "Ошибка получения данных доставки.";
 ?>

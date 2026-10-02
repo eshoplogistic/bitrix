@@ -7,3 +7,4 @@ $MESS["ESHOP_LOGISTIC_LOG_AFTER"] = "После:";
 $MESS["ESHOP_LOGISTIC_LOG_REQUEST"] = "Запрос:";
 $MESS["ESHOP_LOGISTIC_LOG_RESPONSE"] = "Ответ:";
 $MESS["ESHOP_LOGISTIC_LOG_TERMINALS_HIDDEN"] = "[скрыто в логе: #COUNT# шт.]";
+$MESS["ESHOP_LOGISTIC_LOG_NO_LOCATION"] = "Расчёт не выполнен: служба #SERVICE# (#TYPE#) не найдена для местоположения \"#LOCATION#\", запрос не отправлялся.";

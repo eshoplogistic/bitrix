@@ -209,6 +209,12 @@ class CalculateHandler
         }
 
         if (!$to) {
+            // Запрос к API тут не уходит, поэтому без этой записи отказ в логе не виден вовсе.
+            Logger::error(
+                'CALC_NO_LOCATION',
+                Logger::msg('NO_LOCATION', ['#SERVICE#' => $service, '#TYPE#' => $type, '#LOCATION#' => (string)$locationCode]),
+                $order->getId() ?: false
+            );
             $result->addError(new \Bitrix\Main\Error($configClass->locationError));
             return $result;
         }
@@ -264,13 +270,33 @@ class CalculateHandler
             }
         } else {
             $errorString = '';
-            if (is_array($deliveryProfileData['msg'])) {
-                foreach ($deliveryProfileData['msg'] as $err => $msg) {
-                    if ($msg)
-                        $errorString .= 'Error: ' . $err . ' ' . $msg . '. ';
+            $msg = $deliveryProfileData['msg'] ?? null;
+            if (is_array($msg)) {
+                foreach ($msg as $err => $text) {
+                    if ($text)
+                        $errorString .= 'Error: ' . $err . ' ' . $text . '. ';
                 }
-            } else {
-                $errorString = 'Error: ' . $deliveryProfileData['msg'];
+            } elseif ($msg) {
+                $errorString = 'Error: ' . $msg;
+            }
+
+            // Ответ API с ошибкой (422 и т.п.) приходит без msg: текст лежит в errors
+            // ({"to": "Ошибка определения города-получателя..."}) и http_status_message —
+            // иначе покупатель видел в карточке доставки пустое "Error: ".
+            if (!$errorString) {
+                $texts = [];
+                $errors = $deliveryProfileData['errors'] ?? null;
+                if (is_array($errors)) {
+                    array_walk_recursive($errors, function ($text) use (&$texts) {
+                        if (is_scalar($text) && (string)$text !== '') $texts[] = (string)$text;
+                    });
+                } elseif (is_scalar($errors) && (string)$errors !== '') {
+                    $texts[] = (string)$errors;
+                }
+                if (!$texts && !empty($deliveryProfileData['http_status_message'])) {
+                    $texts[] = (string)$deliveryProfileData['http_status_message'];
+                }
+                if ($texts) $errorString = 'Error: ' . implode('. ', $texts);
             }
 
             if (!$errorString) $errorString = 'Unknown error';

@@ -40,6 +40,7 @@ class Config
 	public $pvzBalloonLang;
 	public $priceError;
 	public $locationError;
+	public $dataError;
 
 
 	public function __construct()
@@ -125,7 +126,7 @@ class Config
 
 		$this->priceError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_PRICE_ERROR");
 		$this->locationError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_LOCATION_ERROR");
-		$this->dataErrorError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_DATA_ERROR");
+		$this->dataError = Loc::getMessage("ESHOP_LOGISTIC_DELIVERY_DATA_ERROR");
 	}
 
 	/** Get delivery list for module event
