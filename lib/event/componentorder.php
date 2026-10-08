@@ -88,9 +88,7 @@ class ComponentOrder
 						$pvzTitle = htmlspecialchars(trim(implode(', ', $tmpTitle)), ENT_QUOTES, 'UTF-8');
 						$pvzValue = htmlspecialchars(trim($requestData['ESHOPLOGISTIC_PVZ']), ENT_QUOTES, 'UTF-8');
 					}
-                    if(isset($requestData['ESHOPLOGISTIC_FULL_ADDRESS']) && $requestData['ESHOPLOGISTIC_FULL_ADDRESS']){
-                        $fullAdressValue = htmlspecialchars($requestData['ESHOPLOGISTIC_FULL_ADDRESS'], ENT_QUOTES, 'UTF-8');
-                    }
+                    $fullAdressValue = htmlspecialchars(\Eshoplogistic\Delivery\Helpers\CalculateHandler::getFullAddress(), ENT_QUOTES, 'UTF-8');
 					break;
 				}
 			}
@@ -135,7 +133,26 @@ class ComponentOrder
 						isset($arResult['DELIVERY'][$profile['ID']]) &&
 						$arResult['DELIVERY'][$profile['ID']]['CHECKED'] == 'Y') {
 
+						// Dostavista считает только по полному адресу: без поля ввода покупателю
+						// негде его указать, поэтому поле выводим и при ошибке расчёта.
+						$fullAddressField = '';
+						if ($profile['CODE'] === 'eslogistic:dostavista_door') {
+							$fullAddressField =
+								'<div class="eslogic-address-full-wrap">' .
+								'<input id="eslogic-address-full" name="ESHOPLOGISTIC_FULL_ADDRESS" type="text" value="'.$fullAdressValue.'" placeholder="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL").'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress();}"/>' .
+								'<input type="button" value="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL_BUTTON").'" onclick="BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress()" class="eslogic-address-full_but"/>' .
+								'</div>';
+						}
+
 						if (isset($arResult['DELIVERY'][$profile['ID']]['CALCULATE_ERRORS'])) {
+							// Причину отказа (напр. "Доставка производится только в рамках одного
+							// города") показываем в карточке - общее предупреждение шаблона её не содержит.
+							$calcError = trim(preg_replace('/(^|\s)Error:\s*/', '$1', strip_tags(str_replace('<br>', ' ', (string)$arResult['DELIVERY'][$profile['ID']]['CALCULATE_ERRORS']))));
+							$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] =
+								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
+								($calcError !== '' ? '<div class="eslog-calc-error">' . htmlspecialcharsbx($calcError) . '</div>' : '') .
+								$fullAddressField;
+
 							// Расчёт стоимости не удался (в т.ч. из-за ошибки/невалидного API-ключа):
 							// PRICE у Bitrix не задан, а null == 0.0 — из-за этого ниже включался
 							// "price_empty" и покупатель видел фиктивное "бесплатно" вместо ошибки.
@@ -189,11 +206,11 @@ class ComponentOrder
 								'<div class="eslog-deliverey-desc">'.$arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'].'</div>' .
 								'<div class="eslog-deliverey-desc-lk">' . $arResult['DELIVERY'][$profile['ID']]['CALCULATE_DESCRIPTION'] . '</div>';
 
-                            if($profile['CODE'] === 'eslogistic:dostavista_door'){
+                            if ($fullAddressField !== '' && $fullAdressValue === '') {
                                 $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] .=
-                                    '<input id="eslogic-address-full" name="ESHOPLOGISTIC_FULL_ADDRESS" type="text" value="'.$fullAdressValue.'" placeholder="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL").'"/>' .
-                                    '<input  type="button" value="'.Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL_BUTTON").'" onclick="BX.EShopLogistic.Delivery.sale_order_ajax.calcFullAddress()" class="eslogic-address-full_but"/>';
+                                    '<div class="eslog-calc-error">' . Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL_EMPTY") . '</div>';
                             }
+                            $arResult['DELIVERY'][$profile['ID']]['DESCRIPTION'] .= $fullAddressField;
 						}
 
                         if($priceEmpty && $arResult['DELIVERY'][$profile['ID']]['PRICE'] == 0.0){
@@ -243,8 +260,15 @@ class ComponentOrder
 					}
 				}
 
+				// Адрес из поля Dostavista: по нему считалась цена, он же нужен для выгрузки.
+				// Пишем в своё свойство, а не в "Адрес доставки" — того на сайте может не быть.
+				$fullAddress = $delivery['CODE'] === 'eslogistic:dostavista_door'
+					? \Eshoplogistic\Delivery\Helpers\CalculateHandler::getFullAddress()
+					: '';
+
 				$neededCodes = array();
 				if ($isDeliveryHasPvz) $neededCodes[] = "ESHOPLOGISTIC_PVZ";
+				if ($fullAddress !== '') $neededCodes[] = "ESHOPLOGISTIC_FULL_ADDRESS";
 				if ($choseFrame) $neededCodes[] = "ESHOPLOGISTIC_CHOSE_FRAME";
 				if ($shipMethod) $neededCodes[] = "ESHOPLOGISTIC_SHIPPING_METHODS";
 
@@ -270,6 +294,10 @@ class ComponentOrder
 						$pvz = $request->getPost('ESHOPLOGISTIC_PVZ');
 						if ($pvz)
 							$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_PVZ']] = $pvz;
+					}
+
+					if ($fullAddress !== '' && isset($propIdByCode['ESHOPLOGISTIC_FULL_ADDRESS'])) {
+						$arUserResult['ORDER_PROP'][$propIdByCode['ESHOPLOGISTIC_FULL_ADDRESS']] = $fullAddress;
 					}
 
 					if ($choseFrame && isset($propIdByCode['ESHOPLOGISTIC_CHOSE_FRAME'])) {
@@ -434,7 +462,7 @@ class ComponentOrder
 		// проверенная стоимость. Ошибки служб доставки других модулей сюда не попадают.
 		$eslCalcErrors = $order->isNew() ? \Eshoplogistic\Delivery\Helpers\CalculateHandler::getRealCalculationErrors() : [];
 		if ($eslCalcErrors) {
-			$message = trim((string)$eslCalcErrors[0]->getMessage());
+			$message = trim(preg_replace('/(^|\s)Error:\s*/', '$1', (string)$eslCalcErrors[0]->getMessage()));
 			if ($message === '') {
 				$message = (new Config())->priceError;
 			}
@@ -486,6 +514,15 @@ class ComponentOrder
                                 if ($propertyCode == 'ADDRESS'){
                                     $propertyAddress = $propertyItem;
                                 }
+                                // Dostavista: API может посчитать цену и без адреса, но курьеру он нужен —
+                                // новый заказ без адреса из поля Dostavista не оформляем (админку не трогаем).
+                                if ($propertyCode == 'ESHOPLOGISTIC_FULL_ADDRESS'
+                                    && $delivery['CODE'] === 'eslogistic:dostavista_door'
+                                    && $order->isNew()
+                                    && !(defined('ADMIN_SECTION') && ADMIN_SECTION === true)
+                                    && trim((string)$propertyItem->getValue()) === '') {
+                                    $typeError['ESHOPLOGISTIC_FULL_ADDRESS'] = 1;
+                                }
 							}
                             $requaryPvzAddress = Option::get(Config::MODULE_ID, 'requary_pvz_address');
                             if($propertyPvz && $propertyAddress && $requaryPvzAddress){
@@ -507,6 +544,16 @@ class ComponentOrder
                                 new Sale\ResultError(
                                     $message,
                                     'ESHOP_LOGISTIC_CHOSE_FRAME_EMPTY'
+                                ),
+                                'sale'
+                            );
+                        }
+                        if(isset($typeError['ESHOPLOGISTIC_FULL_ADDRESS'])){
+                            return new Main\EventResult(
+                                Main\EventResult::ERROR,
+                                new Sale\ResultError(
+                                    Loc::getMessage("ESHOP_LOGISTIC_ADDRESS_FULL_EMPTY"),
+                                    'ESHOP_LOGISTIC_ADDRESS_FULL_EMPTY'
                                 ),
                                 'sale'
                             );

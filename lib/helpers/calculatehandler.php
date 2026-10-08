@@ -71,6 +71,34 @@ class CalculateHandler
         return self::$realCalculationErrors;
     }
 
+    private const FULL_ADDRESS_SESSION = 'esl_full_address';
+
+    /** Полный адрес для Dostavista (поле ESHOPLOGISTIC_FULL_ADDRESS).
+     * При обновлении чекаута поле приходит в POST "order", а при оформлении заказа
+     * (saveOrderAjax форма отправляется напрямую) - на верхнем уровне POST, да и самого поля
+     * там уже нет: блок "Доставка" свёрнут и его описание не выводится. Поэтому введённый
+     * адрес запоминаем в сессии и при его отсутствии в запросе берём оттуда.
+     * @param bool $useSession false - только из запроса (админка: сессия там не покупателя)
+     * @return string
+     */
+    public static function getFullAddress($useSession = true)
+    {
+        $request = Application::getInstance()->getContext()->getRequest();
+        $requestData = $request->getPost("order");
+        $value = is_array($requestData) && isset($requestData['ESHOPLOGISTIC_FULL_ADDRESS'])
+            ? $requestData['ESHOPLOGISTIC_FULL_ADDRESS']
+            : $request->getPost('ESHOPLOGISTIC_FULL_ADDRESS');
+
+        $session = Application::getInstance()->getSession();
+        if ($value !== null) {
+            $value = trim((string)$value);
+            $session->set(self::FULL_ADDRESS_SESSION, $value);
+            return $value;
+        }
+
+        return $useSession ? trim((string)$session->get(self::FULL_ADDRESS_SESSION)) : '';
+    }
+
     public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type)
     {
         $result = self::calculateShipment($shipment, $service, $type);
@@ -83,16 +111,13 @@ class CalculateHandler
         return $result;
     }
 
-    private static function calculateShipment(Sale\Shipment $shipment, $service, $type)
+    /** Местоположение доставки заказа: свойство-местоположение, поле из настройки
+     * "api_address_requar" или город по IP (API).
+     * @param Sale\Order $order
+     * @return array [код местоположения или название города, название города из текстового поля|null]
+     */
+    private static function resolveLocation(Sale\Order $order)
     {
-        if (self::skipRealCalculation($shipment)) {
-            $result = new Sale\Delivery\CalculationResult();
-            $result->setDeliveryPrice(0);
-            return $result;
-        }
-
-        $order = $shipment->getCollection()->getOrder();
-        $basket = $order->getBasket();
         $props = $order->getPropertyCollection();
         $locationCode = $props->getDeliveryLocation();
         if ($locationCode) {
@@ -127,6 +152,97 @@ class CalculateHandler
             $locationCode = Helpers\OrderHandler::getCodeCityByApi();
         }
 
+        return array($locationCode, $addressFieldCityName);
+    }
+
+    /** Город назначения в формате API (код ТК или ФИАС).
+     * @return string|null
+     */
+    private static function resolveDestination($locationCode, $addressFieldCityName, $service)
+    {
+        if ($addressFieldCityName !== null) {
+            $resolved = LocationHandler::resolveCityFromText($addressFieldCityName);
+            $deliveriesListTo = $resolved['parsedCity'] ?? [];
+        } else {
+            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationCode);
+        }
+        return $deliveriesListTo['services'][$service] ?? ($deliveriesListTo['fias'] ?? null);
+    }
+
+    /** Доступна ли служба в городе доставки заказа. Нужна для служб, у которых город
+     * отправления задан в ЛК eShopLogistic и в данных модуля его нет (Dostavista возит только
+     * внутри своего города): пробный расчёт без адреса. Ответы API:
+     * 422 — служба в этом городе не работает (скрываем);
+     * 428 — служба работает, но для расчёта нужен точный адрес (показываем с полем адреса).
+     * Сбой API/сети службу не скрывает: она остаётся в списке, а ошибку покажет обычный расчёт.
+     * Результат кэшируется по городу на час.
+     * @param Sale\Shipment $shipment
+     * @param string $service
+     * @return bool
+     */
+    public static function isServiceAvailableInCity(Sale\Shipment $shipment, $service)
+    {
+        // Админка показывает уже оформленные заказы, режим виджета решает доступность сам.
+        if ((defined('ADMIN_SECTION') && ADMIN_SECTION === true) || Option::get(Config::MODULE_ID, 'frame_lib')) {
+            return true;
+        }
+        $collection = $shipment->getCollection();
+        $order = $collection ? $collection->getOrder() : null;
+        if (!$order) {
+            return true;
+        }
+
+        list($locationCode, $addressFieldCityName) = self::resolveLocation($order);
+        if (!$locationCode) {
+            return true;
+        }
+        $to = self::resolveDestination($locationCode, $addressFieldCityName, $service);
+        if (!$to) {
+            return true;
+        }
+
+        $cache = \Bitrix\Main\Data\Cache::createInstance();
+        $cacheKey = 'esl-city-available-' . $service . '-' . md5(serialize($to));
+        if ($cache->initCache(3600, $cacheKey, Config::CACHE_DIR)) {
+            return (bool)$cache->getVars()['available'];
+        }
+
+        $sendPoint = self::getSendPoint();
+        $from = $sendPoint['services'][$service]['city_code'] ?? null;
+        $orderData = array(
+            'payment' => '',
+            'offers' => OrderHandler::getCurrentBasketItems($order->getBasket()),
+        );
+        $response = Api\Delivery::getLocationDeliveryData($service, $from, $to, $orderData);
+
+        $status = isset($response['http_status']) ? (int)$response['http_status'] : 0;
+        $isOk = !empty($response['success']) || $status === 200;
+        $isUnavailable = !$isOk && $status === 422;
+        $needsAddress = $status === 428;
+
+        // Сбой API/сети не кэшируем — проверим на следующем запросе.
+        if ($isOk || $isUnavailable || $needsAddress) {
+            if ($cache->startDataCache()) {
+                $cache->endDataCache(array('available' => !$isUnavailable));
+            }
+        }
+
+        return !$isUnavailable;
+    }
+
+    private static function calculateShipment(Sale\Shipment $shipment, $service, $type)
+    {
+        if (self::skipRealCalculation($shipment)) {
+            $result = new Sale\Delivery\CalculationResult();
+            $result->setDeliveryPrice(0);
+            return $result;
+        }
+
+        $order = $shipment->getCollection()->getOrder();
+        $basket = $order->getBasket();
+        $props = $order->getPropertyCollection();
+        list($locationCode, $addressFieldCityName) = self::resolveLocation($order);
+
         $paymentCollection = $order->getPaymentCollection();
 
         $configClass = new Config();
@@ -149,19 +265,27 @@ class CalculateHandler
 
         $deliveriesListFrom = $sendPoint['services'];
         $from = $deliveriesListFrom[$service]['city_code'];
-        if ($addressFieldCityName !== null) {
-            $resolved = LocationHandler::resolveCityFromText($addressFieldCityName);
-            $deliveriesListTo = $resolved['parsedCity'] ?? [];
-        } else {
-            $deliveriesListTo = LocationHandler::getAvailableDeliveriesByLocation($locationCode);
-        }
-        $to = $deliveriesListTo['services'][$service]??$deliveriesListTo['fias'];
+        $to = self::resolveDestination($locationCode, $addressFieldCityName, $service);
 
 
         if($service === 'dostavista'){
-            $request = Application::getInstance()->getContext()->getRequest();
-            $requestData = $request->getPost("order");
-            $fullAdressValue = trim($requestData['ESHOPLOGISTIC_FULL_ADDRESS'] ?? '');
+            // Порядок: поле на чекауте -> сохранённое свойство заказа (оно же единственный
+            // источник при пересчёте в админке) -> сессия покупателя. "Адрес доставки" заказа
+            // не используем: там может быть что угодно, а цена должна считаться по адресу,
+            // который покупатель указал именно для Dostavista.
+            $isAdmin = defined('ADMIN_SECTION') && ADMIN_SECTION === true;
+            $fullAdressValue = self::getFullAddress(false);
+            if ($fullAdressValue === '') {
+                foreach ($order->getPropertyCollection() as $propertyItem) {
+                    if ($propertyItem->getField('CODE') === 'ESHOPLOGISTIC_FULL_ADDRESS') {
+                        $fullAdressValue = trim((string)$propertyItem->getValue());
+                        break;
+                    }
+                }
+            }
+            if ($fullAdressValue === '' && !$isAdmin) {
+                $fullAdressValue = self::getFullAddress();
+            }
             if($fullAdressValue)
                 $orderData['address'] = $fullAdressValue;
         }

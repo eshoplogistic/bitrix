@@ -162,6 +162,14 @@ foreach ($propertyCollection as $propertyItem) {
     $propertyCodeValue[$propertyCode] = $propertyItem->getValue();
 }
 
+// Dostavista считает доставку по адресу из своего поля на чекауте (ESHOPLOGISTIC_FULL_ADDRESS),
+// он и должен уйти в ТК - свойства "Адрес доставки" на сайте может не быть или там другой адрес.
+$fullAddress = trim((string)($propertyCodeValue['ESHOPLOGISTIC_FULL_ADDRESS'] ?? ''));
+if ($fullAddress !== '') {
+    $propertyAddress = $fullAddress;
+    $propertyCodeValue['ADDRESS'] = $fullAddress;
+}
+
 $propertyCodeValue['FIO'] = $propertyCodeValue['name'] ?? $propertyCodeValue['FIO'];
 $propertyCodeValue['PHONE'] = $propertyCodeValue['phone'] ?? $propertyCodeValue['PHONE'];
 $propertyCodeValue['EMAIL'] = $propertyCodeValue['email'] ?? $propertyCodeValue['EMAIL'];

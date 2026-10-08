@@ -16,4 +16,5 @@ $MESS["ESHOP_LOGISTIC_SERVICE_NOT_CONFIGURED"] = "Выбранный спосо�
 $MESS["ESHOP_LOGISTIC_PER_DAY"] = "день";
 $MESS["ESHOP_LOGISTIC_WIDGET_CALC_ERROR"] = "Ошибка при расчёте стоимости доставки. Пожалуйста, попробуйте изменить адрес.";
 $MESS["ESHOP_LOGISTIC_ADDRESS_FULL_BUTTON"] = "ОК";
+$MESS["ESHOP_LOGISTIC_ADDRESS_FULL_EMPTY"] = "Укажите адрес доставки для курьера Dostavista: улица и дом";
 ?>
