@@ -325,8 +325,15 @@ class EslButtonComponent extends \CBitrixComponent
                 'select' => array('ID')
             ));
 
-            if($delivery=$rsDelivery->fetch()) {
+            // В мультисайте у каждого сайта своя служба с CODE=eslogistic, привязанная к сайту
+            // ограничением "По сайту". Берём не первую попавшуюся, а ту, что доступна текущему
+            // сайту (без ограничения по сайту служба доступна всем сайтам).
+            while ($delivery = $rsDelivery->fetch()) {
+                $deliverySites = Delivery\Restrictions\Manager::getSitesByServiceId($delivery['ID']);
+                if ($deliverySites && !in_array($siteId, $deliverySites))
+                    continue;
 
+                $deliveryBX = false;
                 $rsProfile = Delivery\Services\Table::getList(array(
                     'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $delivery['ID']),
                     'select' => array('ID', 'CODE', 'DESCRIPTION')
@@ -334,7 +341,11 @@ class EslButtonComponent extends \CBitrixComponent
                 while ($profile = $rsProfile->fetch()) {
                     $deliveryBX = self::findDeliveryByName($profile, $idShipper['keyShipper'], $selectedDelivery['key']);
                     if($deliveryBX)
-                        $deliveryCurrectBX = $deliveryBX;
+                        break;
+                }
+                if ($deliveryBX) {
+                    $deliveryCurrectBX = $deliveryBX;
+                    break;
                 }
             }
 

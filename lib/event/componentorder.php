@@ -105,10 +105,18 @@ class ComponentOrder
 
 			$profileIds = array_keys($arResult['DELIVERY']);
 
-			if ($delivery = $rsDelivery->fetch()) {
+			// В мультисайте у каждого сайта своя служба с CODE=eslogistic — берём профили всех
+			// активных служб, а фильтр по $profileIds оставляет только доступные этому заказу
+			// (раньше бралась первая служба, и на чужом сайте профили оставались без обработки).
+			$eslServiceIds = array();
+			while ($eslService = $rsDelivery->fetch()) {
+				$eslServiceIds[] = $eslService['ID'];
+			}
+
+			if ($eslServiceIds) {
 
 				$rsProfile = Delivery\Services\Table::getList(array(
-					'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $delivery['ID'], 'ID' => $profileIds),
+					'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $eslServiceIds, 'ID' => $profileIds),
 					'select' => array('ID', 'CODE', 'DESCRIPTION')
 				));
 
