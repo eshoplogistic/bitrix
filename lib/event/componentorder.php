@@ -613,15 +613,31 @@ class ComponentOrder
 
 		$profileIds = array_keys($arResult['DELIVERY']);
 		$eslDelivery = array();
-		if ($delivery = $rsDelivery->fetch()) {
-
-			$rsProfile = Delivery\Services\Table::getList(array(
-				'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $delivery['ID'], 'ID' => $profileIds),
+		$delivery = null;
+		// В мультисайте у каждого сайта своя служба с одинаковым CODE=eslogistic (так модуль
+		// их и создаёт на каждом новом сайте) — активных совпадений по всей базе может быть
+		// несколько одновременно, и все легитимны. Берём не первую попавшуюся (fetch()), а
+		// ту, чьи профили реально входят в доступные у ЭТОГО заказа $profileIds — иначе при
+		// случайном совпадении с чужим сайтом $eslDelivery остаётся пустым, и ниже
+		// (!$deliveryResult) код молча откатывается к исходному списку тарифов вместо
+		// объединённого виджета.
+		while ($candidateDelivery = $rsDelivery->fetch()) {
+			$rsCandidateProfile = Delivery\Services\Table::getList(array(
+				'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $candidateDelivery['ID'], 'ID' => $profileIds),
 				'select' => array('ID', 'CODE', 'DESCRIPTION')
 			));
-			while ($profile = $rsProfile->fetch()) {
-				$eslDelivery[$profile['ID']] = $profile;
+			$candidateProfiles = array();
+			while ($profile = $rsCandidateProfile->fetch()) {
+				$candidateProfiles[$profile['ID']] = $profile;
 			}
+			if ($candidateProfiles) {
+				$delivery = $candidateDelivery;
+				$eslDelivery = $candidateProfiles;
+				break;
+			}
+		}
+
+		if ($delivery) {
 
 			$session = \Bitrix\Main\Application::getInstance()->getSession();
             //$session->remove('dataEsl');
