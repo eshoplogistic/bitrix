@@ -131,12 +131,23 @@ function isNumeric(value) {
             esldata_offers_id: 'widgetOffersEsl',
             esldata_payments_id: 'widgetPaymentEsl',
             esl_button_id: 'container_widget_esl_button',
+            sender_cities_id: 'widgetSenderCitiesEsl',
         },
         current: {payment_id: null, delivery_id: null},
         widget_offers: '',
         widget_city: {name: null, type: null, fias: null, services: {}},
         widget_payment: {key: ''},
         esldata_value: {},
+        // Город отправки (FIAS), выбранный в окне виджета (см. initSenderCitySelect). Пусто —
+        // `from` в виджет не передаётся, и он считает от города из ЛК eShopLogistic.
+        from: '',
+        fromInitialized: false,
+        withFrom: function (params) {
+            if (this.from) {
+                params.from = this.from
+            }
+            return params
+        },
         request: function (action) {
             return new Promise(function (resolve, reject) {
                 BX.EShopLogistic.OrderAjaxComponent.sendRequest('refreshOrderAjax', action);
@@ -195,6 +206,14 @@ function isNumeric(value) {
             if(isNumeric(this.widget_payment))
                 this.widget_payment = 'card'
 
+            // Город, выбранный раньше (сервер отдаёт его в data-selected), нужен уже
+            // первому расчёту виджета — ещё до того, как будет создано окно со списком.
+            if (!this.fromInitialized) {
+                const senderCities = document.getElementById(this.items.sender_cities_id)
+                this.from = (senderCities && senderCities.dataset.selected) ? senderCities.dataset.selected : ''
+                this.fromInitialized = true
+            }
+
         },
         run: async function (reload = '') {
             if (!this.check()) {
@@ -230,7 +249,7 @@ function isNumeric(value) {
                 widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                     detail: {
                         settlement: settlement,
-                        requestParams: params
+                        requestParams: this.withFrom(params)
                     }
                 }))
             } else {
@@ -238,7 +257,7 @@ function isNumeric(value) {
                     widget.dispatchEvent(new CustomEvent('eShopLogisticWidgetCart:updateParamsRequest', {
                         detail: {
                             settlement: settlement,
-                            requestParams: params
+                            requestParams: this.withFrom(params)
                         }
                     }))
                 })
@@ -256,7 +275,10 @@ function isNumeric(value) {
                 address: '',
                 comment: '',
                 deliveryMethods: '',
-                selectPvz: ''
+                selectPvz: '',
+                // Сервер считает итоговую цену и сохраняет склад отправки по этому городу
+                // (ComponentOrder::getWidgetSenderCity)
+                from: this.from
             }
 
             if(document.getElementById('terminalEsl') && document.getElementById('terminalEsl').value){
@@ -319,6 +341,52 @@ function isNumeric(value) {
         error: function (response) {
             console.error('ESL: request error', response)
         },
+    }
+
+    // Выбор города отправки в окне виджета (как в МС): список приходит из
+    // componentorder.php::frameHtmlField (#widgetSenderCitiesEsl) только если в настройках
+    // модуля заданы "Города отправки". Смена города пересчитывает виджет с новым `from`.
+    function initSenderCitySelect() {
+        let input = document.getElementById(esl.items.sender_cities_id)
+        if (!input || document.getElementById('eslSenderCityBox')) return null
+
+        let cities = []
+        try {
+            cities = JSON.parse(input.value || '[]')
+        } catch (e) {
+            return null
+        }
+        if (!Array.isArray(cities) || cities.length < 2) return null
+
+        let selected = esl.from
+
+        let box = document.createElement('div')
+        box.id = 'eslSenderCityBox'
+        box.className = 'esl-sender-city'
+
+        let label = document.createElement('label')
+        label.className = 'esl-sender-city__label'
+        label.htmlFor = 'eslSenderCitySelect'
+        label.textContent = eslMessage('ESHOP_LOGISTIC_FRAME_SENDER_CITY')
+        box.appendChild(label)
+
+        let select = document.createElement('select')
+        select.id = 'eslSenderCitySelect'
+        select.className = 'esl-sender-city__select'
+        cities.forEach(function (city, index) {
+            let option = document.createElement('option')
+            option.value = city.fias || ''
+            option.textContent = city.name
+            if (selected ? city.fias === selected : index === 0) option.selected = true
+            select.appendChild(option)
+        })
+        eslOn(select, 'change', function () {
+            esl.from = select.value
+            esl.run('from')
+        })
+        box.appendChild(select)
+
+        return box
     }
 
     esl.run = eslSafe(esl.run)
@@ -392,8 +460,18 @@ function isNumeric(value) {
     function initWidgetPopup(init) {
         let popup = document.getElementById('widget_esl_frame')
         if (init && !popup) {
+            let content = BX('eShopLogisticWidgetCart')
+            let senderCityBox = initSenderCitySelect()
+            if (senderCityBox) {
+                let wrapper = document.createElement('div')
+                wrapper.className = 'esl-widget-popup-content'
+                content.parentNode.insertBefore(wrapper, content)
+                wrapper.appendChild(senderCityBox)
+                wrapper.appendChild(content)
+                content = wrapper
+            }
             add_frame_esl = new BX.PopupWindow("widget_esl_frame", null, {
-                content: BX('eShopLogisticWidgetCart'),
+                content: content,
                 closeIcon: {right: "20px", top: "10px"},
                 titleBar: {
                     content: BX.create("span", {

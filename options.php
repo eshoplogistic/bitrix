@@ -10,6 +10,7 @@ use Eshoplogistic\Delivery\Api\Counterparties;
 use Eshoplogistic\Delivery\Config;
 use Eshoplogistic\Delivery\Helpers\Dimensions;
 use Eshoplogistic\Delivery\Helpers\ExportFileds;
+use Eshoplogistic\Delivery\Helpers\SenderCities;
 
 global $APPLICATION;
 
@@ -69,6 +70,30 @@ function eslDimensionPriorityField(): string
     $html .= '</div></div></div>';
 
     return $html;
+}
+
+// Дополнительные города отправки (портировано из МойСклад, sender-address-pvz-multi):
+// список городов, из которых выбирается "Город-отправитель" в параметрах профиля доставки
+// (см. Helpers\SenderCities). Тот же приём, что и у панели габаритов: скрытое поле
+// sender_cities с JSON, которое собирает и перерисовывает settings.js (eslSenderCities*),
+// города ищутся через API eShopLogistic (AjaxHandler::searchSenderCityAction).
+function eslSenderCitiesField(): string
+{
+    $jsonValue = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode(SenderCities::getList()), ENT_QUOTES);
+
+    return '<div class="esl-dimpriority-wrap esl-sendercities-wrap">'
+        . '<div class="esl-dimpriority-wrap__label">' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_TITLE')) . eslHint(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_HINT')) . '</div>'
+        . '<div class="esl-dimpriority-wrap__content"><div class="esl-dimpriority" id="esl-sendercities-root">'
+        . '<div class="esl-dimpriority__axis">'
+        . '<div class="esl-dimpriority__rows esl-sendercities__rows"></div>'
+        . '<div class="esl-sendercities__search">'
+        . '<input type="text" class="esl-sendercities__query" placeholder="' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_PLACEHOLDER')) . '">'
+        . '<button type="button" class="esl-dimpriority__add esl-sendercities__find">' . htmlspecialcharsbx(Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_FIND')) . '</button>'
+        . '</div>'
+        . '<div class="esl-sendercities__results"></div>'
+        . '</div>'
+        . '<input type="hidden" id="esl-sendercities-input" name="sender_cities" value=\'' . $jsonValue . '\'>'
+        . '</div></div></div>';
 }
 
 // Доп. ключи виджета ESL для сайтов, кроме основного (мультисайтовость): виджет
@@ -863,6 +888,9 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
                 // подхватывает как раздел только tr.heading С .esl-section-heading внутри,
                 // так что на аккордеон секции "Габариты" это не влияет.
                 eslDimensionPriorityField(),
+				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_SENDER_CITIES")) . '</span>',
+                // "Сырая" строка, как и панель габаритов выше (см. комментарий там).
+                eslSenderCitiesField(),
 				'<span class="esl-section-heading">' . htmlspecialcharsbx(Loc::getMessage("ESHOP_LOGISTIC_OPTIONS_SECTION_DISPLAY")) . '</span>',
                 array(
                     "api_address_requar",
@@ -1070,6 +1098,17 @@ if ($LOG_ELEMUPD_RIGHT>="R") :
 			// При "default" $dimensionRawConfig остаётся пустым — sanitizeConfig сам
 			// подставит для каждой оси единственное стандартное поле, как и раньше.
 			Dimensions::saveConfig($dimensionRawConfig);
+		}
+
+		// Города отправки — "сырая" строка (eslSenderCitiesField), общий цикл её не видит.
+		if ($request["apply"] || $request["default"]) {
+			$senderCitiesRaw = array();
+			if ($request["apply"]) {
+				$posted = $request->getPost('sender_cities');
+				$decoded = ($posted !== null && $posted !== '') ? json_decode($posted, true) : array();
+				$senderCitiesRaw = is_array($decoded) ? $decoded : array();
+			}
+			SenderCities::saveList($senderCitiesRaw);
 		}
 
 		// Ключи виджета для доп. сайтов (мультисайтовость, см. eslWidgetKeySitesField) —

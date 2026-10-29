@@ -80,9 +80,14 @@ class SdekDoor extends Sale\Delivery\Services\Base
         return true;
     }
 
+    protected function getConfigStructure()
+    {
+        return Helpers\SenderCities::getConfigStructure($this->config);
+    }
+
     public function calculate(Sale\Shipment $shipment = null, $extraServices = array())
     {
-        $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type);
+        $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type, $this->getConfigValues());
         return $result;
     }
 

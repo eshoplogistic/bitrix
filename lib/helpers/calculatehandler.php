@@ -99,9 +99,9 @@ class CalculateHandler
         return $useSession ? trim((string)$session->get(self::FULL_ADDRESS_SESSION)) : '';
     }
 
-    public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type)
+    public static function getDefaultCalculateDelivery(Sale\Shipment $shipment, $service, $type, $profileConfig = null)
     {
-        $result = self::calculateShipment($shipment, $service, $type);
+        $result = self::calculateShipment($shipment, $service, $type, $profileConfig);
         if (self::$forceRealCalculation > 0 && !$result->isSuccess()) {
             foreach ($result->getErrors() as $error) {
                 self::$realCalculationErrors[] = $error;
@@ -178,9 +178,10 @@ class CalculateHandler
      * Результат кэшируется по городу на час.
      * @param Sale\Shipment $shipment
      * @param string $service
+     * @param array|null $profileConfig значения конфига профиля (город-отправитель, см. SenderCities)
      * @return bool
      */
-    public static function isServiceAvailableInCity(Sale\Shipment $shipment, $service)
+    public static function isServiceAvailableInCity(Sale\Shipment $shipment, $service, $profileConfig = null)
     {
         // Админка показывает уже оформленные заказы, режим виджета решает доступность сам.
         if ((defined('ADMIN_SECTION') && ADMIN_SECTION === true) || Option::get(Config::MODULE_ID, 'frame_lib')) {
@@ -201,8 +202,10 @@ class CalculateHandler
             return true;
         }
 
+        $senderCity = SenderCities::getFromConfig($profileConfig);
+
         $cache = \Bitrix\Main\Data\Cache::createInstance();
-        $cacheKey = 'esl-city-available-' . $service . '-' . md5(serialize($to));
+        $cacheKey = 'esl-city-available-' . $service . '-' . md5(serialize($to)) . ($senderCity ? '-' . $senderCity['fias'] : '');
         if ($cache->initCache(3600, $cacheKey, Config::CACHE_DIR)) {
             return (bool)$cache->getVars()['available'];
         }
@@ -213,6 +216,9 @@ class CalculateHandler
             'payment' => '',
             'offers' => OrderHandler::getCurrentBasketItems($order->getBasket()),
         );
+        if ($senderCity) {
+            $orderData['from'] = $senderCity['fias'];
+        }
         $response = Api\Delivery::getLocationDeliveryData($service, $from, $to, $orderData);
 
         $status = isset($response['http_status']) ? (int)$response['http_status'] : 0;
@@ -230,7 +236,39 @@ class CalculateHandler
         return !$isUnavailable;
     }
 
-    private static function calculateShipment(Sale\Shipment $shipment, $service, $type)
+    /** Город отправки для расчёта: в обычном режиме — параметр "Город-отправитель"
+     * профиля. В режиме виджета (frame_lib) профили одной службы склеены в один пункт, и
+     * город выбирает покупатель в окне виджета: для нового заказа на витрине берём его выбор
+     * (ComponentOrder::getWidgetSenderCity), для уже сохранённого — город, записанный при
+     * оформлении в ESHOPLOGISTIC_SHIPPING_METHODS.sender_fias, иначе параметр профиля.
+     * @return array{fias:string, name:string, region:string}|null null — город из ЛК
+     */
+    private static function resolveSenderCity(Sale\Order $order, $service, $type, $profileConfig)
+    {
+        if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
+            return SenderCities::getFromConfig($profileConfig);
+        }
+
+        $isAdmin = defined('ADMIN_SECTION') && ADMIN_SECTION === true;
+        if ($order->isNew() && !$isAdmin) {
+            $deliveryCode = 'eslogistic:' . $service . '_' . ($type === 'door' ? 'door' : 'term');
+            return \Eshoplogistic\Delivery\Event\ComponentOrder::getWidgetSenderCity($deliveryCode);
+        }
+
+        foreach ($order->getPropertyCollection() as $propertyItem) {
+            if ($propertyItem->getField('CODE') === 'ESHOPLOGISTIC_SHIPPING_METHODS') {
+                $shippingMethods = json_decode((string)$propertyItem->getValue(), true);
+                if (is_array($shippingMethods) && array_key_exists('sender_fias', $shippingMethods)) {
+                    return SenderCities::getByFias((string)$shippingMethods['sender_fias']);
+                }
+                break;
+            }
+        }
+
+        return SenderCities::getFromConfig($profileConfig);
+    }
+
+    private static function calculateShipment(Sale\Shipment $shipment, $service, $type, $profileConfig = null)
     {
         if (self::skipRealCalculation($shipment)) {
             $result = new Sale\Delivery\CalculationResult();
@@ -262,6 +300,14 @@ class CalculateHandler
         $orderData['payment'] = $paymentType;
 
         $orderData['offers'] = OrderHandler::getCurrentBasketItems($basket);
+
+        // Город отправки (SenderCities) уходит в API как orderData['from'] (FIAS) — так он
+        // попадает и в хэш кэша расчёта, и в EVENT_BEFORE_CALCULATE. Без него `from` в
+        // запросе нет, и API считает от города, заданного на ключе в ЛК eShopLogistic.
+        $senderCity = self::resolveSenderCity($order, $service, $type, $profileConfig);
+        if ($senderCity) {
+            $orderData['from'] = $senderCity['fias'];
+        }
 
         $deliveriesListFrom = $sendPoint['services'];
         $from = $deliveriesListFrom[$service]['city_code'];

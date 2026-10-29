@@ -12,7 +12,7 @@ $MESS["ESHOP_LOGISTIC_UNAUTHORIZED"] = "Авторизация не выполн
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_KEY"] = "Ключ API";
 $MESS["ESHOP_LOGISTIC_OPTIONS_API_LOG"] = "Включить логирование запросов к API";
 $MESS["ESHOP_LOGISTIC_OPTIONS_OPEN_EVENT_LOG"] = "Открыть журнал событий »";
-$MESS["ESHOP_LOGISTIC_OPTIONS_API_LOG_DESC"] = "Запросы к API и ошибки выгрузки заказов сохраняются в стандартном журнале событий Bitrix (модуль \"eshoplogistic.delivery\") — кнопка выше открывает его с готовым фильтром. Телефон, e-mail, имя, улица, дом, квартира и комментарий покупателя в журнале маскируются.";
+$MESS["ESHOP_LOGISTIC_OPTIONS_API_LOG_DESC"] = "Запросы к API и ошибки выгрузки заказов сохраняются в стандартном журнале событий Bitrix (модуль \"eshoplogistic.delivery\") - кнопка выше открывает его с готовым фильтром. Телефон, e-mail, имя, улица, дом, квартира и комментарий покупателя в журнале маскируются.";
 $MESS["ESHOP_LOGISTIC_OPTIONS_FRAME_LIB"] = "Включить корзинный виджет";
 $MESS["ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY"] = "Ключ widget";
 $MESS["ESHOP_LOGISTIC_OPTIONS_WIDGET_KEY_SITES_TITLE"] = "Ключи widget для других сайтов";
@@ -253,3 +253,8 @@ $MESS["ESHOP_LOGISTIC_OPTIONS_TKD_IDENTITY_TYPE_PECOM_VALUES"] = [
     11 => 'СВИДЕТЕЛЬСТВО О РАССМОТРЕНИИ ХОДАТАЙСТВА О ПРИЗНАНИИ БЕЖЕНЦЕМ',
     12 => 'ВОЕННЫЙ БИЛЕТ',
 ];
+$MESS["ESHOP_LOGISTIC_OPTIONS_SECTION_SENDER_CITIES"] = "Города отправки";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_TITLE"] = "Дополнительные города отправки";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_HINT"] = "Города из этого списка можно выбрать в параметре «Город-отправитель» профиля доставки (вкладка «Город-отправитель» в настройках профиля). Создайте несколько профилей одной службы с разными городами — покупатель увидит при оформлении заказа стоимость доставки из каждого города. Профиль с городом «По умолчанию» считается от города, указанного на ключе в личном кабинете eShopLogistic. В режиме корзинного виджета eShopLogistic профили не нужны: покупатель выбирает город отправки из этого списка прямо в окне виджета (первым идёт город из личного кабинета).";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_PLACEHOLDER"] = "Название города";
+$MESS["ESHOP_LOGISTIC_OPTIONS_SENDER_CITIES_FIND"] = "Найти";

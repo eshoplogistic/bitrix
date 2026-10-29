@@ -65,7 +65,10 @@ class Delivery
         global $USER;
         $currentUser = $USER->GetID();
         $basketEncrypt = $orderData;
-        $basketEncrypt['from'] = $from;
+        // Город отправки из ЛК — под своим ключом: $orderData['from'] (город-отправитель
+        // профиля, см. Helpers\SenderCities) затирать нельзя, иначе профили одной службы
+        // с разными городами отправки делили бы одну ячейку кэша.
+        $basketEncrypt['from_account'] = $from;
         $basketEncrypt['to'] = $to;
 
         if($currentUser) {
@@ -75,8 +78,6 @@ class Delivery
         }
 
         $encodeData = $basketEncrypt;
-        $encodeData['from'] = $from;
-        $encodeData['to'] = $to;
 
 
         $serialized = serialize($encodeData);

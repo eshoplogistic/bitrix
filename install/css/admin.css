@@ -584,3 +584,10 @@ form[name^=unloading_form] .esl-toggle input[type="checkbox"]:checked ~ .esl-tog
 form[name^=unloading_form] .esl-toggle input[type="checkbox"]:focus ~ .esl-toggle__track {
     box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.2);
 }
+
+/* Подсказка под полем формы выгрузки (напр. город отправителя из профиля доставки). */
+.esl-field-note {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #6b7280;
+}

@@ -102,3 +102,4 @@ $MESS["ADDFIELDS_passport_series"] = "Серия документа получа
 $MESS["ADDFIELDS_passport_number"] = "Номер документа получателя";
 $MESS["ADDFIELDS_passport_date_of_issue"] = "Дата выдачи документа";
 $MESS["ADDFIELDS_simplified_issuance"] = "Выдача по СМС";
+$MESS["SENDER_CITY_FROM_PROFILE"] = "Доставка по этому заказу рассчитана из этого города (не из города в настройках отправителя). Укажите адрес или терминал отправки в этом городе.";

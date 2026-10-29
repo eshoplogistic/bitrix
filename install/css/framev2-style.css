@@ -184,3 +184,22 @@ eslog-deliverey-desc-lk {
         min-width: 100%;
     }
 }
+/* Выбор города отправки в окне виджета (framev2-script.js: initSenderCitySelect) */
+.esl-sender-city {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 15px 12px;
+}
+.esl-sender-city__label {
+    font-weight: 600;
+}
+.esl-sender-city__select {
+    min-width: 220px;
+    max-width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d0d5dd;
+    border-radius: 4px;
+    background: #fff;
+}

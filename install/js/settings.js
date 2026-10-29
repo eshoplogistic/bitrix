@@ -812,3 +812,140 @@ function eslDimInit() {
 
 BX.ready(eslDimInit);
 
+
+// ---------- Дополнительные города отправки (options.php, eslSenderCitiesField) ----------
+// Список хранится JSON в скрытом поле sender_cities, сохраняется вместе с формой настроек.
+
+function eslSenderCitiesGetList() {
+    var input = document.getElementById('esl-sendercities-input');
+    if (!input) return [];
+    try {
+        var list = JSON.parse(input.value || '[]');
+        return Array.isArray(list) ? list : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function eslSenderCitiesSetList(list) {
+    var input = document.getElementById('esl-sendercities-input');
+    if (!input) return;
+    input.value = JSON.stringify(list);
+    eslSenderCitiesRender();
+}
+
+function eslSenderCitiesLabel(city) {
+    return city.region ? city.name + ' (' + city.region + ')' : city.name;
+}
+
+function eslSenderCitiesRender() {
+    var rows = document.querySelector('#esl-sendercities-root .esl-sendercities__rows');
+    if (!rows) return;
+
+    var list = eslSenderCitiesGetList();
+    rows.innerHTML = '';
+
+    if (!list.length) {
+        var empty = document.createElement('div');
+        empty.className = 'esl-dimpriority__empty';
+        empty.textContent = BX.message('ESHOP_LOGISTIC_SETTINGS_SENDER_CITIES_EMPTY');
+        rows.appendChild(empty);
+        return;
+    }
+
+    list.forEach(function (city, index) {
+        var row = document.createElement('div');
+        row.className = 'esl-dimpriority__row';
+
+        var name = document.createElement('span');
+        name.className = 'esl-dimpriority__row-name';
+        name.textContent = eslSenderCitiesLabel(city);
+        name.title = city.fias;
+        row.appendChild(name);
+
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'esl-dimpriority__row-remove';
+        remove.title = BX.message('ESHOP_LOGISTIC_SETTINGS_DIM_REMOVE_TITLE');
+        remove.textContent = '×';
+        remove.addEventListener('click', function () {
+            var current = eslSenderCitiesGetList();
+            current.splice(index, 1);
+            eslSenderCitiesSetList(current);
+        });
+        row.appendChild(remove);
+
+        rows.appendChild(row);
+    });
+}
+
+function eslSenderCitiesShowMessage(results, text) {
+    results.innerHTML = '';
+    var note = document.createElement('div');
+    note.className = 'esl-dimpriority__empty';
+    note.textContent = text;
+    results.appendChild(note);
+}
+
+function eslSenderCitiesSearch(root) {
+    var query = root.querySelector('.esl-sendercities__query');
+    var results = root.querySelector('.esl-sendercities__results');
+    var value = query.value.trim();
+    if (!value) return;
+
+    eslSenderCitiesShowMessage(results, BX.message('ESHOP_LOGISTIC_SETTINGS_SENDER_CITIES_SEARCHING'));
+
+    BX.ajax.runAction('eshoplogistic:delivery.api.AjaxHandler.searchSenderCity', {
+        data: {query: value}
+    }).then(function (response) {
+        var cities = Array.isArray(response.data) ? response.data : [];
+        if (!cities.length) {
+            eslSenderCitiesShowMessage(results, BX.message('ESHOP_LOGISTIC_SETTINGS_SENDER_CITIES_NOT_FOUND'));
+            return;
+        }
+
+        results.innerHTML = '';
+        cities.forEach(function (city) {
+            var item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'esl-sendercities__result';
+            item.textContent = (city.type ? city.type + ' ' : '') + eslSenderCitiesLabel(city);
+            item.addEventListener('click', function () {
+                var list = eslSenderCitiesGetList();
+                var exists = list.some(function (e) { return e.fias === city.fias; });
+                if (!exists) {
+                    list.push({fias: city.fias, name: city.name, region: city.region || ''});
+                    eslSenderCitiesSetList(list);
+                }
+                results.innerHTML = '';
+                query.value = '';
+            });
+            results.appendChild(item);
+        });
+    }, function (response) {
+        var message = (response && response.errors && response.errors[0] && response.errors[0].message)
+            ? response.errors[0].message
+            : BX.message('ESHOP_LOGISTIC_SETTINGS_SENDER_CITIES_ERROR');
+        eslSenderCitiesShowMessage(results, message);
+    });
+}
+
+function eslSenderCitiesInit() {
+    var root = document.getElementById('esl-sendercities-root');
+    if (!root) return;
+
+    eslSenderCitiesRender();
+
+    root.querySelector('.esl-sendercities__find').addEventListener('click', function () {
+        eslSenderCitiesSearch(root);
+    });
+    // Enter в поле поиска не должен отправлять всю форму настроек.
+    root.querySelector('.esl-sendercities__query').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            eslSenderCitiesSearch(root);
+        }
+    });
+}
+
+BX.ready(eslSenderCitiesInit);

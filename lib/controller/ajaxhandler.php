@@ -60,6 +60,13 @@ class AjaxHandler extends Controller
                     new HttpMethod([HttpMethod::METHOD_POST]),
                 ],
             ],
+            'searchSenderCity' => [
+                'prefilters' => [
+                    new Authentication(),
+                    new Csrf(),
+                    new HttpMethod([HttpMethod::METHOD_POST]),
+                ],
+            ],
             'unloadingForm' => [
                 'prefilters' => [
                     new Authentication(),
@@ -89,6 +96,37 @@ class AjaxHandler extends Controller
         $managedCahe->cleanDir( Config::CACHE_DIR);
 
         return Loc::getMessage('ESHOP_LOGISTIC_OPTIONS_CLEAR_CACHE_RESULT');
+    }
+
+    /** Поиск города для списка "Города отправки" в настройках модуля (options.php,
+     * eslSenderCitiesField). Ответ API сужаем до того, что хранит Helpers\SenderCities.
+     * @param string $query
+     * @return array|null
+     */
+    public function searchSenderCityAction($query = '')
+    {
+        global $APPLICATION;
+        if ($APPLICATION->GetGroupRight(Config::MODULE_ID) < 'W') {
+            $this->addError(new \Bitrix\Main\Error('Access denied'));
+            return null;
+        }
+
+        $query = trim((string)$query);
+        if ($query === '') return [];
+
+        $response = Search::getCity($query);
+        $cities = [];
+        foreach (($response['data'] ?? []) as $city) {
+            if (empty($city['fias']) || empty($city['name'])) continue;
+            $cities[] = [
+                'fias' => $city['fias'],
+                'name' => $city['name'],
+                'region' => $city['region'] ?? '',
+                'type' => $city['type'] ?? '',
+            ];
+        }
+
+        return $cities;
     }
 
     /** Getting PVZ list for sale.order.ajax component (popup)

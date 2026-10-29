@@ -1214,3 +1214,30 @@ input[name="status-form"] {
     background: #fff;
     color: var(--esl-text);
 }
+
+/* ---------- Дополнительные города отправки (options.php, eslSenderCitiesField) ---------- */
+/* Оформление строк/обёртки — общее с панелью габаритов (.esl-dimpriority*). */
+.esl-sendercities__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--esl-border-soft);
+}
+.esl-sendercities__query {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.esl-sendercities__results { display: flex; flex-direction: column; padding: 0 10px; }
+.esl-sendercities__results:not(:empty) { padding-bottom: 8px; }
+.esl-sendercities__result {
+    border: none;
+    border-bottom: 1px solid var(--esl-border-soft);
+    background: transparent;
+    padding: 6px 8px;
+    font-size: 12px;
+    text-align: left;
+    color: var(--esl-text);
+    cursor: pointer;
+}
+.esl-sendercities__result:hover { background: var(--esl-bg-subtle); color: var(--esl-accent); }

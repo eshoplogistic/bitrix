@@ -12,6 +12,7 @@ use Bitrix\Main\Config\Option;
 use CFile;
 use Eshoplogistic\Delivery\Api\Search;
 use Eshoplogistic\Delivery\Helpers\LocationHandler;
+use Eshoplogistic\Delivery\Helpers\SenderCities;
 use Bitrix\Sale\Delivery\Services\Manager;
 use Eshoplogistic\Delivery\Logger\Logger;
 
@@ -249,15 +250,24 @@ class ComponentOrder
 				// чекаута с eslData — любое следующее обновление без eslData его теряет.
 				// Поэтому тариф, выбранный в виджете, дополнительно берём из самих данных виджета.
 				$widgetTariff = self::getWidgetTariff($request, $delivery['CODE']);
-				if ($widgetTariff) {
+				// Город отправки из окна виджета — по нему считалась цена; сохраняем, чтобы
+				// форма выгрузки и пересчёт заказа в админке знали, с какого склада отправка.
+				// Пустой sender_fias тоже сохраняем: это явный выбор города из ЛК, и он
+				// главнее параметра "Город-отправитель" профиля (см. resolveSenderCity).
+				$widgetSelection = self::getWidgetSelection($delivery['CODE']);
+				$widgetSenderCity = $widgetSelection ? self::getWidgetSenderCity($delivery['CODE']) : null;
+				if ($widgetTariff || $widgetSelection) {
 					$decodedShipMethod = is_string($shipMethod) ? json_decode($shipMethod, true) : null;
 					if (!is_array($decodedShipMethod)) {
 						$decodedShipMethod = array();
 					}
-					if (empty($decodedShipMethod['terminal_tarrif']['code'])) {
+					if ($widgetTariff && empty($decodedShipMethod['terminal_tarrif']['code'])) {
 						$decodedShipMethod['terminal_tarrif'] = $widgetTariff;
-						$shipMethod = json_encode($decodedShipMethod, JSON_UNESCAPED_UNICODE);
 					}
+					if ($widgetSelection) {
+						$decodedShipMethod['sender_fias'] = $widgetSenderCity ? $widgetSenderCity['fias'] : '';
+					}
+					$shipMethod = json_encode($decodedShipMethod, JSON_UNESCAPED_UNICODE);
 				}
 
 				// Адрес из поля Dostavista: по нему считалась цена, он же нужен для выгрузки.
@@ -331,22 +341,8 @@ class ComponentOrder
 	 */
 	private static function getWidgetTariff($request, $deliveryCode)
 	{
-		if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
-			return null;
-		}
-
-		$raw = $request->getPost('eslData');
-		if (!$raw) {
-			$session = Main\Application::getInstance()->getSession();
-			$raw = $session->has('dataEsl') ? $session->get('dataEsl') : null;
-		}
-		$data = is_string($raw) ? json_decode($raw, true) : null;
-		if (!is_array($data) || !isset($data['tariff']['code']) || !is_scalar($data['tariff']['code'])
-			|| !isset($data['key'], $data['mode']) || !is_string($data['key']) || !is_string($data['mode'])) {
-			return null;
-		}
-
-		if (!self::findDeliveryByName(array(array('CODE' => $deliveryCode)), $data['key'], $data['mode'])) {
+		$data = self::getWidgetSelection($deliveryCode);
+		if (!$data || !isset($data['tariff']['code']) || !is_scalar($data['tariff']['code'])) {
 			return null;
 		}
 
@@ -356,6 +352,50 @@ class ComponentOrder
 		);
 	}
 
+
+	/** Данные службы, выбранной покупателем в виджете (framev2-script.js: eslData — из POST
+	 * текущего обновления чекаута, иначе сохранённые в сессии как dataEsl). Возвращаются,
+	 * только если они относятся к той же службе и режиму, что и профиль $deliveryCode, —
+	 * иначе это остатки прежнего выбора.
+	 * @param string $deliveryCode CODE профиля доставки, например eslogistic:sdek_term
+	 * @return array|null
+	 */
+	public static function getWidgetSelection($deliveryCode)
+	{
+		if (!Option::get(Config::MODULE_ID, 'frame_lib')) {
+			return null;
+		}
+
+		$raw = Main\Application::getInstance()->getContext()->getRequest()->getPost('eslData');
+		if (!$raw) {
+			$session = Main\Application::getInstance()->getSession();
+			$raw = $session->has('dataEsl') ? $session->get('dataEsl') : null;
+		}
+		$data = is_string($raw) ? json_decode($raw, true) : null;
+		if (!is_array($data) || !isset($data['key'], $data['mode']) || !is_string($data['key']) || !is_string($data['mode'])) {
+			return null;
+		}
+
+		if (!self::findDeliveryByName(array(array('CODE' => $deliveryCode)), $data['key'], $data['mode'])) {
+			return null;
+		}
+
+		return $data;
+	}
+
+	/** Город отправки, выбранный покупателем в окне виджета (eslData.from). Принимается
+	 * только город из списка "Города отправки" настроек модуля (Helpers\SenderCities):
+	 * значение приходит от покупателя. null — город из ЛК eShopLogistic.
+	 * @param string $deliveryCode CODE профиля доставки
+	 * @return array|null
+	 */
+	public static function getWidgetSenderCity($deliveryCode)
+	{
+		$data = self::getWidgetSelection($deliveryCode);
+		$fias = ($data && isset($data['from']) && is_string($data['from'])) ? $data['from'] : '';
+
+		return SenderCities::getByFias($fias);
+	}
 
 	/** Оставляет в значении ESHOPLOGISTIC_SHIPPING_METHODS из POST только ключи, которые
 	 * CalculateHandler кладёт в hidden input (см. $debugArr): settlement_to/region_to/
@@ -375,6 +415,13 @@ class ComponentOrder
 			if (isset($decoded[$key]) && is_scalar($decoded[$key])) {
 				$safe[$key] = mb_substr((string)$decoded[$key], 0, 255);
 			}
+		}
+
+		// Город отправки (FIAS) — только из списка "Города отправки" настроек модуля;
+		// пустая строка — явно выбран город из ЛК (режим виджета).
+		if (isset($decoded['sender_fias']) && is_string($decoded['sender_fias'])
+			&& ($decoded['sender_fias'] === '' || SenderCities::getByFias($decoded['sender_fias']))) {
+			$safe['sender_fias'] = $decoded['sender_fias'];
 		}
 
 		if (isset($decoded['terminal_tarrif'])) {
@@ -679,7 +726,7 @@ class ComponentOrder
 		while ($candidateDelivery = $rsDelivery->fetch()) {
 			$rsCandidateProfile = Delivery\Services\Table::getList(array(
 				'filter' => array('ACTIVE' => 'Y', 'PARENT_ID' => $candidateDelivery['ID'], 'ID' => $profileIds),
-				'select' => array('ID', 'CODE', 'DESCRIPTION')
+				'select' => array('ID', 'CODE', 'DESCRIPTION', 'CONFIG')
 			));
 			$candidateProfiles = array();
 			while ($profile = $rsCandidateProfile->fetch()) {
@@ -721,6 +768,9 @@ class ComponentOrder
 					$requestDataEsl['selectPvz'] = '';
 				}
 				$selectedElement = self::findDeliveryByName($eslDelivery, $requestDataEsl['key'], $requestDataEsl['mode']);
+				if ($selectedElement) {
+					$selectedElement = self::findProfileBySenderCity($eslDelivery, $selectedElement, $requestDataEsl);
+				}
 
 				if (!$selectedElement) {
 					// Покупатель выбрал в виджете службу (например ПЭК), для которой в админке
@@ -1074,7 +1124,73 @@ class ComponentOrder
 		$jsonValuePayment = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($paymentResult), ENT_QUOTES);
 		$html .= '<input id="widgetPaymentEsl" value="' . $jsonValuePayment . '" type="hidden">';
 
+		$senderCities = self::getWidgetSenderCityOptions();
+		if ($senderCities) {
+			$jsonValueSenderCities = htmlspecialcharsbx(\Bitrix\Main\Web\Json::encode($senderCities), ENT_QUOTES);
+			// Город, выбранный раньше (данные виджета в сессии) — чтобы после перезагрузки
+			// страницы список в окне виджета совпадал с городом, от которого считается цена.
+			$session = Main\Application::getInstance()->getSession();
+			$savedData = $session->has('dataEsl') ? json_decode((string)$session->get('dataEsl'), true) : null;
+			$savedFias = is_array($savedData) && isset($savedData['from']) && is_string($savedData['from']) ? $savedData['from'] : '';
+			$selectedFias = SenderCities::getByFias($savedFias) ? $savedFias : '';
+			$html .= '<input id="widgetSenderCitiesEsl" value="' . $jsonValueSenderCities . '" data-selected="' . htmlspecialcharsbx($selectedFias, ENT_QUOTES) . '" type="hidden">';
+		}
+
 		return $html;
+	}
+
+	/** Варианты выбора "Город отправки" в окне виджета (как в МС, sender-address-pvz-multi):
+	 * первым — город из ЛК eShopLogistic (fias пустой, если API его не вернул), затем
+	 * города из настроек модуля. Пустой массив — список в настройках не задан, выбор не нужен.
+	 * @return array<int, array{fias:string, name:string}>
+	 */
+	private static function getWidgetSenderCityOptions()
+	{
+		$cities = SenderCities::getList();
+		if (!$cities) {
+			return array();
+		}
+
+		$sendPoint = \Eshoplogistic\Delivery\Api\Site::getSendPoint();
+		$accountFias = (string)($sendPoint['city_fias'] ?? '');
+		$accountName = (string)($sendPoint['city_name'] ?? '');
+
+		$options = array(array(
+			'fias' => $accountFias,
+			'name' => $accountName !== '' ? $accountName : Loc::getMessage('ESHOP_LOGISTIC_WIDGET_SENDER_CITY_DEFAULT'),
+		));
+		foreach ($cities as $city) {
+			if ($city['fias'] === $accountFias) continue;
+			$options[] = array('fias' => $city['fias'], 'name' => $city['name']);
+		}
+
+		return count($options) > 1 ? $options : array();
+	}
+
+	/** Профилей одной службы может быть несколько — по одному на город отправки (параметр
+	 * "Город-отправитель", Helpers\SenderCities). findDeliveryByName() находит любой из них
+	 * по CODE; здесь выбираем тот, чей город совпадает с выбранным в окне виджета (для города
+	 * из ЛК — профиль "По умолчанию"), чтобы название доставки в чекауте и заказе
+	 * соответствовало складу, от которого посчитана цена. Нет подходящего — оставляем найденный.
+	 * @param array $profiles профили с CONFIG, ключ — ID
+	 * @param array $found профиль, найденный findDeliveryByName()
+	 * @param array $widgetData данные виджета (eslData)
+	 * @return array
+	 */
+	private static function findProfileBySenderCity($profiles, $found, $widgetData)
+	{
+		$city = SenderCities::getByFias(isset($widgetData['from']) && is_string($widgetData['from']) ? $widgetData['from'] : '');
+		$wantedFias = $city ? $city['fias'] : '';
+
+		foreach ($profiles as $profile) {
+			if ($profile['CODE'] !== $found['CODE']) continue;
+			$profileCity = SenderCities::getFromConfig($profile['CONFIG'] ?? null);
+			if (($profileCity ? $profileCity['fias'] : '') === $wantedFias) {
+				return $profile;
+			}
+		}
+
+		return $found;
 	}
 
 	private static function findDeliveryByName($deliveryBX, $code, $type)

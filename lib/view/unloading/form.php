@@ -13,6 +13,7 @@ use Eshoplogistic\Delivery\Helpers\ExportFileds;
 use Eshoplogistic\Delivery\Api\Additional;
 use Eshoplogistic\Delivery\Helpers\AddressParser;
 use Eshoplogistic\Delivery\Helpers\LocationHandler;
+use Eshoplogistic\Delivery\Helpers\SenderCities;
 
 require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
 
@@ -211,6 +212,38 @@ $paymentTypeDefault = Option::get(Config::MODULE_ID, 'payment_type-' . $typeMeth
 $pickupDefault = Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
     ? Option::get(Config::MODULE_ID, 'type_delivery_from_tk-' . $typeMethod['name'])
     : null;
+
+// Данные отправителя по умолчанию — из настроек модуля. Если у заказа свой
+// город-отправитель (Helpers\SenderCities) и он не совпадает с городом из настроек, адрес
+// и терминал отправки из настроек относятся к другому складу: подставляем город и регион
+// профиля, а улицу/дом/офис и терминал оставляем пустыми — их заполняет менеджер.
+$senderDefaults = [
+    'region' => (string)Option::get(Config::MODULE_ID, 'sender-region'),
+    'city' => (string)Option::get(Config::MODULE_ID, 'sender-city'),
+    'street' => (string)Option::get(Config::MODULE_ID, 'sender-street'),
+    'house' => (string)Option::get(Config::MODULE_ID, 'sender-house'),
+    'room' => (string)Option::get(Config::MODULE_ID, 'sender-room'),
+    'terminal' => Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
+        ? (string)Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name'])
+        : '',
+];
+// В режиме виджета город отправки выбирает покупатель — он сохранён в
+// ESHOPLOGISTIC_SHIPPING_METHODS.sender_fias (пусто — город из ЛК) и главнее параметра профиля.
+$profileSenderCity = is_array($shippingMethods ?? null) && array_key_exists('sender_fias', $shippingMethods)
+    ? SenderCities::getByFias((string)$shippingMethods['sender_fias'])
+    : SenderCities::getByDeliveryId($orderShipping['id'] ?? 0);
+if ($profileSenderCity && mb_strtolower(trim($senderDefaults['city'])) !== mb_strtolower($profileSenderCity['name'])) {
+    $senderDefaults = [
+        'region' => $profileSenderCity['region'],
+        'city' => $profileSenderCity['name'],
+        'street' => '',
+        'house' => '',
+        'room' => '',
+        'terminal' => '',
+    ];
+} else {
+    $profileSenderCity = null;
+}
 
 $cutAddressShipping = [
     'terminal' => '',
@@ -566,9 +599,7 @@ echo (int)$ID ?>"
             echo GetMessage("SENDER_TERMINAL") ?></td>
         <td><input type="text" name="sender-terminal"
                    value="<?php
-                   echo Config::isCarrierFeatureEnabled('pickup_terminal', $typeMethod['name'])
-                       ? htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-terminal-' . $typeMethod['name']))
-                       : '' ?>"></td>
+                   echo htmlspecialcharsbx($senderDefaults['terminal']) ?>"></td>
     </tr>
     <?php endif; ?>
     <?php if ($typeMethod['name'] === 'yandex' || $typeMethod['name'] === 'fivepost'): ?>
@@ -585,13 +616,17 @@ echo (int)$ID ?>"
             echo GetMessage("SENDER_REGION") ?></td>
         <td><input type="text" name="sender-region"
                    value="<?php
-                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-region')) ?>"></td>
+                   echo htmlspecialcharsbx($senderDefaults['region']) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_CITY") ?></td>
         <td><input type="text" name="sender-city" value="<?php
-            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-city')) ?>">
+            echo htmlspecialcharsbx($senderDefaults['city']) ?>">
+            <?php if ($profileSenderCity): ?>
+                <div class="esl-field-note"><?php
+                    echo GetMessage("SENDER_CITY_FROM_PROFILE") ?></div>
+            <?php endif; ?>
         </td>
     </tr>
     <tr>
@@ -599,20 +634,20 @@ echo (int)$ID ?>"
             echo GetMessage("SENDER_STREET") ?></td>
         <td><input type="text" name="sender-street"
                    value="<?php
-                   echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-street')) ?>"></td>
+                   echo htmlspecialcharsbx($senderDefaults['street']) ?>"></td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_HOUSE") ?></td>
         <td><input type="text" name="sender-house" value="<?php
-            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-house')) ?>">
+            echo htmlspecialcharsbx($senderDefaults['house']) ?>">
         </td>
     </tr>
     <tr>
         <td><span class="required">*</span><?php
             echo GetMessage("SENDER_ROOM") ?></td>
         <td><input type="text" name="sender-room" value="<?php
-            echo htmlspecialcharsbx(Option::get(Config::MODULE_ID, 'sender-room')) ?>">
+            echo htmlspecialcharsbx($senderDefaults['room']) ?>">
         </td>
     </tr>
 

@@ -9,3 +9,4 @@ $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_1"] = "Всего доступно";
 $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_2"] = "служба доставки.";
 $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_3"] = "служб доставки.";
 $MESS["ESHOP_LOGISTIC_TERMINAL_DESC_5"] = "службы доставки.";
+$MESS["ESHOP_LOGISTIC_FRAME_SENDER_CITY"] = "Город отправки";

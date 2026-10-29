@@ -77,12 +77,17 @@ class DostavistaDoor extends \Bitrix\Sale\Delivery\Services\Base
     public function isCompatible(Sale\Shipment $shipment)
     {
         // Dostavista возит только внутри города отправления из ЛК: API отвечает 422 — не показываем, 428 (нужен адрес) — показываем.
-        return Helpers\CalculateHandler::isServiceAvailableInCity($shipment, self::$service);
+        return Helpers\CalculateHandler::isServiceAvailableInCity($shipment, self::$service, $this->getConfigValues());
+    }
+
+    protected function getConfigStructure()
+    {
+        return Helpers\SenderCities::getConfigStructure($this->config);
     }
 
     public function calculate(Sale\Shipment $shipment = null, $extraServices = array())
     {
-        $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type);
+        $result = Helpers\CalculateHandler::getDefaultCalculateDelivery($shipment, self::$service, self::$type, $this->getConfigValues());
         return $result;
     }
 
