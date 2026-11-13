@@ -636,7 +636,7 @@ class ComponentOrder
 			array('TYPE' => 'LOCATION', 'UTIL' => 'N'),
 			false,
 			false,
-			array('ID')
+			array('ID', 'SORT')
 		);
 		while ($locProp = $dbLocationProps->Fetch()) {
 			$ids[] = $locProp['ID'];
